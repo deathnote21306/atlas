@@ -1,1 +1,3 @@
-__all__ = ["health"]
+from .health import HealthResponse
+
+__all__ = ["HealthResponse", "health"]
