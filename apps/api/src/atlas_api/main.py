@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from atlas_api.config import settings
-from atlas_api.routers import health
+from atlas_api.routers import auth, health
 
 app = FastAPI(title="Atlas API", version="0.0.0")
 
@@ -15,3 +15,4 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(auth.router)
