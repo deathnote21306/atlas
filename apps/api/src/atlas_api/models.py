@@ -33,11 +33,23 @@ class Country(Base):
     tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
     tier: Mapped[str] = mapped_column(String(8), nullable=False)
     status: Mapped[CountryStatus] = mapped_column(
-        SqlEnum(CountryStatus, name="country_status", native_enum=False, length=32),
+        SqlEnum(
+            CountryStatus,
+            name="country_status",
+            native_enum=False,
+            length=32,
+            values_callable=lambda enum: [e.value for e in enum],
+        ),
         nullable=False,
     )
     fx_regime: Mapped[FxRegime] = mapped_column(
-        SqlEnum(FxRegime, name="fx_regime", native_enum=False, length=32),
+        SqlEnum(
+            FxRegime,
+            name="fx_regime",
+            native_enum=False,
+            length=32,
+            values_callable=lambda enum: [e.value for e in enum],
+        ),
         nullable=False,
     )
     fx_regime_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
