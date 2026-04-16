@@ -2,7 +2,17 @@ import uuid
 from datetime import UTC, datetime
 
 from atlas_schemas.country import CountryStatus, FxRegime
-from sqlalchemy import DateTime, Float, String, Text
+from sqlalchemy import (
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -65,3 +75,64 @@ class DataVintage(Base):
     )
     source: Mapped[str] = mapped_column(String(64), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class MacroIndicatorVintage(Base):
+    __tablename__ = "macro_indicator_vintage"
+    __table_args__ = (
+        UniqueConstraint("iso3", "indicator", "period", "vintage_id", name="uq_macro_vintage"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    iso3: Mapped[str] = mapped_column(String(3), ForeignKey("country.iso3"), nullable=False)
+    indicator: Mapped[str] = mapped_column(String(64), nullable=False)
+    value: Mapped[float | None] = mapped_column(Numeric(20, 6), nullable=True)
+    source: Mapped[str] = mapped_column(String(32), nullable=False)
+    source_date: Mapped[datetime | None] = mapped_column(Date, nullable=True)
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+    period: Mapped[str] = mapped_column(String(16), nullable=False)
+    vintage_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data_vintage.id"), nullable=False
+    )
+
+
+class FxRate(Base):
+    __tablename__ = "fx_rate"
+    __table_args__ = (UniqueConstraint("iso3", "observation_date", name="uq_fx_daily"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    iso3: Mapped[str] = mapped_column(String(3), ForeignKey("country.iso3"), nullable=False)
+    ccy: Mapped[str] = mapped_column(String(3), nullable=False)
+    usd_per_ccy: Mapped[float] = mapped_column(Numeric(20, 8), nullable=False)
+    observation_date: Mapped[datetime] = mapped_column(Date, nullable=False)
+    source: Mapped[str] = mapped_column(String(32), nullable=False)
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+
+
+class RatingHistory(Base):
+    __tablename__ = "rating_history"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    iso3: Mapped[str] = mapped_column(String(3), ForeignKey("country.iso3"), nullable=False)
+    agency: Mapped[str] = mapped_column(String(16), nullable=False)
+    rating: Mapped[str] = mapped_column(String(16), nullable=False)
+    outlook: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    action: Mapped[str] = mapped_column(String(32), nullable=False)
+    action_date: Mapped[datetime] = mapped_column(Date, nullable=False)
+    source_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
