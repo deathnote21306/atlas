@@ -95,11 +95,8 @@ async def test_e2e_with_mocked_externals(httpx_mock, engine, monkeypatch):
         if "imf.org" in host:
             parts = request.url.path.split("/")
             indicator, iso3 = parts[-2], parts[-1]
-            # Use period "2023" (not "2024") so WB and IMF observations do not
-            # collide on the (iso3, indicator, period, vintage_id) unique index
-            # when indicator sets overlap (e.g. GDP_USD).
             return httpx.Response(
-                200, json={"values": {indicator: {iso3: {"2023": 5.5}}}}
+                200, json={"values": {indicator: {iso3: {"2024": 5.5}}}}
             )
         if "exchangerate.host" in host:
             return httpx.Response(

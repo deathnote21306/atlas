@@ -81,7 +81,9 @@ class DataVintage(Base):
 class MacroIndicatorVintage(Base):
     __tablename__ = "macro_indicator_vintage"
     __table_args__ = (
-        UniqueConstraint("iso3", "indicator", "period", "vintage_id", name="uq_macro_vintage"),
+        UniqueConstraint(
+            "iso3", "indicator", "period", "vintage_id", "source", name="uq_macro_vintage"
+        ),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
