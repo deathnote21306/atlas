@@ -68,3 +68,40 @@ def test_data_vintage_schema_roundtrip():
         "notes": None,
     })
     assert v.source == "nightly"
+
+
+def test_macro_value_schema():
+    from atlas_schemas.macro import MacroIndicator, MacroValue
+    v = MacroValue.model_validate({
+        "iso3": "GHA",
+        "indicator": "INFLATION_PCT",
+        "period": "2024",
+        "value": 22.4,
+        "source": "worldbank",
+        "source_date": "2024-12-31",
+        "ingested_at": "2026-04-16T03:00:00Z",
+        "vintage_id": "00000000-0000-0000-0000-000000000001",
+    })
+    assert v.indicator is MacroIndicator.INFLATION_PCT
+    assert v.value == 22.4
+
+
+def test_macro_value_allows_null():
+    from atlas_schemas.macro import MacroValue
+    v = MacroValue.model_validate({
+        "iso3": "GHA", "indicator": "GDP_USD", "period": "2025", "value": None,
+        "source": "imf_weo", "source_date": None,
+        "ingested_at": "2026-04-16T03:00:00Z",
+        "vintage_id": "00000000-0000-0000-0000-000000000001",
+    })
+    assert v.value is None
+
+
+def test_rating_action_schema():
+    from atlas_schemas.ratings import Agency, RatingAction
+    r = RatingAction.model_validate({
+        "iso3": "GHA", "agency": "S&P", "rating": "SD",
+        "outlook": None, "action": "default", "action_date": "2022-12-21",
+        "source_url": "https://www.spglobal.com/ratings/en/research/articles/221221",
+    })
+    assert r.agency is Agency.SP
