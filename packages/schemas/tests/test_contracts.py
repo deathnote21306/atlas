@@ -40,8 +40,8 @@ def test_country_schema_roundtrip():
 
 def test_country_rejects_bad_iso3():
     import pytest
-    from pydantic import ValidationError
     from atlas_schemas.country import Country
+    from pydantic import ValidationError
 
     with pytest.raises(ValidationError):
         Country.model_validate({
