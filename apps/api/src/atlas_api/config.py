@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     jwt_secret: str = "dev-secret-change-me"
     jwt_algorithm: str = "HS256"
     jwt_expires_minutes: int = 480
-    demo_user_email: str = "analyst@atlas.local"
+    demo_user_email: str = "analyst@atlas.test"
     demo_user_password: str = "change-me"
     cors_origins: str = "http://localhost:5173"
     log_level: str = "INFO"
