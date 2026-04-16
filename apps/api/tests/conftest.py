@@ -1,14 +1,13 @@
 from collections.abc import Iterator
 
 import pytest
+from atlas_api.db import Base
+from atlas_api.deps import db_session
+from atlas_api.main import app
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from testcontainers.postgres import PostgresContainer
-
-from atlas_api.db import Base
-from atlas_api.deps import db_session
-from atlas_api.main import app
 
 
 @pytest.fixture(scope="session")
@@ -41,14 +40,14 @@ def session(engine):
     # Rolling back the outer transaction after the test cleans up all rows.
     conn = engine.connect()
     trans = conn.begin()
-    TestSession = sessionmaker(
+    test_session_factory = sessionmaker(
         bind=conn,
         autoflush=False,
         autocommit=False,
         future=True,
         join_transaction_mode="create_savepoint",
     )
-    s = TestSession()
+    s = test_session_factory()
     try:
         yield s
     finally:

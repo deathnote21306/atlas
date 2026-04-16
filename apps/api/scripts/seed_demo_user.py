@@ -1,11 +1,10 @@
 """Idempotently seed the single demo user from env vars."""
 
-from sqlalchemy import select
-
 from atlas_api.config import settings
 from atlas_api.db import SessionLocal
 from atlas_api.models import User
 from atlas_api.security import hash_password
+from sqlalchemy import select
 
 
 def main() -> None:

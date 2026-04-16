@@ -1,7 +1,7 @@
+from atlas_schemas.health import HealthResponse
 from fastapi import APIRouter
 
 from atlas_api import __version__
-from atlas_schemas.health import HealthResponse
 
 router = APIRouter(prefix="/api", tags=["health"])
 
