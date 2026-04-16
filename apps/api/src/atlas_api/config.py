@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     demo_user_password: str = "change-me"
     cors_origins: str = "http://localhost:5173"
     log_level: str = "INFO"
+    ingestion_schedule_enabled: bool = True
+    ingestion_cron: str = "0 3 * * *"  # 03:00 UTC daily
 
 
 settings = Settings()
