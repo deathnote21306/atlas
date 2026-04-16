@@ -1,13 +1,17 @@
-from collections.abc import Iterator
+import os
 
-import pytest
-from atlas_api.db import Base
-from atlas_api.deps import db_session
-from atlas_api.main import app
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from testcontainers.postgres import PostgresContainer
+os.environ.setdefault("INGESTION_SCHEDULE_ENABLED", "false")
+
+from collections.abc import Iterator  # noqa: E402
+
+import pytest  # noqa: E402
+from atlas_api.db import Base  # noqa: E402
+from atlas_api.deps import db_session  # noqa: E402
+from atlas_api.main import app  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from sqlalchemy import create_engine  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+from testcontainers.postgres import PostgresContainer  # noqa: E402
 
 
 @pytest.fixture(scope="session")
