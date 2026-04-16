@@ -11,7 +11,7 @@ COPY apps/api/pyproject.toml apps/api/pyproject.toml
 COPY packages/schemas/pyproject.toml packages/schemas/pyproject.toml
 COPY apps/api/src apps/api/src
 COPY packages/schemas/src packages/schemas/src
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --package atlas-api
 
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
