@@ -9,4 +9,4 @@ def list_countries(session: Session) -> list[Country]:
 
 
 def get_country(session: Session, iso3: str) -> Country | None:
-    return session.get(Country, iso3.upper())
+    return session.get(Country, iso3)

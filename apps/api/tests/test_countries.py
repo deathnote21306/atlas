@@ -45,6 +45,9 @@ def test_list_countries_returns_seeded(client, session):
     assert len(body) == 2
     isos = {c["iso3"] for c in body}
     assert isos == {"GHA", "KEN"}
+    gha = next(c for c in body if c["iso3"] == "GHA")
+    assert gha["status"] == "restructured"
+    assert gha["fx_regime"] == "float"
 
 
 def test_get_country_returns_full_row(client, session):
@@ -64,3 +67,13 @@ def test_get_country_404(client, session):
     _login(client)
     r = client.get("/api/countries/ZZZ")
     assert r.status_code == 404
+
+
+def test_get_country_normalizes_case(client, session):
+    _seed_user(session)
+    _seed_country(session, "GHA")
+    _login(client)
+    r = client.get("/api/countries/gha")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["iso3"] == "GHA"

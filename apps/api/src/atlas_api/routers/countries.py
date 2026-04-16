@@ -14,6 +14,7 @@ def list_all(session: DbSession, _: CurrentUser) -> list[CountrySchema]:
 
 @router.get("/{iso3}", response_model=CountrySchema)
 def get_one(iso3: str, session: DbSession, _: CurrentUser) -> CountrySchema:
+    iso3 = iso3.upper()
     c = get_country(session, iso3)
     if c is None:
         raise HTTPException(
