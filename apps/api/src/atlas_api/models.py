@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Integer,
     Numeric,
     String,
     Text,
@@ -117,6 +118,20 @@ class FxRate(Base):
         default=lambda: datetime.now(UTC),
         server_default=func.now(),
     )
+
+
+class IngestionCircuit(Base):
+    __tablename__ = "ingestion_circuit"
+
+    source: Mapped[str] = mapped_column(String(32), primary_key=True)
+    consecutive_failures: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    last_failure_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    last_success_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    state: Mapped[str] = mapped_column(String(16), nullable=False, default="closed")
 
 
 class RatingHistory(Base):
