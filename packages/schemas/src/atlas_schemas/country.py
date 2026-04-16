@@ -1,9 +1,9 @@
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class CountryStatus(str, Enum):
+class CountryStatus(StrEnum):
     PERFORMING = "performing"
     NEGOTIATING = "negotiating"
     SELECTIVE_DEFAULT = "selective_default"
@@ -11,7 +11,7 @@ class CountryStatus(str, Enum):
     RESTRUCTURED = "restructured"
 
 
-class FxRegime(str, Enum):
+class FxRegime(StrEnum):
     FLOAT = "float"
     MANAGED_FLOAT = "managed_float"
     PEGGED = "pegged"
