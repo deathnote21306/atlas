@@ -38,11 +38,11 @@ const SLIDER_CONFIG: {
   step: number;
   unit: string;
 }[] = [
-  { key: "gdp_shock", label: "GDP Growth Shock", min: -20, max: 20, step: 0.5, unit: "pp" },
-  { key: "inflation_shock", label: "Inflation Shock", min: -20, max: 20, step: 0.5, unit: "pp" },
-  { key: "fx_depreciation", label: "FX Depreciation", min: -50, max: 100, step: 1, unit: "%" },
-  { key: "rate_shock", label: "Interest Rate Shock", min: -10, max: 20, step: 0.5, unit: "pp" },
-  { key: "commodity_shock", label: "Commodity Price Shock", min: -50, max: 50, step: 1, unit: "%" },
+  { key: "gdp_shock", label: "Global GDP Growth (pp)", min: -5, max: 5, step: 0.1, unit: "pp" },
+  { key: "inflation_shock", label: "Inflation Shock (pp)", min: -10, max: 15, step: 0.5, unit: "pp" },
+  { key: "fx_depreciation", label: "USD Appreciation (%)", min: -10, max: 30, step: 0.5, unit: "%" },
+  { key: "rate_shock", label: "EM Spread Widening (bps \u00f7 100)", min: -5, max: 10, step: 0.25, unit: "bps\u00f7100" },
+  { key: "commodity_shock", label: "Commodity Price Shock (%)", min: -50, max: 50, step: 1, unit: "%" },
 ];
 
 function fmtDelta(n: number): string {
@@ -167,7 +167,7 @@ export default function ScenarioEngine() {
                     >
                       {cfg.label}
                     </label>
-                    <span className="font-mono text-sm text-ink-900">
+                    <span className="font-mono font-semibold text-ink-900">
                       {shocks[cfg.key] >= 0 ? "+" : ""}
                       {shocks[cfg.key].toFixed(1)} {cfg.unit}
                     </span>
