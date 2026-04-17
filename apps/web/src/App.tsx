@@ -3,6 +3,8 @@ import Login from "./routes/Login";
 import Home from "./routes/Home";
 import CountriesList from "./routes/CountriesList";
 import CountryProfile from "./routes/CountryProfile";
+import ScenarioEngine from "./routes/ScenarioEngine";
+import ScenarioView from "./routes/ScenarioView";
 import RequireAuth from "./routes/RequireAuth";
 
 export default function App() {
@@ -12,6 +14,8 @@ export default function App() {
       <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
       <Route path="/countries" element={<RequireAuth><CountriesList /></RequireAuth>} />
       <Route path="/countries/:iso3" element={<RequireAuth><CountryProfile /></RequireAuth>} />
+      <Route path="/scenarios/new" element={<RequireAuth><ScenarioEngine /></RequireAuth>} />
+      <Route path="/scenarios/:id" element={<RequireAuth><ScenarioView /></RequireAuth>} />
     </Routes>
   );
 }
