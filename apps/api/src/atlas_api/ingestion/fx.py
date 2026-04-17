@@ -1,13 +1,11 @@
-"""ExchangeRate.host FX ingester — daily USD rates for our 9 country currencies.
+"""FX ingester — daily USD rates for our 9 country currencies.
 
-Note: if ExchangeRate.host starts requiring a key (they moved to freemium),
-set env var EXCHANGERATE_HOST_KEY and extend PARAMS. If the API is fully
-gated, swap to Frankfurter (api.frankfurter.app) — same response shape.
+Uses open.er-api.com (free, no key, full African currency coverage).
+ExchangeRate.host was the original source but moved to mandatory API keys.
 """
 
-import os
 import uuid
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 import httpx
@@ -20,21 +18,16 @@ from atlas_api.services.country.indicators import ISO3_TO_CCY
 
 log = structlog.get_logger()
 
-BASE_URL = "https://api.exchangerate.host/latest"
+BASE_URL = "https://open.er-api.com/v6/latest/USD"
 
 
 class ExchangeRateHostIngester(Ingester):
-    source_name = "exchangerate.host"
+    source_name = "open.er-api.com"
 
     async def run(self, vintage_id: UUID) -> SourceStats:
         stats = SourceStats(source=self.source_name)
-        currencies = sorted(set(ISO3_TO_CCY.values()))
-        params: dict[str, str] = {"base": "USD", "symbols": ",".join(currencies)}
-        key = os.getenv("EXCHANGERATE_HOST_KEY")
-        if key:
-            params["access_key"] = key
         try:
-            resp = await self.http.get(BASE_URL, params=params, timeout=30)
+            resp = await self.http.get(BASE_URL, timeout=30)
             resp.raise_for_status()
             payload = resp.json()
         except httpx.HTTPError as exc:
@@ -42,11 +35,11 @@ class ExchangeRateHostIngester(Ingester):
             return stats
 
         rates = payload.get("rates") or {}
-        obs_date_raw = payload.get("date")
-        if obs_date_raw is None:
+        ts = payload.get("time_last_update_unix")
+        if ts is None:
             stats.errors.append("missing date in response")
             return stats
-        obs_date = date.fromisoformat(obs_date_raw)
+        obs_date = datetime.fromtimestamp(int(ts), tz=UTC).date()
 
         now = datetime.now(UTC)
         for iso3, ccy in ISO3_TO_CCY.items():

@@ -85,7 +85,7 @@ def test_fx_deltas(session):
     for d, rate in rows:
         session.add(FxRate(
             id=uuid.uuid4(), iso3="GHA", ccy="GHS", usd_per_ccy=rate,
-            observation_date=d, source="exchangerate.host",
+            observation_date=d, source="open.er-api.com",
         ))
     session.commit()
 

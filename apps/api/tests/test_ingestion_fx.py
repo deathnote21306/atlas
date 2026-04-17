@@ -27,16 +27,16 @@ def _seed_countries(session):
     return v.id
 
 
+MOCK_TS = int(datetime(2026, 4, 16, tzinfo=UTC).timestamp())
+
+
 async def test_fx_writes_daily_rows(httpx_mock, session):
     vintage_id = _seed_countries(session)
     httpx_mock.add_response(
-        url=httpx.URL(
-            "https://api.exchangerate.host/latest",
-            params={"base": "USD", "symbols": "EGP,ETB,GHS,KES,MAD,NGN,RWF,XOF,ZAR"},
-        ),
         json={
-            "base": "USD",
-            "date": "2026-04-16",
+            "result": "success",
+            "base_code": "USD",
+            "time_last_update_unix": MOCK_TS,
             "rates": {
                 "XOF": 600.0, "GHS": 15.2, "KES": 129.4, "NGN": 1450.0,
                 "ETB": 56.8, "RWF": 1350.0, "ZAR": 18.4, "MAD": 10.1, "EGP": 48.5,
@@ -48,7 +48,7 @@ async def test_fx_writes_daily_rows(httpx_mock, session):
         ing = ExchangeRateHostIngester(http, session)
         stats = await ing.run(vintage_id)
 
-    assert stats.rows_written == 10  # CIV + SEN both use XOF
+    assert stats.rows_written == 10
     assert not stats.errors
     rows = session.execute(select(FxRate)).scalars().all()
     assert len(rows) == 10
@@ -58,8 +58,10 @@ async def test_fx_writes_daily_rows(httpx_mock, session):
 async def test_fx_handles_missing_currency(httpx_mock, session):
     vintage_id = _seed_countries(session)
     httpx_mock.add_response(json={
-        "base": "USD", "date": "2026-04-16",
-        "rates": {"GHS": 15.2},  # only one currency returned
+        "result": "success",
+        "base_code": "USD",
+        "time_last_update_unix": MOCK_TS,
+        "rates": {"GHS": 15.2},
     })
     async with httpx.AsyncClient() as http:
         ing = ExchangeRateHostIngester(http, session)

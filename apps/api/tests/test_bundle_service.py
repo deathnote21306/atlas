@@ -57,7 +57,7 @@ def test_bundle_populates_macro_and_fx(session):
         ),
         FxRate(
             id=uuid.uuid4(), iso3="GHA", ccy="GHS", usd_per_ccy=1 / 15.0,
-            observation_date=date(2026, 4, 16), source="exchangerate.host",
+            observation_date=date(2026, 4, 16), source="open.er-api.com",
         ),
     ])
     session.commit()
