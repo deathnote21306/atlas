@@ -102,8 +102,9 @@ async def test_e2e_with_mocked_externals(httpx_mock, engine, monkeypatch):
             return httpx.Response(
                 200,
                 json={
-                    "base": "USD",
-                    "date": "2026-04-16",
+                    "result": "success",
+                    "base_code": "USD",
+                    "time_last_update_unix": 1744761600,
                     "rates": {
                         "XOF": 600,
                         "GHS": 15.2,
