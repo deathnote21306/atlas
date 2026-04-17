@@ -105,3 +105,41 @@ def test_rating_action_schema():
         "source_url": "https://www.spglobal.com/ratings/en/research/articles/221221",
     })
     assert r.agency is Agency.SP
+
+
+def test_staleness_info_schema():
+    from atlas_schemas.staleness import StalenessInfo, StalenessState
+    s = StalenessInfo.model_validate({"state": "yellow", "age_days": 200})
+    assert s.state is StalenessState.YELLOW
+    assert s.age_days == 200
+    s_missing = StalenessInfo.model_validate({"state": "missing", "age_days": None})
+    assert s_missing.state is StalenessState.MISSING
+    assert s_missing.age_days is None
+
+
+def test_dimension_score_schema():
+    from atlas_schemas.risk import DimensionScore, RiskDimension
+    d = DimensionScore.model_validate({
+        "dimension": "debt_burden", "score": 7, "rationale": "debt 85% of GDP",
+        "input_value": 85.0, "is_estimate": False,
+    })
+    assert d.dimension is RiskDimension.DEBT_BURDEN
+    assert d.score == 7
+
+
+def test_country_bundle_shape():
+    from atlas_schemas.bundle import CountryBundle
+    payload = {
+        "country": {
+            "iso3": "GHA", "name": "Ghana", "capital": "Accra", "region": "West Africa",
+            "tags": ["SSA"], "tier": "C", "status": "restructured", "fx_regime": "float",
+            "fx_regime_notes": None, "fx_parallel_premium": None,
+        },
+        "macro": [], "fx": None,
+        "ratings": {"latest_per_agency": {}, "composite_score": None, "history": []},
+        "risk": {"composite": 50.0, "dimensions": []},
+        "synopsis": None, "news_placeholder": True,
+    }
+    b = CountryBundle.model_validate(payload)
+    assert b.country.iso3 == "GHA"
+    assert b.risk.composite == 50.0
