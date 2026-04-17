@@ -37,6 +37,15 @@ def engine(pg_url):
     Base.metadata.drop_all(eng)
 
 
+@pytest.fixture(autouse=True)
+def _clean_db(engine):
+    """Truncate all tables before each test to prevent cross-test data leaks."""
+    with engine.begin() as conn:
+        for table in reversed(Base.metadata.sorted_tables):
+            conn.execute(table.delete())
+    yield
+
+
 @pytest.fixture()
 def session(engine):
     # Wrap each test in an outer transaction; use a nested savepoint so that
