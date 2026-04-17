@@ -7,6 +7,7 @@ from atlas_schemas.ingestion import DataVintage, IngestionReport, SourceStats
 from atlas_schemas.macro import MacroIndicator, MacroValue
 from atlas_schemas.ratings import Agency, RatingAction
 from atlas_schemas.risk import DimensionScore, RiskDimension, RiskScore
+from atlas_schemas.scenario import ScenarioDeltas, ScenarioPreview, ScenarioRunOut, ShockVector
 from atlas_schemas.staleness import StalenessInfo, StalenessState
 
 __all__ = [
@@ -14,5 +15,7 @@ __all__ = [
     "DimensionScore", "FxDeltas", "FxObservation", "FxRegime", "HealthResponse",
     "IngestionReport", "LoginRequest", "LoginResponse", "MacroIndicator",
     "MacroTile", "MacroValue", "Me", "RatingAction", "RatingsSection",
-    "RiskDimension", "RiskScore", "SourceStats", "StalenessInfo", "StalenessState",
+    "RiskDimension", "RiskScore", "ScenarioDeltas", "ScenarioPreview",
+    "ScenarioRunOut", "ShockVector", "SourceStats", "StalenessInfo",
+    "StalenessState",
 ]
