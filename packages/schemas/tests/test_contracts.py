@@ -143,3 +143,30 @@ def test_country_bundle_shape():
     b = CountryBundle.model_validate(payload)
     assert b.country.iso3 == "GHA"
     assert b.risk.composite == 50.0
+
+
+def test_shock_vector_defaults():
+    from atlas_schemas.scenario import ShockVector
+    sv = ShockVector()
+    assert sv.gdp_shock == 0.0
+    assert sv.fx_depreciation == 0.0
+
+
+def test_shock_vector_roundtrip():
+    from atlas_schemas.scenario import ShockVector
+    sv = ShockVector(gdp_shock=-2.0, inflation_shock=5.0, fx_depreciation=15.0,
+                     rate_shock=3.0, commodity_shock=-10.0)
+    d = sv.model_dump()
+    assert ShockVector(**d) == sv
+
+
+def test_scenario_preview_roundtrip():
+    from atlas_schemas.scenario import ScenarioDeltas, ScenarioPreview
+    sp = ScenarioPreview(
+        baseline_risk_score=46.7, new_risk_score=53.3, distress_probability=0.2624,
+        deltas=ScenarioDeltas(debt_gdp=3.06, fiscal_balance=-1.5, current_account=-1.5),
+        baseline_debt_gdp=60.0, baseline_fiscal_balance=-3.0, baseline_current_account=-2.0,
+        new_debt_gdp=63.06, new_fiscal_balance=-4.5, new_current_account=-3.5,
+    )
+    d = sp.model_dump()
+    assert ScenarioPreview(**d).new_risk_score == 53.3
