@@ -1,3 +1,6 @@
-// packages/design-system/src/index.ts
 export { KpiCard } from "./primitives/KpiCard";
 export type { KpiCardProps } from "./primitives/KpiCard";
+export { StalenessChip } from "./primitives/StalenessChip";
+export type { StalenessChipProps, StalenessState } from "./primitives/StalenessChip";
+export { RatingBadge } from "./primitives/RatingBadge";
+export type { RatingBadgeProps } from "./primitives/RatingBadge";
