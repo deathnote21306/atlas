@@ -8,3 +8,5 @@ export { RiskGauge } from "./primitives/RiskGauge";
 export type { RiskGaugeProps } from "./primitives/RiskGauge";
 export { InstitutionalTable } from "./primitives/InstitutionalTable";
 export type { Column, InstitutionalTableProps } from "./primitives/InstitutionalTable";
+export { RiskBadge } from "./primitives/RiskBadge";
+export type { RiskBadgeProps, RiskLevel } from "./primitives/RiskBadge";
