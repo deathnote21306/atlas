@@ -30,6 +30,17 @@ def login(body: LoginRequest, response: Response, session: DbSession) -> LoginRe
     return LoginResponse(email=user.email, role=user.role)
 
 
+@router.post("/auth/logout", status_code=204)
+def logout(response: Response) -> Response:
+    response.delete_cookie(
+        key=COOKIE_NAME,
+        path="/",
+        samesite="lax",
+    )
+    response.status_code = 204
+    return response
+
+
 @router.get("/me", response_model=Me)
 def me(user: CurrentUser) -> Me:
     return Me(email=user.email, role=user.role)
