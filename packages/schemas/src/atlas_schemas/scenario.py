@@ -35,6 +35,17 @@ class ScenarioPreview(BaseModel):
     new_current_account: float
 
 
+class CountryImpact(BaseModel):
+    iso3: str
+    name: str
+    status: str
+    baseline_risk: float
+    new_risk: float
+    risk_change: float
+    deltas: ScenarioDeltas
+    distress_probability: float | None = None
+
+
 class ScenarioRunOut(BaseModel):
     id: uuid.UUID
     iso3: str
