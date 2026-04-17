@@ -4,3 +4,7 @@ export { StalenessChip } from "./primitives/StalenessChip";
 export type { StalenessChipProps, StalenessState } from "./primitives/StalenessChip";
 export { RatingBadge } from "./primitives/RatingBadge";
 export type { RatingBadgeProps } from "./primitives/RatingBadge";
+export { RiskGauge } from "./primitives/RiskGauge";
+export type { RiskGaugeProps } from "./primitives/RiskGauge";
+export { InstitutionalTable } from "./primitives/InstitutionalTable";
+export type { Column, InstitutionalTableProps } from "./primitives/InstitutionalTable";
