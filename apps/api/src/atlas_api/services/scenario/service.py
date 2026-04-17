@@ -133,16 +133,15 @@ def get_scenario(session: Session, scenario_id: uuid.UUID) -> ScenarioRunOut | N
     )
 
 
-def list_scenarios(session: Session, iso3: str) -> list[ScenarioRunOut]:
-    """List all saved scenarios for a given country, newest first."""
+def list_scenarios(session: Session, iso3: str | None = None) -> list[ScenarioRunOut]:
+    """List all saved scenarios, optionally filtered by country, newest first."""
     from sqlalchemy import select
 
-    iso3 = iso3.upper()
-    stmt = (
-        select(ScenarioRun)
-        .where(ScenarioRun.iso3 == iso3, ScenarioRun.saved.is_(True))
-        .order_by(ScenarioRun.created_at.desc())
-    )
+    stmt = select(ScenarioRun).where(ScenarioRun.saved.is_(True))
+    if iso3 is not None:
+        iso3 = iso3.upper()
+        stmt = stmt.where(ScenarioRun.iso3 == iso3)
+    stmt = stmt.order_by(ScenarioRun.created_at.desc())
     runs = list(session.execute(stmt).scalars())
     return [
         ScenarioRunOut(
