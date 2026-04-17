@@ -49,6 +49,8 @@ class CountryImpact(BaseModel):
 class ScenarioRunOut(BaseModel):
     id: uuid.UUID
     iso3: str
+    title: str = ""
+    description: str | None = None
     shocks: ShockVector
     outputs: ScenarioPreview
     created_by: uuid.UUID
