@@ -98,7 +98,7 @@ async def test_e2e_with_mocked_externals(httpx_mock, engine, monkeypatch):
             return httpx.Response(
                 200, json={"values": {indicator: {iso3: {"2024": 5.5}}}}
             )
-        if "exchangerate.host" in host:
+        if "open.er-api.com" in host:
             return httpx.Response(
                 200,
                 json={
