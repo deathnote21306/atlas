@@ -1,0 +1,82 @@
+"""Scenario Engine API endpoints."""
+
+from __future__ import annotations
+
+import uuid
+
+from atlas_schemas.scenario import ScenarioPreview, ScenarioRunOut, ShockVector
+from fastapi import APIRouter, HTTPException, Query, status
+from pydantic import BaseModel
+
+from atlas_api.deps import CurrentUser, DbSession
+from atlas_api.services.scenario.service import (
+    get_scenario,
+    list_scenarios,
+    preview_scenario,
+    save_scenario,
+)
+
+router = APIRouter(prefix="/api/scenarios", tags=["scenarios"])
+
+
+class PreviewRequest(BaseModel):
+    iso3: str
+    shocks: ShockVector
+
+
+class SaveRequest(BaseModel):
+    iso3: str
+    shocks: ShockVector
+
+
+@router.post("/preview", response_model=ScenarioPreview)
+def post_preview(
+    body: PreviewRequest,
+    session: DbSession,
+    _: CurrentUser,
+) -> ScenarioPreview:
+    """Compute a scenario preview (no DB writes)."""
+    try:
+        return preview_scenario(session, body.iso3, body.shocks)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+
+
+@router.post("", response_model=ScenarioRunOut, status_code=status.HTTP_201_CREATED)
+def post_save(
+    body: SaveRequest,
+    session: DbSession,
+    user: CurrentUser,
+) -> ScenarioRunOut:
+    """Preview + persist a scenario run."""
+    try:
+        preview = preview_scenario(session, body.iso3, body.shocks)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
+    return save_scenario(session, body.iso3, user.id, body.shocks, preview)
+
+
+@router.get("/{scenario_id}", response_model=ScenarioRunOut)
+def get_one(
+    scenario_id: uuid.UUID,
+    session: DbSession,
+    _: CurrentUser,
+) -> ScenarioRunOut:
+    """Retrieve a saved scenario by ID."""
+    result = get_scenario(session, scenario_id)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"scenario {scenario_id} not found",
+        )
+    return result
+
+
+@router.get("", response_model=list[ScenarioRunOut])
+def list_all(
+    session: DbSession,
+    _: CurrentUser,
+    iso3: str = Query(..., min_length=3, max_length=3, description="Country ISO3 code"),
+) -> list[ScenarioRunOut]:
+    """List saved scenarios for a country."""
+    return list_scenarios(session, iso3)

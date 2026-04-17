@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from atlas_api.config import settings
 from atlas_api.ingestion.scheduler import build_scheduler
 from atlas_api.logging_config import configure_logging
-from atlas_api.routers import auth, countries, health
+from atlas_api.routers import auth, countries, health, scenarios
 
 configure_logging()
 
@@ -37,3 +37,4 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(countries.router)
+app.include_router(scenarios.router)
