@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 
-from atlas_schemas.scenario import ScenarioPreview, ScenarioRunOut, ShockVector
+from atlas_schemas.scenario import CountryImpact, ScenarioPreview, ScenarioRunOut, ShockVector
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 
@@ -12,6 +12,7 @@ from atlas_api.deps import CurrentUser, DbSession
 from atlas_api.services.scenario.service import (
     get_scenario,
     list_scenarios,
+    preview_all_countries,
     preview_scenario,
     save_scenario,
 )
@@ -27,6 +28,20 @@ class PreviewRequest(BaseModel):
 class SaveRequest(BaseModel):
     iso3: str
     shocks: ShockVector
+
+
+class PreviewAllRequest(BaseModel):
+    shocks: ShockVector
+
+
+@router.post("/preview-all", response_model=list[CountryImpact])
+def preview_all(
+    body: PreviewAllRequest,
+    session: DbSession,
+    _: CurrentUser,
+) -> list[CountryImpact]:
+    """Compute scenario preview for all countries, ranked by impact."""
+    return preview_all_countries(session, body.shocks)
 
 
 @router.post("/preview", response_model=ScenarioPreview)

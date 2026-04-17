@@ -8,6 +8,7 @@ import uuid
 import pytest
 from atlas_api.models import Country, DataVintage, MacroIndicatorVintage, User
 from atlas_api.security import hash_password
+from sqlalchemy import select
 
 
 @pytest.fixture()
@@ -146,3 +147,52 @@ def test_preview_requires_auth(client):
         "iso3": "TST", "shocks": {"gdp_shock": -1.0},
     })
     assert resp.status_code == 401
+
+
+def test_preview_all_returns_ranked_impacts(auth_client, session, seeded):
+    # Seed a second country with macro data
+    session.add(Country(
+        iso3="KEN",
+        name="Kenya",
+        capital="Nairobi",
+        region="East Africa",
+        tags=["SSA"],
+        tier="B",
+        status="performing",
+        fx_regime="managed_float",
+    ))
+    v = session.execute(select(DataVintage)).scalars().first()
+    indicators = {
+        "PUBLIC_DEBT_PCT_GDP": 73.0,
+        "FISCAL_BALANCE_PCT_GDP": -5.0,
+        "CURRENT_ACCOUNT_PCT_GDP": -4.0,
+        "GDP_GROWTH_PCT": 5.0,
+        "INFLATION_PCT": 7.0,
+        "FX_RESERVES_MO_IMPORTS": 3.5,
+    }
+    for ind, val in indicators.items():
+        session.add(MacroIndicatorVintage(
+            iso3="KEN",
+            indicator=ind,
+            value=val,
+            source="worldbank",
+            period="2024",
+            vintage_id=v.id,
+        ))
+    session.commit()
+
+    resp = auth_client.post("/api/scenarios/preview-all", json={
+        "shocks": {"gdp_shock": -5.0, "commodity_shock": -20.0},
+    })
+    assert resp.status_code == 200
+    body = resp.json()
+    assert len(body) >= 2
+    # Should be sorted by abs(risk_change) DESC
+    changes = [abs(c["risk_change"]) for c in body]
+    assert changes == sorted(changes, reverse=True)
+    # Each item has required fields
+    for item in body:
+        assert "iso3" in item
+        assert "name" in item
+        assert "risk_change" in item
+        assert "deltas" in item

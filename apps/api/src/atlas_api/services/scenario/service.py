@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 
-from atlas_schemas.scenario import ScenarioPreview, ScenarioRunOut, ShockVector
+from atlas_schemas.scenario import CountryImpact, ScenarioPreview, ScenarioRunOut, ShockVector
 from sqlalchemy.orm import Session
 
 from atlas_api.models import ScenarioRun
@@ -47,6 +47,34 @@ def preview_scenario(
         shocks=shocks,
         baseline_risk_composite=bundle.risk.composite,
     )
+
+
+def preview_all_countries(
+    session: Session, shocks: ShockVector
+) -> list[CountryImpact]:
+    """Run scenario preview across all countries, return sorted by abs(risk_change) DESC."""
+    from atlas_api.services.country.queries import list_countries
+
+    results: list[CountryImpact] = []
+    for country in list_countries(session):
+        try:
+            preview = preview_scenario(session, country.iso3, shocks)
+        except ValueError:
+            continue
+        raw_status = country.status
+        status = raw_status.value if hasattr(raw_status, "value") else str(raw_status)
+        results.append(CountryImpact(
+            iso3=country.iso3,
+            name=country.name,
+            status=status,
+            baseline_risk=preview.baseline_risk_score,
+            new_risk=preview.new_risk_score,
+            risk_change=round(preview.new_risk_score - preview.baseline_risk_score, 1),
+            deltas=preview.deltas,
+            distress_probability=preview.distress_probability,
+        ))
+    results.sort(key=lambda x: abs(x.risk_change), reverse=True)
+    return results
 
 
 def save_scenario(

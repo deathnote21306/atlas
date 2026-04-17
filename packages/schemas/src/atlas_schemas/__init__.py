@@ -7,11 +7,17 @@ from atlas_schemas.ingestion import DataVintage, IngestionReport, SourceStats
 from atlas_schemas.macro import MacroIndicator, MacroValue
 from atlas_schemas.ratings import Agency, RatingAction
 from atlas_schemas.risk import DimensionScore, RiskDimension, RiskScore
-from atlas_schemas.scenario import ScenarioDeltas, ScenarioPreview, ScenarioRunOut, ShockVector
+from atlas_schemas.scenario import (
+    CountryImpact,
+    ScenarioDeltas,
+    ScenarioPreview,
+    ScenarioRunOut,
+    ShockVector,
+)
 from atlas_schemas.staleness import StalenessInfo, StalenessState
 
 __all__ = [
-    "Agency", "Country", "CountryBundle", "CountryStatus", "DataVintage",
+    "Agency", "Country", "CountryBundle", "CountryImpact", "CountryStatus", "DataVintage",
     "DimensionScore", "FxDeltas", "FxObservation", "FxRegime", "HealthResponse",
     "IngestionReport", "LoginRequest", "LoginResponse", "MacroIndicator",
     "MacroTile", "MacroValue", "Me", "RatingAction", "RatingsSection",
