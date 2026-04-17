@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import {
   InstitutionalTable,
   RatingBadge,
@@ -111,9 +111,17 @@ export default function CountryProfile() {
       <main className="mx-auto max-w-6xl p-6">
         {/* Header */}
         <header className="mb-6">
-          <div className="flex items-baseline gap-3">
-            <h1 className="text-2xl font-semibold text-ink-900">{country.name}</h1>
-            <span className="font-mono text-sm text-ink-500">{country.iso3}</span>
+          <div className="flex items-baseline justify-between">
+            <div className="flex items-baseline gap-3">
+              <h1 className="text-2xl font-semibold text-ink-900">{country.name}</h1>
+              <span className="font-mono text-sm text-ink-500">{country.iso3}</span>
+            </div>
+            <Link
+              to={`/scenarios/new?country=${country.iso3}`}
+              className="rounded-md bg-atlas-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-atlas-700"
+            >
+              Run Scenario
+            </Link>
           </div>
           <div className="mt-2 flex flex-wrap gap-2 text-xs text-ink-500">
             <span className="rounded bg-ink-100 px-2 py-0.5 uppercase tracking-wide">{country.status}</span>
