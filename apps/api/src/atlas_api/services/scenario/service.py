@@ -83,11 +83,16 @@ def save_scenario(
     user_id: uuid.UUID,
     shocks: ShockVector,
     preview: ScenarioPreview,
+    *,
+    title: str = "",
+    description: str | None = None,
 ) -> ScenarioRunOut:
     """Persist a scenario run and return the saved record."""
     iso3 = iso3.upper()
     run = ScenarioRun(
         iso3=iso3,
+        title=title,
+        description=description,
         shocks=shocks.model_dump(),
         outputs=preview.model_dump(),
         created_by=user_id,
@@ -100,6 +105,8 @@ def save_scenario(
     return ScenarioRunOut(
         id=run.id,
         iso3=run.iso3,
+        title=run.title,
+        description=run.description,
         shocks=ShockVector(**run.shocks),
         outputs=ScenarioPreview(**run.outputs),
         created_by=run.created_by,
@@ -116,6 +123,8 @@ def get_scenario(session: Session, scenario_id: uuid.UUID) -> ScenarioRunOut | N
     return ScenarioRunOut(
         id=run.id,
         iso3=run.iso3,
+        title=run.title,
+        description=run.description,
         shocks=ShockVector(**run.shocks),
         outputs=ScenarioPreview(**run.outputs),
         created_by=run.created_by,
@@ -139,6 +148,8 @@ def list_scenarios(session: Session, iso3: str) -> list[ScenarioRunOut]:
         ScenarioRunOut(
             id=r.id,
             iso3=r.iso3,
+            title=r.title,
+            description=r.description,
             shocks=ShockVector(**r.shocks),
             outputs=ScenarioPreview(**r.outputs),
             created_by=r.created_by,

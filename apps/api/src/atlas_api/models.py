@@ -177,6 +177,8 @@ class ScenarioRun(Base):
         default=lambda: datetime.now(UTC),
         server_default=func.now(),
     )
+    title: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     saved: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),

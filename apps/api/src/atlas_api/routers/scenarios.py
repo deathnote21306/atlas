@@ -28,6 +28,8 @@ class PreviewRequest(BaseModel):
 class SaveRequest(BaseModel):
     iso3: str
     shocks: ShockVector
+    title: str = ""
+    description: str | None = None
 
 
 class PreviewAllRequest(BaseModel):
@@ -68,7 +70,10 @@ def post_save(
         preview = preview_scenario(session, body.iso3, body.shocks)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)) from exc
-    return save_scenario(session, body.iso3, user.id, body.shocks, preview)
+    return save_scenario(
+        session, body.iso3, user.id, body.shocks, preview,
+        title=body.title, description=body.description,
+    )
 
 
 @router.get("/{scenario_id}", response_model=ScenarioRunOut)
