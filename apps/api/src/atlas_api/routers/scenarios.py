@@ -96,7 +96,7 @@ def get_one(
 def list_all(
     session: DbSession,
     _: CurrentUser,
-    iso3: str = Query(..., min_length=3, max_length=3, description="Country ISO3 code"),
+    iso3: str | None = Query(None, min_length=3, max_length=3, description="Country ISO3 code"),
 ) -> list[ScenarioRunOut]:
-    """List saved scenarios for a country."""
+    """List saved scenarios, optionally filtered by country."""
     return list_scenarios(session, iso3)
