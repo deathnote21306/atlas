@@ -1,8 +1,10 @@
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
 from atlas_schemas.country import CountryStatus, FxRegime
 from sqlalchemy import (
+    Boolean,
     Date,
     DateTime,
     Float,
@@ -13,9 +15,10 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy import Enum as SqlEnum
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import ARRAY
 
@@ -152,4 +155,32 @@ class RatingHistory(Base):
         nullable=False,
         default=lambda: datetime.now(UTC),
         server_default=func.now(),
+    )
+
+
+class ScenarioRun(Base):
+    __tablename__ = "scenario_run"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    iso3: Mapped[str] = mapped_column(String(3), ForeignKey("country.iso3"), nullable=False)
+    input_vintage_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data_vintage.id"), nullable=True
+    )
+    shocks: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    outputs: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    created_by: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user.id"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+    saved: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=False,
+        default=uuid.UUID("00000000-0000-0000-0000-000000000000"),
+        server_default=text("'00000000-0000-0000-0000-000000000000'::uuid"),
     )
