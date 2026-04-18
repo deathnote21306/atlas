@@ -17,5 +17,10 @@ class Settings(BaseSettings):
     news_poll_enabled: bool = False
     news_poll_cron: str = "*/10 * * * *"  # every 10 minutes
 
+    # -- AI integration (Plan 5b) --
+    anthropic_api_key: str = ""
+    ai_model: str = "claude-sonnet-4-5-20250514"
+    ai_daily_token_cap: int = 200_000
+
 
 settings = Settings()
