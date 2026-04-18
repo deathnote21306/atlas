@@ -23,7 +23,7 @@ def login(body: LoginRequest, response: Response, session: DbSession) -> LoginRe
         value=token,
         httponly=True,
         samesite="lax",
-        secure=False,
+        secure=settings.is_production,
         max_age=settings.jwt_expires_minutes * 60,
         path="/",
     )
@@ -36,6 +36,7 @@ def logout(response: Response) -> Response:
         key=COOKIE_NAME,
         path="/",
         samesite="lax",
+        secure=settings.is_production,
     )
     response.status_code = 204
     return response

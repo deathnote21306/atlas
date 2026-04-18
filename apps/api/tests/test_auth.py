@@ -1,5 +1,6 @@
 import uuid
 
+from atlas_api.config import settings
 from atlas_api.models import User
 from atlas_api.security import hash_password
 
@@ -42,3 +43,12 @@ def test_me_returns_user_when_authed(client, session):
     me = client.get("/api/me")
     assert me.status_code == 200
     assert me.json() == {"email": "a@b.test", "role": "Analyst"}
+
+
+def test_login_sets_secure_cookie_in_production(client, session, monkeypatch):
+    monkeypatch.setattr(settings, "environment", "production")
+    _seed(session)
+    r = client.post("/api/auth/login", json={"email": "a@b.test", "password": "pw-123456"})
+    assert r.status_code == 200
+    cookie_header = r.headers.get("set-cookie", "")
+    assert "Secure" in cookie_header
