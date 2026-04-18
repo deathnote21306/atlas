@@ -5,7 +5,6 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import httpx
-
 from pydantic import BaseModel
 
 from atlas_api.services.ai.provider import (
