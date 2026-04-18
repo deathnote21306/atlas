@@ -15,7 +15,7 @@ import hashlib
 import json
 import threading
 from datetime import UTC, datetime
-from typing import TypeVar, Any
+from typing import Any, TypeVar
 
 import anthropic
 import structlog
