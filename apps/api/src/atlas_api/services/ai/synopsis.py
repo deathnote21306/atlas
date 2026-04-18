@@ -40,7 +40,7 @@ Write 2-4 paragraphs covering:
 Be factual, precise, and use numerical values from the context."""
 
 
-def _get_recent_news(session: Session, iso3: str, days: int = 7) -> list[dict]:
+def _get_recent_news(session: Session, iso3: str, days: int = 7) -> list[dict[str, Any]]:
     """Pull scored news items from the last N days for a country."""
     cutoff = datetime.now(UTC) - timedelta(days=days)
     items = (

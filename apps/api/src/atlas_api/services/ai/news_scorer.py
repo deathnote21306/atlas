@@ -1,3 +1,4 @@
+from typing import Any
 """Claude-based 4-axis news impact scorer.
 
 Falls back to heuristic scorer on:
@@ -41,7 +42,7 @@ Score each article across 4 axes using L (low), M (medium), or H (high):
 Provide a brief rationale for each axis score."""
 
 
-def _build_messages(title: str, body: str, iso3: str | None, event_type: str | None) -> list[dict]:
+def _build_messages(title: str, body: str, iso3: str | None, event_type: str | None) -> list[dict[str, Any]]:
     context_parts = [f"Title: {title}"]
     if body:
         # Truncate body to ~2000 chars to manage token usage
