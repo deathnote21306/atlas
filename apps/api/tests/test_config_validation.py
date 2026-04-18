@@ -4,11 +4,13 @@ from atlas_api.config import Settings
 def test_default_dev_config_returns_expected_warnings():
     s = Settings(
         database_url="postgresql+psycopg://x:x@localhost/x",
+        jwt_secret="dev-secret-change-me",
+        demo_user_password="change-me",
         _env_file=None,
     )
     warnings = s.validate_for_production()
-    assert any("jwt_secret" in w for w in warnings)
-    assert any("demo_user_password" in w for w in warnings)
+    assert any("JWT_SECRET" in w or "jwt_secret" in w for w in warnings)
+    assert any("DEMO_USER_PASSWORD" in w or "demo_user_password" in w for w in warnings)
     assert not s.is_production
 
 
@@ -16,11 +18,13 @@ def test_production_with_default_jwt_secret_would_fail():
     s = Settings(
         environment="production",
         database_url="postgresql+psycopg://x:x@localhost/x",
+        jwt_secret="dev-secret-change-me",
+        demo_user_password="change-me",
         _env_file=None,
     )
     assert s.is_production
     warnings = s.validate_for_production()
-    assert any("jwt_secret" in w for w in warnings)
+    assert any("JWT_SECRET" in w or "jwt_secret" in w for w in warnings)
 
 
 def test_properly_configured_settings_returns_no_warnings():
