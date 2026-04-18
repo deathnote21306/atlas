@@ -23,6 +23,18 @@ const SAMPLE = [
   { iso3: "ZAF", name: "South Africa", capital: "Pretoria", region: "Southern Africa", tags: ["SSA"], tier: "A", status: "performing", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
 ];
 
+function makeBundle(country: typeof SAMPLE[number]) {
+  return {
+    country,
+    macro: [],
+    fx: null,
+    ratings: { latest_per_agency: {}, composite_score: null, history: [] },
+    risk: { composite: 50, dimensions: [] },
+    synopsis: null,
+    news_placeholder: true,
+  };
+}
+
 function stubFetch(countries: typeof SAMPLE) {
   vi.stubGlobal(
     "fetch",
@@ -30,6 +42,17 @@ function stubFetch(countries: typeof SAMPLE) {
       if (url === "/api/me") {
         return Promise.resolve(new Response(JSON.stringify({ email: "a@b.test", role: "Analyst" }), { status: 200 }));
       }
+      // Match bundle endpoints: /api/countries/{iso3}/bundle
+      const bundleMatch = url.match(/^\/api\/countries\/([A-Z]{3})\/bundle$/);
+      if (bundleMatch) {
+        const iso3 = bundleMatch[1];
+        const country = countries.find((c) => c.iso3 === iso3);
+        if (country) {
+          return Promise.resolve(new Response(JSON.stringify(makeBundle(country)), { status: 200 }));
+        }
+        return Promise.resolve(new Response(JSON.stringify({ detail: "Not found" }), { status: 404 }));
+      }
+      // Default: return the country list
       return Promise.resolve(new Response(JSON.stringify(countries), { status: 200 }));
     }),
   );

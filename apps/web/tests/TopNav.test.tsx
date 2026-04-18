@@ -24,8 +24,8 @@ describe("Sidebar", () => {
   it("renders Atlas brand and navigation sections", async () => {
     render(wrap(<Sidebar />));
     expect(screen.getByText(/atlas/i)).toBeInTheDocument();
-    expect(screen.getByText(/intelligence/i)).toBeInTheDocument();
-    expect(screen.getByText(/operations/i)).toBeInTheDocument();
+    expect(screen.getByText("INTELLIGENCE")).toBeInTheDocument();
+    expect(screen.getByText("OPERATIONS")).toBeInTheDocument();
   });
 
   it("renders nav links for Dashboard, Countries, Scenarios, and News", async () => {
