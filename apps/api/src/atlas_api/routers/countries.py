@@ -2,7 +2,7 @@ from atlas_schemas.bundle import CountryBundle
 from atlas_schemas.country import Country as CountrySchema
 from fastapi import APIRouter, HTTPException, status
 
-from atlas_api.deps import CurrentUser, DbSession
+from atlas_api.deps import CurrentUser, DbSession, _check_iso3
 from atlas_api.services.country import get_country, list_countries
 from atlas_api.services.country.bundle import get_country_bundle
 
@@ -16,7 +16,7 @@ def list_all(session: DbSession, _: CurrentUser) -> list[CountrySchema]:
 
 @router.get("/{iso3}", response_model=CountrySchema)
 def get_one(iso3: str, session: DbSession, _: CurrentUser) -> CountrySchema:
-    iso3 = iso3.upper()
+    iso3 = _check_iso3(iso3)
     c = get_country(session, iso3)
     if c is None:
         raise HTTPException(
@@ -28,7 +28,7 @@ def get_one(iso3: str, session: DbSession, _: CurrentUser) -> CountrySchema:
 
 @router.get("/{iso3}/bundle", response_model=CountryBundle)
 def get_bundle(iso3: str, session: DbSession, _: CurrentUser) -> CountryBundle:
-    iso3 = iso3.upper()
+    iso3 = _check_iso3(iso3)
     bundle = get_country_bundle(session, iso3)
     if bundle is None:
         raise HTTPException(

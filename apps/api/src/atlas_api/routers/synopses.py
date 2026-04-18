@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from atlas_schemas.ai import SynopsisListItem, SynopsisOut
 from fastapi import APIRouter, HTTPException
 
-from atlas_api.deps import CurrentUser, DbSession
+from atlas_api.deps import CurrentUser, DbSession, _check_iso3
 from atlas_api.models import Synopsis
 from atlas_api.services.ai.synopsis import generate_synopsis
 
@@ -20,7 +20,7 @@ _APPROVED_STATES = {"human_approved", "auto_approved_similarity", "auto_approved
 @router.get("/api/synopses/{iso3}")
 def get_latest_synopsis(iso3: str, db: DbSession) -> SynopsisOut | None:
     """Return the latest approved synopsis for a country, or null."""
-    iso3 = iso3.upper()
+    iso3 = _check_iso3(iso3)
     row = (
         db.query(Synopsis)
         .filter(Synopsis.iso3 == iso3)
@@ -128,6 +128,7 @@ def trigger_synopsis_generation(
     user: CurrentUser,
 ) -> SynopsisOut | dict[str, str]:
     """Admin trigger to generate a new synopsis for a country."""
+    iso3 = _check_iso3(iso3)
     result = generate_synopsis(db, iso3, user_id=user.id)
     if result is None:
         return {"status": "skipped", "reason": "AI unavailable or no data"}
