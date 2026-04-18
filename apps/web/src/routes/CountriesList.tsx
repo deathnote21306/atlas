@@ -103,6 +103,10 @@ function formatFxDelta(fx: FxDeltas | null): { text: string; color: string } | n
   };
 }
 
+function formatStatus(s: string): string {
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 function ratingsDisplay(ratings: RatingsSection): string {
   const agencies = Object.entries(ratings.latest_per_agency);
   if (agencies.length === 0) return "\u2014";
@@ -395,7 +399,7 @@ export default function CountriesList() {
                       {/* Status */}
                       <td className="px-3 py-2.5">
                         <span className="rounded bg-[#374151] px-2 py-0.5 text-xs font-medium text-[#9ca3af]">
-                          {c.status}
+                          {formatStatus(c.status)}
                         </span>
                       </td>
                     </tr>

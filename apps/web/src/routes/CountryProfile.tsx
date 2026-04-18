@@ -87,6 +87,16 @@ function dimensionLabel(d: string): string {
   return d.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+function formatStatus(s: string): string {
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function periodLabel(period: string | null): string {
+  if (!period) return "\u2014";
+  const currentYear = new Date().getFullYear();
+  return Number(period) > currentYear ? `${period} (proj.)` : period;
+}
+
 export default function CountryProfile() {
   const { iso3 = "" } = useParams();
   const { data, isLoading, error } = useQuery<CountryBundle>({
@@ -152,7 +162,7 @@ export default function CountryProfile() {
             </Link>
           </div>
           <div className="mt-2 flex flex-wrap gap-2 text-xs text-ink-400">
-            <span className="rounded bg-white/[0.04] px-2 py-0.5 uppercase tracking-wide">{country.status}</span>
+            <span className="rounded bg-white/[0.04] px-2 py-0.5 uppercase tracking-wide">{formatStatus(country.status)}</span>
             <span className="rounded bg-white/[0.04] px-2 py-0.5 uppercase tracking-wide">{country.fx_regime}</span>
             <span>Tier {country.tier} · {country.region}</span>
           </div>
@@ -191,7 +201,7 @@ export default function CountryProfile() {
                 </div>
                 <div className="mt-1 font-mono text-lg text-ink-100">{fmtValue(t.value)}</div>
                 <div className="text-[10px] text-ink-400">
-                  {t.period ?? "\u2014"}{t.source ? ` \u00b7 ${t.source}` : ""}
+                  {periodLabel(t.period)}{t.source ? ` \u00b7 ${t.source}` : ""}
                 </div>
               </div>
             ))}
