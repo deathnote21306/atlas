@@ -1,3 +1,4 @@
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -10,9 +11,6 @@ from atlas_api.logging_config import configure_logging
 from atlas_api.routers import auth, countries, health, news, scenarios, synopses
 
 configure_logging()
-
-
-import logging
 
 logger = logging.getLogger("atlas")
 
