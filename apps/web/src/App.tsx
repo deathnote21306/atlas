@@ -7,10 +7,13 @@ import ScenarioEngine from "./routes/ScenarioEngine";
 import ScenarioView from "./routes/ScenarioView";
 import AdminSynopses from "./routes/AdminSynopses";
 import RequireAuth from "./routes/RequireAuth";
+import { AppToaster } from "./components/Toast";
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <AppToaster />
+      <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
       <Route path="/countries" element={<RequireAuth><CountriesList /></RequireAuth>} />
@@ -19,5 +22,6 @@ export default function App() {
       <Route path="/scenarios/:id" element={<RequireAuth><ScenarioView /></RequireAuth>} />
       <Route path="/admin/synopses" element={<RequireAuth><AdminSynopses /></RequireAuth>} />
     </Routes>
+    </>
   );
 }
