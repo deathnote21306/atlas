@@ -17,6 +17,10 @@ dependencies = [
   "apscheduler>=3.10",
   "tenacity>=9.0",
   "structlog>=24.4",
+  "fastembed>=0.4",
+  "spacy>=3.7",
+  "feedparser>=6.0",
+  "pgvector>=0.3",
 ]
 
 [project.optional-dependencies]
