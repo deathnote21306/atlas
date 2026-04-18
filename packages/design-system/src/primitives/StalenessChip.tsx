@@ -13,7 +13,7 @@ function formatAge(days: number | null): string {
 }
 
 const PALETTE: Record<StalenessState, string> = {
-  missing: "bg-ink-100 text-ink-500",
+  missing: "bg-white/[0.04] text-ink-400",
   fresh: "bg-positive/10 text-positive",
   yellow: "bg-warning/10 text-warning",
   red: "bg-danger/10 text-danger",

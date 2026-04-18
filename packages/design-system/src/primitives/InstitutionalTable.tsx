@@ -20,16 +20,16 @@ export function InstitutionalTable<Row extends object>({
 }: InstitutionalTableProps<Row>) {
   if (rows.length === 0 && emptyLabel) {
     return (
-      <div className="rounded-md border border-ink-100 bg-white p-4 text-xs text-ink-500">
+      <div className="rounded-md border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4 text-xs text-ink-400">
         {emptyLabel}
       </div>
     );
   }
   return (
-    <div className="overflow-hidden rounded-md border border-ink-100 bg-white">
+    <div className="overflow-hidden rounded-md border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl">
       <table className="w-full text-xs">
         <thead>
-          <tr className="border-b border-ink-100 bg-ink-100/40 text-ink-500">
+          <tr className="border-b border-white/[0.06] bg-white/[0.04] text-ink-400">
             {columns.map((c) => (
               <th
                 key={c.key}
@@ -42,13 +42,13 @@ export function InstitutionalTable<Row extends object>({
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i} className="border-b border-ink-100 last:border-b-0">
+            <tr key={i} className="border-b border-white/[0.06] last:border-b-0 hover:bg-white/[0.02]">
               {columns.map((c) => {
                 const value = c.render ? c.render(r) : (r as Record<string, ReactNode>)[c.key];
                 return (
                   <td
                     key={c.key}
-                    className={`px-3 py-2 font-mono text-ink-900 ${c.align === "right" ? "text-right" : "text-left"}`}
+                    className={`px-3 py-2 font-mono text-ink-300 ${c.align === "right" ? "text-right" : "text-left"}`}
                   >
                     {value}
                   </td>

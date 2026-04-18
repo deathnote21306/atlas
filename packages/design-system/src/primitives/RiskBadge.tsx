@@ -14,7 +14,7 @@ function riskLevel(score: number): RiskLevel {
 
 const COLORS: Record<RiskLevel, string> = {
   LOW: "bg-positive/15 text-positive",
-  MODERATE: "bg-positive/10 text-ink-700",
+  MODERATE: "bg-positive/10 text-ink-300",
   ELEVATED: "bg-warning/15 text-warning",
   HIGH: "bg-warning/20 text-warning",
   CRITICAL: "bg-danger/15 text-danger",

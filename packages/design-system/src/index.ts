@@ -10,3 +10,5 @@ export { InstitutionalTable } from "./primitives/InstitutionalTable";
 export type { Column, InstitutionalTableProps } from "./primitives/InstitutionalTable";
 export { RiskBadge } from "./primitives/RiskBadge";
 export type { RiskBadgeProps, RiskLevel } from "./primitives/RiskBadge";
+export { AlertBadge } from "./primitives/AlertBadge";
+export type { AlertBadgeProps } from "./primitives/AlertBadge";
