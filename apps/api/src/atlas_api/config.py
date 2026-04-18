@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     ingestion_schedule_enabled: bool = True
     ingestion_cron: str = "0 3 * * *"  # 03:00 UTC daily
+    news_poll_enabled: bool = False
+    news_poll_cron: str = "*/10 * * * *"  # every 10 minutes
 
 
 settings = Settings()

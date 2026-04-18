@@ -1,6 +1,7 @@
 import os
 
 os.environ.setdefault("INGESTION_SCHEDULE_ENABLED", "false")
+os.environ.setdefault("NEWS_POLL_ENABLED", "false")
 
 from collections.abc import Iterator  # noqa: E402
 

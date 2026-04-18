@@ -186,3 +186,52 @@ class ScenarioRun(Base):
         default=uuid.UUID("00000000-0000-0000-0000-000000000000"),
         server_default=text("'00000000-0000-0000-0000-000000000000'::uuid"),
     )
+
+
+class NewsItem(Base):
+    __tablename__ = "news_item"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    url: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    url_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    title: Mapped[str] = mapped_column(Text, nullable=False)
+    source: Mapped[str] = mapped_column(String(200), nullable=False)
+    published_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    body_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    primary_iso3: Mapped[str | None] = mapped_column(
+        String(3), ForeignKey("country.iso3"), nullable=True
+    )
+    event_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    raw_payload: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+    # Note: 'embedding' column is vector(384) managed via raw SQL in migration.
+    # We do NOT map it here; we use raw queries for vector operations.
+
+
+class NewsImpactScore(Base):
+    __tablename__ = "news_impact_score"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    news_item_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("news_item.id", ondelete="CASCADE"),
+        nullable=False, unique=True,
+    )
+    fiscal_impact: Mapped[str] = mapped_column(String(1), nullable=False)
+    external_impact: Mapped[str] = mapped_column(String(1), nullable=False)
+    fx_impact: Mapped[str] = mapped_column(String(1), nullable=False)
+    political_impact: Mapped[str] = mapped_column(String(1), nullable=False)
+    rationale: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    scorer: Mapped[str] = mapped_column(String(32), nullable=False)
+    scored_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
