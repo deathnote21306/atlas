@@ -94,13 +94,37 @@ function hasNonZeroShock(s: ShockVector): boolean {
 /*  ImpactCard                                                         */
 /* ------------------------------------------------------------------ */
 
+function getRiskTint(newRisk: number): { bg: string; border: string } {
+  if (newRisk < 30) return { bg: "rgba(34,197,94,0.03)", border: "rgba(34,197,94,0.06)" };
+  if (newRisk < 45) return { bg: "rgba(132,204,22,0.03)", border: "rgba(132,204,22,0.06)" };
+  if (newRisk < 60) return { bg: "rgba(245,158,11,0.03)", border: "rgba(245,158,11,0.06)" };
+  if (newRisk < 75) return { bg: "rgba(249,115,22,0.03)", border: "rgba(249,115,22,0.06)" };
+  return { bg: "rgba(239,68,68,0.03)", border: "rgba(239,68,68,0.06)" };
+}
+
+function getImpactText(impact: CountryImpact): string {
+  if (impact.risk_change > 5)
+    return `Significant deterioration expected. Risk score increases by ${impact.risk_change.toFixed(1)} points under this scenario.`;
+  if (impact.risk_change > 0)
+    return "Moderate negative impact. Debt sustainability metrics weaken slightly.";
+  if (impact.risk_change < -5)
+    return "Notable improvement projected. Fiscal position strengthens under favorable conditions.";
+  if (impact.risk_change < 0)
+    return "Mild positive effect. Risk metrics improve marginally under this scenario.";
+  return "Limited impact. Country fundamentals remain largely unchanged.";
+}
+
 function ImpactCard({ impact, fxValue }: { impact: CountryImpact; fxValue: number }) {
   const changeColor =
     impact.risk_change > 0 ? "text-danger" : impact.risk_change < 0 ? "text-positive" : "text-ink-400";
   const sign = impact.risk_change > 0 ? "+" : "";
+  const tint = getRiskTint(impact.new_risk);
 
   return (
-    <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
+    <div
+      className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4"
+      style={{ backgroundColor: tint.bg, borderLeftWidth: 3, borderLeftColor: tint.border }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-ink-100">{impact.name}</span>
@@ -125,6 +149,7 @@ function ImpactCard({ impact, fxValue }: { impact: CountryImpact; fxValue: numbe
           </div>
         ))}
       </div>
+      <p className="mt-3 text-xs text-ink-400 italic">{getImpactText(impact)}</p>
     </div>
   );
 }
