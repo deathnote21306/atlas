@@ -7,6 +7,7 @@ from atlas_schemas.macro import MacroIndicator
 from atlas_schemas.ratings import RatingAction
 from sqlalchemy.orm import Session
 
+from atlas_api.models import Synopsis
 from atlas_api.services.country.composite_rating import composite_score
 from atlas_api.services.country.queries import (
     compute_fx_deltas,
@@ -93,6 +94,19 @@ def _ratings_section(session: Session, iso3: str) -> RatingsSection:
     )
 
 
+def _latest_approved_synopsis(session: Session, iso3: str) -> str | None:
+    """Return the text of the latest approved synopsis, or None."""
+    _approved = {"human_approved", "auto_approved_similarity", "auto_approved_stable_country"}
+    row = (
+        session.query(Synopsis)
+        .filter(Synopsis.iso3 == iso3)
+        .filter(Synopsis.approval_state.in_(_approved))
+        .order_by(Synopsis.generated_at.desc())
+        .first()
+    )
+    return row.text if row else None
+
+
 def get_country_bundle(session: Session, iso3: str) -> CountryBundle | None:
     iso3 = iso3.upper()
     country = get_country(session, iso3)
@@ -110,12 +124,14 @@ def get_country_bundle(session: Session, iso3: str) -> CountryBundle | None:
         fx_delta_30d_pct=fx.delta_30d_pct if fx is not None else None,
     )
 
+    synopsis_text = _latest_approved_synopsis(session, iso3)
+
     return CountryBundle(
         country=CountrySchema.model_validate(country, from_attributes=True),
         macro=macro,
         fx=fx,
         ratings=ratings,
         risk=risk,
-        synopsis=None,
-        news_placeholder=True,
+        synopsis=synopsis_text,
+        news_placeholder=synopsis_text is None,
     )
