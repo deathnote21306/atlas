@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { api } from "../api/client";
 import AppShell from "./AppShell";
+import { SkeletonCard } from "../components/Skeleton";
 
 interface Country {
   iso3: string;
@@ -62,7 +63,9 @@ export default function CountriesList() {
         </div>
 
         {isLoading ? (
-          <div className="mt-8 text-ink-500">Loading…</div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 10 }, (_, i) => <SkeletonCard key={i} />)}
+          </div>
         ) : error ? (
           <div className="mt-8 text-danger">Failed to load countries.</div>
         ) : (
