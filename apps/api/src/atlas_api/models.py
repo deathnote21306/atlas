@@ -2,6 +2,7 @@ import uuid
 from datetime import UTC, datetime
 from typing import Any
 
+import sqlalchemy as sa
 from atlas_schemas.country import CountryStatus, FxRegime
 from sqlalchemy import (
     Boolean,
@@ -234,4 +235,67 @@ class NewsImpactScore(Base):
         nullable=False,
         default=lambda: datetime.now(UTC),
         server_default=func.now(),
+    )
+    prompt_trace_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("prompt_trace.id"), nullable=True
+    )
+
+
+class PromptTrace(Base):
+    __tablename__ = "prompt_trace"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    purpose: Mapped[str] = mapped_column(String(32), nullable=False)
+    model: Mapped[str] = mapped_column(String(64), nullable=False)
+    prompt_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    input_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    input: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    output: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    tokens_in: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    tokens_out: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user.id"), nullable=True
+    )
+    approval_state: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+
+
+class Synopsis(Base):
+    __tablename__ = "synopsis"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    iso3: Mapped[str] = mapped_column(String(3), ForeignKey("country.iso3"), nullable=False)
+    text: Mapped[str] = mapped_column(Text, nullable=False)
+    key_points: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+    vintage_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("data_vintage.id"), nullable=True
+    )
+    prompt_trace_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("prompt_trace.id"), nullable=True
+    )
+    approval_state: Mapped[str] = mapped_column(
+        String(40), nullable=False, default="proposed"
+    )
+    approved_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("user.id"), nullable=True
+    )
+    approved_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=False,
+        default=uuid.UUID("00000000-0000-0000-0000-000000000000"),
+        server_default=sa.text("'00000000-0000-0000-0000-000000000000'::uuid"),
     )
