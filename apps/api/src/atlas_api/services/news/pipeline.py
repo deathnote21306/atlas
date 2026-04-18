@@ -5,9 +5,12 @@ Chains: poll -> dedup -> embed -> semantic dedup -> NER -> classify -> score.
 
 from __future__ import annotations
 
+from typing import Any
+
 import httpx
 import structlog
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from atlas_api.db import SessionLocal
 from atlas_api.services.news.dedup import store_new_articles
@@ -21,10 +24,38 @@ from atlas_api.services.news.semantic_dedup import is_duplicate
 log = structlog.get_logger()
 
 
+def _score_item(session: Session, item: Any, stats: dict[str, int]) -> None:
+    """Try AI scorer first, fall back to heuristic."""
+    try:
+        from atlas_api.services.ai.news_scorer import score_with_ai
+
+        ai_score = score_with_ai(
+            session,
+            news_item_id=item.id,
+            title=item.title,
+            body=item.body_text or "",
+            iso3=item.primary_iso3,
+            event_type=item.event_type,
+        )
+        if ai_score is not None:
+            stats["ai_scored"] = stats.get("ai_scored", 0) + 1
+            return
+    except Exception:
+        log.exception("ai_scorer_import_or_call_error")
+
+    # Heuristic fallback
+    scores = score_impact(item.title, item.body_text or "")
+    persist_score(session, item.id, scores)
+    stats["heuristic_scored"] = stats.get("heuristic_scored", 0) + 1
+
+
 async def run_news_pipeline() -> dict[str, int]:
     """Run one poll cycle. Returns stats dict."""
     session = SessionLocal()
-    stats = {"polled": 0, "stored": 0, "embedded": 0, "scored": 0, "irrelevant": 0, "duplicates": 0}
+    stats: dict[str, int] = {
+        "polled": 0, "stored": 0, "embedded": 0, "scored": 0,
+        "irrelevant": 0, "duplicates": 0, "ai_scored": 0, "heuristic_scored": 0,
+    }
     try:
         # 1. Poll sources
         async with httpx.AsyncClient() as http:
@@ -44,7 +75,7 @@ async def run_news_pipeline() -> dict[str, int]:
         embedded = update_embeddings(session, new_items)
         stats["embedded"] = embedded
 
-        # 4. Process each item: semantic dedup → NER → relevance → classify → score
+        # 4. Process each item: semantic dedup -> NER -> relevance -> classify -> score
         for item in new_items:
             # Semantic dedup: fetch embedding from DB
             row = session.execute(
@@ -72,9 +103,9 @@ async def run_news_pipeline() -> dict[str, int]:
             item.event_type = event_type
             session.commit()
 
-            # Heuristic impact scoring
-            scores = score_impact(item.title, item.body_text or "")
-            persist_score(session, item.id, scores)
+            # Impact scoring: AI first, heuristic fallback
+            _score_item(session, item, stats)
+            session.commit()
             stats["scored"] += 1
 
         log.info("news_pipeline_complete", **stats)
