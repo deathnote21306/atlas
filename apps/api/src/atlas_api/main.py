@@ -12,11 +12,22 @@ from atlas_api.routers import auth, countries, health, news, scenarios, synopses
 configure_logging()
 
 
+import logging
+
+logger = logging.getLogger("atlas")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     scheduler = build_scheduler()
     if settings.ingestion_schedule_enabled or settings.news_poll_enabled:
         scheduler.start()
+
+    for warning in settings.validate_for_production():
+        if settings.is_production:
+            raise RuntimeError(f"Production config error: {warning}")
+        logger.warning("CONFIG: %s", warning)
+
     try:
         yield
     finally:
@@ -30,8 +41,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 app.include_router(health.router)
