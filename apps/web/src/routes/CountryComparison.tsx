@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { RiskGauge } from "@atlas/design-system";
 import { api } from "../api/client";
 import AppShell from "./AppShell";
@@ -123,16 +123,15 @@ export default function CountryComparison() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Fetch bundles for each selected country
-  const bundleQueries = selected.map((iso3) => {
-    const enabled = iso3.length > 0;
-    return useQuery<CountryBundle>({
-      queryKey: ["country-bundle", iso3],
-      queryFn: () => api<CountryBundle>(`/api/countries/${iso3}/bundle`),
+  // Always query for all MAX_SLOTS so hook count stays stable across renders
+  const bundleQueries = useQueries({
+    queries: Array.from({ length: MAX_SLOTS }, (_, i) => ({
+      queryKey: ["country-bundle", selected[i] ?? ""],
+      queryFn: () => api<CountryBundle>(`/api/countries/${selected[i]}/bundle`),
       staleTime: 5 * 60 * 1000,
       retry: false,
-      enabled,
-    });
+      enabled: !!selected[i],
+    })),
   });
 
   const bundles = bundleQueries.map((q) => q.data ?? null);
@@ -223,7 +222,7 @@ export default function CountryComparison() {
       <main className="mx-auto max-w-6xl p-6">
         {/* Header */}
         <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-ink-900">Country Comparison</h1>
+          <h1 className="text-2xl font-semibold text-ink-100">Country Comparison</h1>
           <p className="mt-1 text-sm text-ink-500">
             Compare up to {MAX_SLOTS} countries side by side
           </p>
