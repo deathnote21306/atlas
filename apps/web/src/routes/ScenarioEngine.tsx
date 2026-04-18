@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { toast } from "../components/Toast";
 import { RiskBadge } from "@atlas/design-system";
 import AppShell from "./AppShell";
 
@@ -206,7 +207,7 @@ export default function ScenarioEngine() {
   useEffect(() => {
     api<SavedScenario[]>("/api/scenarios")
       .then(setSavedScenarios)
-      .catch(() => {});
+      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load scenarios"));
   }, []);
 
   // Preview-all when debounced shocks change (only if non-zero)
@@ -248,11 +249,13 @@ export default function ScenarioEngine() {
         body: JSON.stringify({ iso3: "ALL", shocks, title: title.trim(), description: description.trim() || null }),
       });
       setSavedId(result.id);
+      toast.success("Scenario saved");
       // Refresh sidebar
       const updated = await api<SavedScenario[]>("/api/scenarios");
       setSavedScenarios(updated);
     } catch {
       setError("Failed to save scenario");
+      toast.error("Failed to save scenario");
     } finally {
       setSaving(false);
     }
