@@ -14,6 +14,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import structlog
+from atlas_schemas.ai import SynopsisContent
 from sqlalchemy.orm import Session
 
 from atlas_api.config import settings
@@ -21,7 +22,6 @@ from atlas_api.models import NewsImpactScore, NewsItem, Synopsis
 from atlas_api.services.ai.provider import call_tool, compute_input_hash
 from atlas_api.services.ai.trace import persist_trace
 from atlas_api.services.country.bundle import get_country_bundle
-from atlas_schemas.ai import SynopsisContent
 
 log = structlog.get_logger()
 

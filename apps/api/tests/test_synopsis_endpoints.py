@@ -6,7 +6,6 @@ import uuid
 from datetime import UTC, datetime
 
 import pytest
-
 from atlas_schemas.ai import SynopsisListItem, SynopsisOut
 
 

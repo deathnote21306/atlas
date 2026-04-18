@@ -5,12 +5,12 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
+from atlas_schemas.ai import SynopsisListItem, SynopsisOut
 from fastapi import APIRouter, HTTPException
 
 from atlas_api.deps import CurrentUser, DbSession
 from atlas_api.models import Synopsis
 from atlas_api.services.ai.synopsis import generate_synopsis
-from atlas_schemas.ai import SynopsisListItem, SynopsisOut
 
 router = APIRouter(tags=["synopses"])
 

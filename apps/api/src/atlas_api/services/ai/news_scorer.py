@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime
-from typing import Any
 
 import structlog
+from atlas_schemas.ai import AIScoreResult
 from sqlalchemy.orm import Session
 
 from atlas_api.config import settings
@@ -22,9 +22,10 @@ from atlas_api.services.ai.provider import call_tool, compute_input_hash
 from atlas_api.services.ai.trace import persist_trace
 from atlas_api.services.news.heuristic_scorer import (
     persist_score as persist_heuristic_score,
+)
+from atlas_api.services.news.heuristic_scorer import (
     score_impact as heuristic_score,
 )
-from atlas_schemas.ai import AIScoreResult
 
 log = structlog.get_logger()
 
