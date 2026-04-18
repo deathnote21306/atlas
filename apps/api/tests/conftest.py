@@ -34,6 +34,11 @@ def engine(pg_url):
     with eng.begin() as conn:
         conn.exec_driver_sql("CREATE EXTENSION IF NOT EXISTS vector")
     Base.metadata.create_all(eng)
+    # Add pgvector column not represented in ORM metadata (managed via migration 0008)
+    with eng.begin() as conn:
+        conn.exec_driver_sql(
+            "ALTER TABLE news_item ADD COLUMN IF NOT EXISTS embedding vector(384)"
+        )
     yield eng
     Base.metadata.drop_all(eng)
 
