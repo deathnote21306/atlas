@@ -255,3 +255,39 @@ def test_news_item_with_score():
     )
     assert item.impact_score is not None
     assert item.impact_score.fiscal_impact == "H"
+
+
+# -- AI schemas ------------------------------------------------------------
+
+
+def test_synopsis_content_roundtrip():
+    from atlas_schemas.ai import SynopsisContent, SynopsisKeyPoint
+    sc = SynopsisContent(
+        text="Nigeria faces headwinds...",
+        key_points=[SynopsisKeyPoint(text="Naira under pressure", category="fx")],
+        coverage_notes=["Q4 GDP not yet available"],
+    )
+    d = sc.model_dump()
+    assert d["text"] == "Nigeria faces headwinds..."
+    assert len(d["key_points"]) == 1
+    rt = SynopsisContent.model_validate(d)
+    assert rt == sc
+
+
+def test_ai_score_result_roundtrip():
+    from atlas_schemas.ai import AIScoreResult
+    r = AIScoreResult(
+        fiscal_impact="H", external_impact="M", fx_impact="L", political_impact="M",
+        rationale={"fiscal": "Debt restructuring", "external": "Trade deficit",
+                   "fx": "Stable peg", "political": "Election upcoming"},
+    )
+    d = r.model_dump()
+    assert d["fiscal_impact"] == "H"
+    rt = AIScoreResult.model_validate(d)
+    assert rt == r
+
+
+def test_synopsis_approval_state_is_strenum():
+    from atlas_schemas.ai import SynopsisApprovalState
+    assert SynopsisApprovalState.PROPOSED == "proposed"
+    assert SynopsisApprovalState.HUMAN_APPROVED == "human_approved"
