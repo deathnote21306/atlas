@@ -23,7 +23,7 @@ export default function SynopsisCard({ synopsis }: { synopsis: SynopsisData | nu
     <div className="rounded-md border border-ink-100 bg-white p-4">
       <div className="mb-2 flex items-center justify-between">
         <span className="rounded bg-positive/10 px-2 py-0.5 text-xs font-medium text-positive">
-          {synopsis.approval_state.replace(/_/g, " ")}
+          {(synopsis.approval_state ?? "").replace(/_/g, " ")}
         </span>
         {synopsis.prompt_trace_id && (
           <span className="text-[10px] text-ink-300" title={`Trace: ${synopsis.prompt_trace_id}`}>
