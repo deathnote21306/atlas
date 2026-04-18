@@ -68,6 +68,12 @@ function stubBundle(body: unknown = GHA_BUNDLE) {
       if (url === "/api/me") {
         return Promise.resolve(new Response(JSON.stringify({ email: "a@b.test", role: "Analyst" }), { status: 200 }));
       }
+      if (url.includes("/api/synopses/")) {
+        return Promise.resolve(new Response("{}", { status: 404 }));
+      }
+      if (url.includes("/api/news")) {
+        return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }));
+      }
       return Promise.resolve(new Response(JSON.stringify(body), { status: 200 }));
     }),
   );
