@@ -17,7 +17,7 @@ export default function SynopsisCard({ synopsis }: { synopsis: SynopsisData | nu
 
   if (!synopsis) {
     return (
-      <div className="rounded-md border border-dashed border-ink-100 bg-white p-4 text-sm text-ink-500">
+      <div className="rounded-[10px] border border-dashed border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4 text-sm text-ink-400">
         AI synopsis pending review.
       </div>
     );
@@ -28,18 +28,18 @@ export default function SynopsisCard({ synopsis }: { synopsis: SynopsisData | nu
   const hasMore = paragraphs.length > 1 || preview.length > 300;
 
   return (
-    <div className="rounded-md border border-ink-100 bg-white p-4">
+    <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
       <div className="mb-2 flex items-center justify-between">
         <span className="rounded bg-positive/10 px-2 py-0.5 text-xs font-medium text-positive">
           {(synopsis.approval_state ?? "").replace(/_/g, " ")}
         </span>
         <div className="flex items-center gap-2">
           {synopsis.prompt_trace_id && (
-            <span className="text-[10px] text-ink-300" title={`Trace: ${synopsis.prompt_trace_id}`}>
+            <span className="text-[10px] text-ink-400" title={`Trace: ${synopsis.prompt_trace_id}`}>
               AI lineage
             </span>
           )}
-          <span className="text-[10px] text-ink-300">
+          <span className="text-[10px] text-ink-400">
             {new Date(synopsis.generated_at).toLocaleDateString()}
           </span>
         </div>
@@ -47,7 +47,7 @@ export default function SynopsisCard({ synopsis }: { synopsis: SynopsisData | nu
 
       {expanded ? (
         <>
-          <div className="prose prose-sm max-w-none text-ink-800">
+          <div className="prose prose-sm max-w-none text-ink-300">
             {paragraphs.map((p, i) => (
               <p key={i}>{p}</p>
             ))}
@@ -55,7 +55,7 @@ export default function SynopsisCard({ synopsis }: { synopsis: SynopsisData | nu
           {synopsis.key_points.length > 0 && (
             <ul className="mt-3 space-y-1">
               {synopsis.key_points.map((kp, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-ink-700">
+                <li key={i} className="flex items-start gap-2 text-sm text-ink-300">
                   <span className="mt-0.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-accent" />
                   {kp.text}
                 </li>
@@ -72,7 +72,7 @@ export default function SynopsisCard({ synopsis }: { synopsis: SynopsisData | nu
         </>
       ) : (
         <>
-          <p className="line-clamp-3 text-sm text-ink-800">{preview}</p>
+          <p className="line-clamp-3 text-sm text-ink-300">{preview}</p>
           {hasMore && (
             <button
               type="button"

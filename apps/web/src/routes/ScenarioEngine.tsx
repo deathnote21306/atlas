@@ -96,14 +96,14 @@ function hasNonZeroShock(s: ShockVector): boolean {
 
 function ImpactCard({ impact, fxValue }: { impact: CountryImpact; fxValue: number }) {
   const changeColor =
-    impact.risk_change > 0 ? "text-danger" : impact.risk_change < 0 ? "text-positive" : "text-ink-500";
+    impact.risk_change > 0 ? "text-danger" : impact.risk_change < 0 ? "text-positive" : "text-ink-400";
   const sign = impact.risk_change > 0 ? "+" : "";
 
   return (
-    <div className="rounded-md border border-ink-100 bg-white p-4">
+    <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-ink-900">{impact.name}</span>
+          <span className="font-semibold text-ink-100">{impact.name}</span>
           <RiskBadge score={impact.new_risk} />
         </div>
         <span className={`font-mono font-semibold ${changeColor}`}>
@@ -118,7 +118,7 @@ function ImpactCard({ impact, fxValue }: { impact: CountryImpact; fxValue: numbe
           { label: "FX (%)", v: fxValue },
         ].map((cell) => (
           <div key={cell.label}>
-            <div className="text-ink-500">{cell.label}</div>
+            <div className="text-ink-400">{cell.label}</div>
             <div className={`font-mono ${cell.v < 0 ? "text-danger" : "text-positive"}`}>
               {cell.v >= 0 ? "+" : ""}{cell.v.toFixed(1)}
             </div>
@@ -143,11 +143,11 @@ function ScenarioLibrary({
   onNew: () => void;
 }) {
   return (
-    <aside className="w-72 shrink-0 border-r border-ink-100 bg-white p-4">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-500">Scenario Library</h2>
+    <aside className="w-72 shrink-0 border-r border-white/[0.06] bg-ink-900/50 p-4">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-400">Scenario Library</h2>
       <button
         onClick={onNew}
-        className="mt-3 w-full rounded border border-ink-100 py-2 text-sm text-ink-700 hover:border-accent"
+        className="mt-3 w-full rounded border border-white/[0.06] py-2 text-sm text-ink-300 hover:border-white/[0.12]"
       >
         + New Scenario
       </button>
@@ -156,10 +156,10 @@ function ScenarioLibrary({
           <li key={s.id}>
             <button
               onClick={() => onSelect(s.id)}
-              className="w-full rounded-md border border-ink-100 p-3 text-left hover:border-accent"
+              className="w-full rounded-[10px] border border-white/[0.06] bg-white/[0.03] p-3 text-left hover:border-white/[0.12]"
             >
-              <div className="text-sm font-medium text-ink-900">{s.title || "Untitled"}</div>
-              <div className="mt-1 flex items-center gap-2 text-[10px] text-ink-500">
+              <div className="text-sm font-medium text-ink-100">{s.title || "Untitled"}</div>
+              <div className="mt-1 flex items-center gap-2 text-[10px] text-ink-400">
                 <span className="rounded bg-positive/10 px-1.5 py-0.5 text-positive">saved</span>
                 <span>{formatAge(s.created_at)}</span>
               </div>
@@ -279,14 +279,14 @@ export default function ScenarioEngine() {
         <ScenarioLibrary scenarios={savedScenarios} onSelect={handleSelect} onNew={handleReset} />
 
         {/* Center: Sliders + save form */}
-        <div className="w-96 shrink-0 border-r border-ink-100 p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-ink-500">
+        <div className="w-96 shrink-0 border-r border-white/[0.06] p-6">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-ink-400">
             Scenario Variables
           </h2>
 
           {/* Title input */}
           <div className="mb-4">
-            <label htmlFor="scenario-title" className="mb-1 block text-xs font-medium text-ink-500">
+            <label htmlFor="scenario-title" className="mb-1 block text-xs font-medium text-ink-400">
               Title <span className="text-danger">*</span>
             </label>
             <input
@@ -295,19 +295,19 @@ export default function ScenarioEngine() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Trade War Escalation"
-              className="w-full rounded-md border border-ink-200 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 focus:border-atlas-600 focus:outline-none"
+              className="w-full rounded-md border border-white/[0.06] bg-white/[0.04] px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 focus:border-atlas-600 focus:outline-none"
             />
           </div>
 
           {/* Sliders */}
           <div className="space-y-4">
             {SLIDER_CONFIG.map((cfg) => (
-              <div key={cfg.key} className="rounded-md border border-ink-100 bg-white p-4">
+              <div key={cfg.key} className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
                 <div className="flex items-center justify-between">
-                  <label htmlFor={cfg.key} className="text-sm font-medium text-ink-700">
+                  <label htmlFor={cfg.key} className="text-sm font-medium text-ink-300">
                     {cfg.label}
                   </label>
-                  <span className="font-mono font-semibold text-ink-900">
+                  <span className="font-mono font-semibold text-ink-100">
                     {shocks[cfg.key] >= 0 ? "+" : ""}
                     {shocks[cfg.key].toFixed(1)} {cfg.unit}
                   </span>
@@ -322,7 +322,7 @@ export default function ScenarioEngine() {
                   onChange={(e) => handleSlider(cfg.key, parseFloat(e.target.value))}
                   className="mt-2 w-full accent-atlas-600"
                 />
-                <div className="mt-1 flex justify-between text-[10px] text-ink-300">
+                <div className="mt-1 flex justify-between text-[10px] text-ink-400">
                   <span>{cfg.min} {cfg.unit}</span>
                   <span>0</span>
                   <span>{cfg.max} {cfg.unit}</span>
@@ -333,7 +333,7 @@ export default function ScenarioEngine() {
 
           {/* Description textarea */}
           <div className="mt-4">
-            <label htmlFor="scenario-desc" className="mb-1 block text-xs font-medium text-ink-500">
+            <label htmlFor="scenario-desc" className="mb-1 block text-xs font-medium text-ink-400">
               Description
             </label>
             <textarea
@@ -342,7 +342,7 @@ export default function ScenarioEngine() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Optional notes about this scenario..."
               rows={3}
-              className="w-full rounded-md border border-ink-200 px-3 py-2 text-sm text-ink-900 placeholder:text-ink-300 focus:border-atlas-600 focus:outline-none"
+              className="w-full rounded-md border border-white/[0.06] bg-white/[0.04] px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 focus:border-atlas-600 focus:outline-none"
             />
           </div>
 
@@ -357,7 +357,7 @@ export default function ScenarioEngine() {
             </button>
             <button
               onClick={handleReset}
-              className="rounded-md border border-ink-200 px-4 py-2 text-sm font-medium text-ink-700 hover:bg-ink-50"
+              className="rounded-md border border-white/[0.06] px-4 py-2 text-sm font-medium text-ink-300 hover:border-white/[0.12]"
             >
               Reset
             </button>
@@ -372,14 +372,14 @@ export default function ScenarioEngine() {
 
         {/* Right: Impact Analysis */}
         <div className="flex-1 p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-500">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-400">
             Scenario Impact Analysis
           </h2>
-          <p className="mt-1 text-xs text-ink-500">
+          <p className="mt-1 text-xs text-ink-400">
             Deterministic calculation &middot; Live update on slider change
           </p>
 
-          {impactsLoading && <p className="mt-4 text-sm text-ink-500">Computing...</p>}
+          {impactsLoading && <p className="mt-4 text-sm text-ink-400">Computing...</p>}
 
           {!hasNonZeroShock(shocks) && !impactsLoading && (
             <p className="mt-4 text-sm text-ink-400">

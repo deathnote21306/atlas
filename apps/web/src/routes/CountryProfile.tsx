@@ -141,8 +141,8 @@ export default function CountryProfile() {
         <header className="mb-6">
           <div className="flex items-baseline justify-between">
             <div className="flex items-baseline gap-3">
-              <h1 className="text-2xl font-semibold text-ink-900">{country.name}</h1>
-              <span className="font-mono text-sm text-ink-500">{country.iso3}</span>
+              <h1 className="text-2xl font-semibold text-ink-100">{country.name}</h1>
+              <span className="font-mono text-sm text-ink-400">{country.iso3}</span>
             </div>
             <Link
               to={`/scenarios/new?country=${country.iso3}`}
@@ -151,28 +151,28 @@ export default function CountryProfile() {
               Run Scenario
             </Link>
           </div>
-          <div className="mt-2 flex flex-wrap gap-2 text-xs text-ink-500">
-            <span className="rounded bg-ink-100 px-2 py-0.5 uppercase tracking-wide">{country.status}</span>
-            <span className="rounded bg-ink-100 px-2 py-0.5 uppercase tracking-wide">{country.fx_regime}</span>
+          <div className="mt-2 flex flex-wrap gap-2 text-xs text-ink-400">
+            <span className="rounded bg-white/[0.04] px-2 py-0.5 uppercase tracking-wide">{country.status}</span>
+            <span className="rounded bg-white/[0.04] px-2 py-0.5 uppercase tracking-wide">{country.fx_regime}</span>
             <span>Tier {country.tier} · {country.region}</span>
           </div>
         </header>
 
         {/* Synopsis */}
         <section className="mb-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">Synopsis</h2>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-400">Synopsis</h2>
           <SynopsisCard synopsis={synopsisData ?? null} />
         </section>
 
         {/* Ratings */}
         <section className="mb-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">Ratings</h2>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-400">Ratings</h2>
           <div className="flex flex-wrap items-center gap-2">
             {Object.values(ratings.latest_per_agency).map((r) => (
               <RatingBadge key={r.agency} agency={r.agency} rating={r.rating} outlook={r.outlook} />
             ))}
             {ratings.composite_score != null ? (
-              <span className="ml-2 rounded border border-ink-100 px-2 py-0.5 text-xs text-ink-700">
+              <span className="ml-2 rounded border border-white/[0.06] px-2 py-0.5 text-xs text-ink-300">
                 Composite <span className="font-mono">{ratings.composite_score.toFixed(1)}</span>/21
               </span>
             ) : null}
@@ -181,16 +181,16 @@ export default function CountryProfile() {
 
         {/* Macro grid */}
         <section className="mb-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">Macro</h2>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-400">Macro</h2>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {macro.map((t) => (
-              <div key={t.indicator} className="rounded-md border border-ink-100 bg-white p-3">
+              <div key={t.indicator} className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3">
                 <div className="flex items-start justify-between">
-                  <div className="text-xs text-ink-500">{t.label}</div>
+                  <div className="text-xs text-ink-400">{t.label}</div>
                   <StalenessChip state={t.staleness.state} ageDays={t.staleness.age_days} />
                 </div>
-                <div className="mt-1 font-mono text-lg text-ink-900">{fmtValue(t.value)}</div>
-                <div className="text-[10px] text-ink-300">
+                <div className="mt-1 font-mono text-lg text-ink-100">{fmtValue(t.value)}</div>
+                <div className="text-[10px] text-ink-400">
                   {t.period ?? "\u2014"}{t.source ? ` \u00b7 ${t.source}` : ""}
                 </div>
               </div>
@@ -200,15 +200,15 @@ export default function CountryProfile() {
 
         {/* FX section */}
         <section className="mb-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">FX</h2>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-400">FX</h2>
           {fx ? (
-            <div className="rounded-md border border-ink-100 bg-white p-4">
+            <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
               <div className="flex items-baseline justify-between">
                 <div>
-                  <span className="text-xs text-ink-500">{fx.latest.ccy} / USD</span>
-                  <div className="font-mono text-2xl text-ink-900">{fx.latest.usd_per_ccy.toFixed(6)}</div>
+                  <span className="text-xs text-ink-400">{fx.latest.ccy} / USD</span>
+                  <div className="font-mono text-2xl text-ink-100">{fx.latest.usd_per_ccy.toFixed(6)}</div>
                 </div>
-                <div className="text-[10px] text-ink-300">as of {fx.latest.observation_date}</div>
+                <div className="text-[10px] text-ink-400">as of {fx.latest.observation_date}</div>
               </div>
               <div className="mt-3 grid grid-cols-4 gap-2 text-center">
                 {[
@@ -217,9 +217,9 @@ export default function CountryProfile() {
                   { label: "30d", v: fx.delta_30d_pct },
                   { label: "YTD", v: fx.delta_ytd_pct },
                 ].map((cell) => (
-                  <div key={cell.label} className="rounded bg-ink-100/40 py-2">
-                    <div className="text-[10px] uppercase tracking-wide text-ink-500">{cell.label}</div>
-                    <div className={`font-mono text-sm ${cell.v == null ? "text-ink-500" : cell.v < 0 ? "text-danger" : "text-positive"}`}>
+                  <div key={cell.label} className="rounded bg-white/[0.04] py-2">
+                    <div className="text-[10px] uppercase tracking-wide text-ink-400">{cell.label}</div>
+                    <div className={`font-mono text-sm ${cell.v == null ? "text-ink-400" : cell.v < 0 ? "text-danger" : "text-positive"}`}>
                       {fmtPct(cell.v)}
                     </div>
                   </div>
@@ -233,8 +233,8 @@ export default function CountryProfile() {
 
         {/* Risk decomposition */}
         <section className="mb-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">
-            Risk decomposition <span className="ml-2 font-mono text-ink-900">{risk.composite.toFixed(1)}/100</span>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-400">
+            Risk decomposition <span className="ml-2 font-mono text-ink-100">{risk.composite.toFixed(1)}/100</span>
           </h2>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {risk.dimensions.map((d) => (
@@ -251,7 +251,7 @@ export default function CountryProfile() {
 
         {/* News & impact */}
         <section className="mb-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">News & impact</h2>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-400">News & impact</h2>
           {newsData && newsData.length > 0 ? (
             <div className="space-y-2">
               {newsData.map((item) => (

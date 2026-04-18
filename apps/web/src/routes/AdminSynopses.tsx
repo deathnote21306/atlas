@@ -47,15 +47,15 @@ export default function AdminSynopses() {
   return (
     <AppShell>
       <main className="mx-auto max-w-4xl p-6">
-        <h1 className="mb-6 text-xl font-semibold text-ink-900">Synopsis Review</h1>
+        <h1 className="mb-6 text-xl font-semibold text-ink-100">Synopsis Review</h1>
 
         {isLoading && (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-md border border-ink-100 bg-white p-4 space-y-3">
-                <div className="h-4 w-1/3 animate-pulse rounded bg-ink-100" />
-                <div className="h-3 w-full animate-pulse rounded bg-ink-100" />
-                <div className="h-3 w-2/3 animate-pulse rounded bg-ink-100" />
+              <div key={i} className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4 space-y-3">
+                <div className="h-4 w-1/3 animate-pulse rounded bg-white/[0.06]" />
+                <div className="h-3 w-full animate-pulse rounded bg-white/[0.06]" />
+                <div className="h-3 w-2/3 animate-pulse rounded bg-white/[0.06]" />
               </div>
             ))}
           </div>
@@ -68,16 +68,16 @@ export default function AdminSynopses() {
         )}
 
         {synopses && synopses.length === 0 && (
-          <p className="text-ink-500">No synopses pending review.</p>
+          <p className="text-ink-400">No synopses pending review.</p>
         )}
 
         <div className="space-y-4">
           {synopses?.map((s) => (
-            <div key={s.id} className="rounded-md border border-ink-100 bg-white p-4">
+            <div key={s.id} className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-medium text-ink-900">{s.iso3}</span>
-                  <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+                  <span className="font-mono text-sm font-medium text-ink-100">{s.iso3}</span>
+                  <span className="rounded bg-amber-500/10 px-2 py-0.5 text-xs text-amber-400">
                     {s.approval_state}
                   </span>
                 </div>
@@ -86,7 +86,7 @@ export default function AdminSynopses() {
                 </span>
               </div>
 
-              <div className="mb-3 text-sm text-ink-700 line-clamp-4">{s.text}</div>
+              <div className="mb-3 text-sm text-ink-300 line-clamp-4">{s.text}</div>
 
               <div className="flex gap-2">
                 <button

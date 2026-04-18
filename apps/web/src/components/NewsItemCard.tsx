@@ -21,8 +21,8 @@ export type { NewsItemData };
 function ImpactBadge({ axis, level }: { axis: string; level: string }) {
   const colors: Record<string, string> = {
     H: "bg-danger/10 text-danger",
-    M: "bg-amber-100 text-amber-700",
-    L: "bg-ink-100 text-ink-500",
+    M: "bg-amber-500/10 text-amber-400",
+    L: "bg-white/[0.04] text-ink-400",
   };
   return (
     <span className={`rounded px-1.5 py-0.5 text-[10px] font-mono ${colors[level] ?? colors.L}`}>
@@ -36,7 +36,7 @@ function ScorerBadge({ scorer }: { scorer: string }) {
   return (
     <span
       className={`rounded px-1.5 py-0.5 text-[10px] ${
-        isAI ? "bg-atlas-100 text-atlas-700" : "bg-ink-100 text-ink-500"
+        isAI ? "bg-atlas-500/15 text-atlas-400" : "bg-white/[0.04] text-ink-400"
       }`}
     >
       {isAI ? "AI" : "heuristic"}
@@ -46,13 +46,13 @@ function ScorerBadge({ scorer }: { scorer: string }) {
 
 export default function NewsItemCard({ item }: { item: NewsItemData }) {
   return (
-    <div className="rounded-md border border-ink-100 bg-white p-3">
+    <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3">
       <div className="flex items-start justify-between gap-2">
         <a
           href={item.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-medium text-ink-800 hover:text-atlas-600"
+          className="text-sm font-medium text-ink-100 hover:text-atlas-400"
         >
           {item.title}
         </a>
@@ -64,7 +64,7 @@ export default function NewsItemCard({ item }: { item: NewsItemData }) {
           <span>{new Date(item.published_at).toLocaleDateString()}</span>
         )}
         {item.event_type && (
-          <span className="rounded bg-ink-100 px-1.5 py-0.5">{item.event_type}</span>
+          <span className="rounded bg-white/[0.04] px-1.5 py-0.5">{item.event_type}</span>
         )}
       </div>
       {item.impact_score && (

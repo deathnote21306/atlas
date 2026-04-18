@@ -62,7 +62,7 @@ export default function ScenarioView() {
   });
 
   if (isLoading) {
-    return <AppShell><main className="p-8 text-ink-500">Loading...</main></AppShell>;
+    return <AppShell><main className="p-8 text-ink-400">Loading...</main></AppShell>;
   }
   if (error) {
     const msg = error instanceof ApiError && error.status === 404
@@ -79,8 +79,8 @@ export default function ScenarioView() {
       <main className="mx-auto max-w-4xl p-6">
         <header className="mb-6">
           <div className="flex items-baseline gap-3">
-            <h1 className="text-2xl font-semibold text-ink-900">Saved Scenario</h1>
-            <span className="font-mono text-sm text-ink-500">{iso3}</span>
+            <h1 className="text-2xl font-semibold text-ink-100">Saved Scenario</h1>
+            <span className="font-mono text-sm text-ink-400">{iso3}</span>
           </div>
           <p className="mt-1 text-xs text-ink-400">
             Created {new Date(created_at).toLocaleString()}
@@ -88,13 +88,13 @@ export default function ScenarioView() {
           <div className="mt-2 flex gap-3">
             <Link
               to={`/countries/${iso3}`}
-              className="text-sm text-atlas-600 hover:underline"
+              className="text-sm text-atlas-400 hover:underline"
             >
               Back to country profile
             </Link>
             <Link
               to={`/scenarios/new?country=${iso3}`}
-              className="text-sm text-atlas-600 hover:underline"
+              className="text-sm text-atlas-400 hover:underline"
             >
               Run new scenario
             </Link>
@@ -104,16 +104,16 @@ export default function ScenarioView() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Inputs */}
           <section>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-500">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-400">
               Shock Inputs
             </h2>
-            <div className="rounded-md border border-ink-100 bg-white p-4">
+            <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
               <table className="w-full text-sm">
                 <tbody>
                   {(Object.keys(SHOCK_LABELS) as (keyof ShockVector)[]).map((key) => (
-                    <tr key={key} className="border-b border-ink-50 last:border-0">
-                      <td className="py-2 text-ink-700">{SHOCK_LABELS[key].label}</td>
-                      <td className="py-2 text-right font-mono text-ink-900">
+                    <tr key={key} className="border-b border-white/[0.04] last:border-0">
+                      <td className="py-2 text-ink-300">{SHOCK_LABELS[key].label}</td>
+                      <td className="py-2 text-right font-mono text-ink-100">
                         {shocks[key] >= 0 ? "+" : ""}{shocks[key].toFixed(1)} {SHOCK_LABELS[key].unit}
                       </td>
                     </tr>
@@ -125,27 +125,27 @@ export default function ScenarioView() {
 
           {/* Outputs */}
           <section>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-500">
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-400">
               Results
             </h2>
             <div className="space-y-3">
               {/* Risk comparison */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-md border border-ink-100 bg-white p-3 text-center">
-                  <div className="text-xs text-ink-500">Baseline Risk</div>
-                  <div className="mt-1 font-mono text-xl text-ink-900">
+                <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3 text-center">
+                  <div className="text-xs text-ink-400">Baseline Risk</div>
+                  <div className="mt-1 font-mono text-xl text-ink-100">
                     {outputs.baseline_risk_score.toFixed(1)}
                   </div>
                 </div>
-                <div className="rounded-md border border-ink-100 bg-white p-3 text-center">
-                  <div className="text-xs text-ink-500">Shocked Risk</div>
+                <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3 text-center">
+                  <div className="text-xs text-ink-400">Shocked Risk</div>
                   <div
                     className={`mt-1 font-mono text-xl ${
                       outputs.new_risk_score > outputs.baseline_risk_score
                         ? "text-danger"
                         : outputs.new_risk_score < outputs.baseline_risk_score
                           ? "text-positive"
-                          : "text-ink-900"
+                          : "text-ink-100"
                     }`}
                   >
                     {outputs.new_risk_score.toFixed(1)}
@@ -154,9 +154,9 @@ export default function ScenarioView() {
               </div>
 
               {/* PoD */}
-              <div className="rounded-md border border-ink-100 bg-white p-3">
-                <div className="text-xs text-ink-500">Probability of Debt Distress</div>
-                <div className="mt-1 font-mono text-ink-900">
+              <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3">
+                <div className="text-xs text-ink-400">Probability of Debt Distress</div>
+                <div className="mt-1 font-mono text-ink-100">
                   {outputs.distress_probability != null
                     ? `${(outputs.distress_probability * 100).toFixed(1)}%`
                     : "Not applicable -- country in distressed status"}
@@ -164,10 +164,10 @@ export default function ScenarioView() {
               </div>
 
               {/* Deltas */}
-              <div className="rounded-md border border-ink-100 bg-white p-3">
+              <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-ink-100 text-left text-xs text-ink-500">
+                    <tr className="border-b border-white/[0.06] text-left text-xs text-ink-400">
                       <th className="pb-1">Metric</th>
                       <th className="pb-1 text-right">Baseline</th>
                       <th className="pb-1 text-right">Shocked</th>
@@ -176,19 +176,19 @@ export default function ScenarioView() {
                   </thead>
                   <tbody className="font-mono text-sm">
                     <tr>
-                      <td className="py-1 text-ink-700">Debt / GDP</td>
+                      <td className="py-1 text-ink-300">Debt / GDP</td>
                       <td className="py-1 text-right">{outputs.baseline_debt_gdp.toFixed(1)}%</td>
                       <td className="py-1 text-right">{outputs.new_debt_gdp.toFixed(1)}%</td>
                       <td className="py-1 text-right">{fmtDelta(outputs.deltas.debt_gdp)} pp</td>
                     </tr>
                     <tr>
-                      <td className="py-1 text-ink-700">Fiscal Balance</td>
+                      <td className="py-1 text-ink-300">Fiscal Balance</td>
                       <td className="py-1 text-right">{outputs.baseline_fiscal_balance.toFixed(1)}%</td>
                       <td className="py-1 text-right">{outputs.new_fiscal_balance.toFixed(1)}%</td>
                       <td className="py-1 text-right">{fmtDelta(outputs.deltas.fiscal_balance)} pp</td>
                     </tr>
                     <tr>
-                      <td className="py-1 text-ink-700">Current Account</td>
+                      <td className="py-1 text-ink-300">Current Account</td>
                       <td className="py-1 text-right">{outputs.baseline_current_account.toFixed(1)}%</td>
                       <td className="py-1 text-right">{outputs.new_current_account.toFixed(1)}%</td>
                       <td className="py-1 text-right">{fmtDelta(outputs.deltas.current_account)} pp</td>
