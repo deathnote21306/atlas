@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import Login from "./routes/Login";
-import Home from "./routes/Home";
+import Dashboard from "./routes/Dashboard";
 import CountriesList from "./routes/CountriesList";
 import CountryProfile from "./routes/CountryProfile";
 import CountryComparison from "./routes/CountryComparison";
@@ -17,7 +17,7 @@ export default function App() {
       <AppToaster />
       <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
+      <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>} />
       <Route path="/countries" element={<RequireAuth><CountriesList /></RequireAuth>} />
       <Route path="/countries/compare" element={<RequireAuth><CountryComparison /></RequireAuth>} />
       <Route path="/countries/:iso3" element={<RequireAuth><CountryProfile /></RequireAuth>} />
