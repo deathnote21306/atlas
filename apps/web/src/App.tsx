@@ -3,9 +3,11 @@ import Login from "./routes/Login";
 import Home from "./routes/Home";
 import CountriesList from "./routes/CountriesList";
 import CountryProfile from "./routes/CountryProfile";
+import CountryComparison from "./routes/CountryComparison";
 import ScenarioEngine from "./routes/ScenarioEngine";
 import ScenarioView from "./routes/ScenarioView";
 import AdminSynopses from "./routes/AdminSynopses";
+import NewsIntelligence from "./routes/NewsIntelligence";
 import RequireAuth from "./routes/RequireAuth";
 import { AppToaster } from "./components/Toast";
 
@@ -17,9 +19,11 @@ export default function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<RequireAuth><Home /></RequireAuth>} />
       <Route path="/countries" element={<RequireAuth><CountriesList /></RequireAuth>} />
+      <Route path="/countries/compare" element={<RequireAuth><CountryComparison /></RequireAuth>} />
       <Route path="/countries/:iso3" element={<RequireAuth><CountryProfile /></RequireAuth>} />
       <Route path="/scenarios/new" element={<RequireAuth><ScenarioEngine /></RequireAuth>} />
       <Route path="/scenarios/:id" element={<RequireAuth><ScenarioView /></RequireAuth>} />
+      <Route path="/news" element={<RequireAuth><NewsIntelligence /></RequireAuth>} />
       <Route path="/admin/synopses" element={<RequireAuth><AdminSynopses /></RequireAuth>} />
     </Routes>
     </>
