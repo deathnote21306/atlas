@@ -18,6 +18,7 @@ export default function TopNav() {
           <nav className="flex items-center gap-4 text-sm text-ink-700">
             <Link to="/" className="hover:text-ink-900">Home</Link>
             <Link to="/countries" className="hover:text-ink-900">Countries</Link>
+            <Link to="/admin/synopses" className="hover:text-ink-900">Admin</Link>
           </nav>
         </div>
         {user ? (

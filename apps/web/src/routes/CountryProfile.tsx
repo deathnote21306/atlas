@@ -9,6 +9,8 @@ import {
 } from "@atlas/design-system";
 import { ApiError, api } from "../api/client";
 import AppShell from "./AppShell";
+import SynopsisCard, { type SynopsisData } from "../components/SynopsisCard";
+import NewsItemCard, { type NewsItemData } from "../components/NewsItemCard";
 
 interface MacroTile {
   indicator: string;
@@ -93,6 +95,20 @@ export default function CountryProfile() {
     retry: false,
   });
 
+  const { data: synopsisData } = useQuery<SynopsisData | null>({
+    queryKey: ["synopsis", iso3.toUpperCase()],
+    queryFn: () => api<SynopsisData | null>(`/api/synopses/${iso3.toUpperCase()}`),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  const { data: newsData } = useQuery<NewsItemData[]>({
+    queryKey: ["news", iso3.toUpperCase()],
+    queryFn: () => api<NewsItemData[]>(`/api/news?iso3=${iso3.toUpperCase()}&limit=10`),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
   if (isLoading) {
     return <AppShell><main className="p-8 text-ink-500">Loading\u2026</main></AppShell>;
   }
@@ -130,9 +146,10 @@ export default function CountryProfile() {
           </div>
         </header>
 
-        {/* Synopsis placeholder */}
-        <section className="mb-6 rounded-md border border-dashed border-ink-100 bg-white p-4 text-sm text-ink-500">
-          {synopsis ?? "AI synopsis pending review."}
+        {/* Synopsis */}
+        <section className="mb-6">
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">Synopsis</h2>
+          <SynopsisCard synopsis={synopsisData ?? null} />
         </section>
 
         {/* Ratings */}
@@ -220,12 +237,18 @@ export default function CountryProfile() {
           </div>
         </section>
 
-        {/* News placeholder */}
+        {/* News & impact */}
         <section className="mb-6">
           <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">News & impact</h2>
-          {news_placeholder
-            ? <InstitutionalTable columns={[{ key: "label", header: "" }]} rows={[]} emptyLabel="No scored news yet." />
-            : <div>News list goes here in Plan 4.</div>}
+          {newsData && newsData.length > 0 ? (
+            <div className="space-y-2">
+              {newsData.map((item) => (
+                <NewsItemCard key={item.id} item={item} />
+              ))}
+            </div>
+          ) : (
+            <InstitutionalTable columns={[{ key: "label", header: "" }]} rows={[]} emptyLabel="No scored news yet." />
+          )}
         </section>
       </main>
     </AppShell>
