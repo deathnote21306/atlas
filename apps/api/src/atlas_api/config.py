@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     # -- AI integration (Plan 5b) --
     anthropic_api_key: str = ""
-    ai_model: str = "claude-sonnet-4-5-20250514"
+    ai_model: str = "claude-sonnet-4-5"
     ai_daily_token_cap: int = 200_000
 
 
