@@ -25,7 +25,7 @@ def _login(client):
 def _seed_country(session, iso3="NGA"):
     session.add(Country(
         iso3=iso3, name="Nigeria", capital="Abuja", region="West Africa",
-        tags=["SSA"], tier="B", status="active", fx_regime="float",
+        tags=["SSA"], tier="B", status="performing", fx_regime="float",
         fx_regime_notes=None, fx_parallel_premium=None,
     ))
     session.commit()
