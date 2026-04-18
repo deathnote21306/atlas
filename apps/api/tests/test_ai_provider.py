@@ -5,14 +5,13 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import httpx
-from pydantic import BaseModel
-
 from atlas_api.services.ai.provider import (
     _DailyTokenCounter,
     call_tool,
     compute_prompt_hash,
     token_counter,
 )
+from pydantic import BaseModel
 
 
 class MockScoreResult(BaseModel):
