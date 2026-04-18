@@ -107,7 +107,7 @@ def compute_input_hash(grounding_data: dict) -> str:
     return hashlib.sha256(blob.encode()).hexdigest()
 
 
-def call_tool(
+def call_tool[T: BaseModel](
     *,
     messages: list[dict],
     system: str,
