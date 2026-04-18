@@ -15,7 +15,7 @@ import hashlib
 import json
 import threading
 from datetime import UTC, datetime
-from typing import TypeVar
+from typing import TypeVar, Any
 
 import anthropic
 import structlog
@@ -69,7 +69,7 @@ token_counter = _DailyTokenCounter()
 # ── Tool schema builder ───────────────────────────────────────────────────
 
 
-def _pydantic_to_tool_schema(name: str, description: str, model: type[BaseModel]) -> dict:
+def _pydantic_to_tool_schema(name: str, description: str, model: type[BaseModel]) -> dict[str, Any]:
     """Convert a Pydantic model to an Anthropic tool definition."""
     schema = model.model_json_schema()
     properties = schema.get("properties", {})
@@ -95,13 +95,13 @@ def _get_client() -> anthropic.Anthropic:
     return anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
 
-def compute_prompt_hash(messages: list[dict], system: str) -> str:
+def compute_prompt_hash(messages: list[dict[str, Any]], system: str) -> str:
     """SHA-256 of the serialized prompt (messages + system)."""
     blob = json.dumps({"system": system, "messages": messages}, sort_keys=True, default=str)
     return hashlib.sha256(blob.encode()).hexdigest()
 
 
-def compute_input_hash(grounding_data: dict) -> str:
+def compute_input_hash(grounding_data: dict[str, Any]) -> str:
     """SHA-256 of the grounding data used to build the prompt."""
     blob = json.dumps(grounding_data, sort_keys=True, default=str)
     return hashlib.sha256(blob.encode()).hexdigest()
@@ -109,13 +109,13 @@ def compute_input_hash(grounding_data: dict) -> str:
 
 def call_tool[T: BaseModel](
     *,
-    messages: list[dict],
+    messages: list[dict[str, Any]],
     system: str,
     tool_name: str,
     tool_description: str,
     result_model: type[T],
     max_tokens: int = 2048,
-) -> tuple[T | None, dict]:
+) -> tuple[T | None, dict[str, Any]]:
     """Call Claude with a single tool and parse the result.
 
     Returns:
@@ -123,7 +123,7 @@ def call_tool[T: BaseModel](
         - model, tokens_in, tokens_out, prompt_hash, raw_response
         On failure: (None, metadata_dict)
     """
-    meta: dict = {
+    meta: dict[str, Any] = {
         "model": settings.ai_model,
         "tokens_in": 0,
         "tokens_out": 0,
@@ -143,7 +143,7 @@ def call_tool[T: BaseModel](
 
     for attempt in range(2):  # 1 try + 1 retry
         try:
-            response = client.messages.create(
+            response = client.messages.create( # type: ignore[call-overload]
                 model=settings.ai_model,
                 max_tokens=max_tokens,
                 system=system,
