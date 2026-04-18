@@ -31,6 +31,7 @@ jobs:
         with: { version: "0.4.18" }
       - run: uv python install 3.12
       - run: uv sync --all-extras
+      - run: uv run python -m spacy download en_core_web_sm
       - run: uv run ruff check .
       - run: uv run mypy apps/api/src packages/schemas/src
       - run: uv run alembic -c infra/migrations/alembic.ini upgrade head
