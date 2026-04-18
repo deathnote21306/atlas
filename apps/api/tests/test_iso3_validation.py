@@ -3,10 +3,9 @@
 import uuid
 from datetime import UTC, datetime
 
-from atlas_api.models import Country, User
+from atlas_api.models import Country, NewsItem, User
 from atlas_api.security import hash_password
 from atlas_api.services.news.dedup import url_hash
-from atlas_api.models import NewsItem
 
 
 def _seed_user(session):
