@@ -1,4 +1,8 @@
+import uuid
+from datetime import UTC, datetime
+
 from atlas_schemas.health import HealthResponse
+from atlas_schemas.news import EventType, ImpactLevel, NewsImpactScoreOut, NewsItemOut
 
 
 def test_health_response_roundtrips():
@@ -170,3 +174,84 @@ def test_scenario_preview_roundtrip():
     )
     d = sp.model_dump()
     assert ScenarioPreview(**d).new_risk_score == 53.3
+
+
+# -- News schemas ----------------------------------------------------------
+
+
+def test_event_type_values():
+    assert EventType.MONETARY == "Monetary"
+    assert EventType.FISCAL == "Fiscal"
+    assert EventType.POLITICAL == "Political"
+    assert EventType.EXTERNAL == "External"
+    assert EventType.RATING == "Rating"
+    assert EventType.IMF == "IMF"
+    assert EventType.MARKET == "Market"
+
+
+def test_impact_level_values():
+    assert ImpactLevel.LOW == "L"
+    assert ImpactLevel.MEDIUM == "M"
+    assert ImpactLevel.HIGH == "H"
+
+
+def test_news_item_out_roundtrip():
+    now = datetime.now(UTC)
+    item = NewsItemOut(
+        id=uuid.uuid4(),
+        url="https://example.com/article",
+        title="Kenya raises rates",
+        source="Reuters",
+        published_at=now,
+        primary_iso3="KEN",
+        event_type="Monetary",
+        ingested_at=now,
+        impact_score=None,
+    )
+    d = item.model_dump()
+    assert NewsItemOut(**d).title == "Kenya raises rates"
+
+
+def test_news_impact_score_out_roundtrip():
+    now = datetime.now(UTC)
+    score = NewsImpactScoreOut(
+        id=uuid.uuid4(),
+        news_item_id=uuid.uuid4(),
+        fiscal_impact=ImpactLevel.LOW,
+        external_impact=ImpactLevel.MEDIUM,
+        fx_impact=ImpactLevel.HIGH,
+        political_impact=ImpactLevel.LOW,
+        rationale={"keywords": ["rate hike", "inflation"]},
+        scorer="heuristic",
+        scored_at=now,
+    )
+    d = score.model_dump()
+    assert NewsImpactScoreOut(**d).fiscal_impact == "L"
+
+
+def test_news_item_with_score():
+    now = datetime.now(UTC)
+    item_id = uuid.uuid4()
+    item = NewsItemOut(
+        id=item_id,
+        url="https://example.com/article2",
+        title="Nigeria fiscal deficit widens",
+        source="IMF Blog",
+        published_at=now,
+        primary_iso3="NGA",
+        event_type="Fiscal",
+        ingested_at=now,
+        impact_score=NewsImpactScoreOut(
+            id=uuid.uuid4(),
+            news_item_id=item_id,
+            fiscal_impact=ImpactLevel.HIGH,
+            external_impact=ImpactLevel.MEDIUM,
+            fx_impact=ImpactLevel.MEDIUM,
+            political_impact=ImpactLevel.LOW,
+            rationale={"keywords": ["deficit", "spending"]},
+            scorer="heuristic",
+            scored_at=now,
+        ),
+    )
+    assert item.impact_score is not None
+    assert item.impact_score.fiscal_impact == "H"
