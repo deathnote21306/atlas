@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from atlas_api.config import settings
 from atlas_api.ingestion.scheduler import build_scheduler
 from atlas_api.logging_config import configure_logging
-from atlas_api.routers import auth, countries, health, scenarios
+from atlas_api.routers import auth, countries, health, news, scenarios
 
 configure_logging()
 
@@ -15,7 +15,7 @@ configure_logging()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     scheduler = build_scheduler()
-    if settings.ingestion_schedule_enabled:
+    if settings.ingestion_schedule_enabled or settings.news_poll_enabled:
         scheduler.start()
     try:
         yield
@@ -38,3 +38,4 @@ app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(countries.router)
 app.include_router(scenarios.router)
+app.include_router(news.router)
