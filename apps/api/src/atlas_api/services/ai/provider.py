@@ -18,6 +18,7 @@ from datetime import UTC, datetime
 from typing import Any, TypeVar
 
 import anthropic
+import httpx
 import structlog
 from pydantic import BaseModel, ValidationError
 
@@ -92,7 +93,10 @@ def _get_client() -> anthropic.Anthropic:
     """Lazy client construction. Raises if no API key configured."""
     if not settings.anthropic_api_key:
         raise RuntimeError("ANTHROPIC_API_KEY not configured")
-    return anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    return anthropic.Anthropic(
+        api_key=settings.anthropic_api_key,
+        timeout=httpx.Timeout(60.0, connect=10.0),
+    )
 
 
 def compute_prompt_hash(messages: list[dict[str, Any]], system: str) -> str:
@@ -186,6 +190,12 @@ def call_tool[T: BaseModel](
                     continue
                 return None, meta
 
+        except httpx.TimeoutException as e:
+            meta["error"] = f"timeout_attempt_{attempt}: {e}"
+            log.warning("ai_timeout", attempt=attempt, error=str(e))
+            if attempt == 0:
+                continue
+            return None, meta
         except anthropic.APIError as e:
             meta["error"] = f"api_error_attempt_{attempt}: {e}"
             log.warning("ai_api_error", attempt=attempt, error=str(e))

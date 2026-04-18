@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+import httpx
+
 from atlas_api.services.ai.provider import (
     _DailyTokenCounter,
     call_tool,
@@ -148,4 +150,34 @@ def test_call_tool_retry_on_validation_error(mock_client_fn, mock_settings):
 
     assert result is not None
     assert result.fiscal_impact == "H"
+    assert client.messages.create.call_count == 2
+
+
+@patch("atlas_api.services.ai.provider.settings")
+@patch("atlas_api.services.ai.provider._get_client")
+def test_call_tool_timeout_returns_none(mock_client_fn, mock_settings):
+    """When the Claude API times out, call_tool returns (None, meta) with timeout error."""
+    mock_settings.ai_model = "claude-sonnet-4-5-20250514"
+    mock_settings.ai_daily_token_cap = 200_000
+    mock_settings.anthropic_api_key = "sk-ant-test"
+
+    # Reset counter
+    token_counter._total = 0
+    token_counter._date = ""
+
+    client = MagicMock()
+    client.messages.create.side_effect = httpx.ReadTimeout("Request timed out")
+    mock_client_fn.return_value = client
+
+    result, meta = call_tool(
+        messages=[{"role": "user", "content": "test"}],
+        system="test",
+        tool_name="score_news",
+        tool_description="test",
+        result_model=MockScoreResult,
+    )
+
+    assert result is None
+    assert "timeout" in meta["error"]
+    # Should have retried once (2 total attempts)
     assert client.messages.create.call_count == 2
