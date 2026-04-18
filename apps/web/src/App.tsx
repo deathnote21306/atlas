@@ -5,6 +5,7 @@ import CountriesList from "./routes/CountriesList";
 import CountryProfile from "./routes/CountryProfile";
 import ScenarioEngine from "./routes/ScenarioEngine";
 import ScenarioView from "./routes/ScenarioView";
+import AdminSynopses from "./routes/AdminSynopses";
 import RequireAuth from "./routes/RequireAuth";
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
       <Route path="/countries/:iso3" element={<RequireAuth><CountryProfile /></RequireAuth>} />
       <Route path="/scenarios/new" element={<RequireAuth><ScenarioEngine /></RequireAuth>} />
       <Route path="/scenarios/:id" element={<RequireAuth><ScenarioView /></RequireAuth>} />
+      <Route path="/admin/synopses" element={<RequireAuth><AdminSynopses /></RequireAuth>} />
     </Routes>
   );
 }
