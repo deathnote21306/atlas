@@ -8,7 +8,7 @@ from atlas_schemas.scenario import CountryImpact, ScenarioPreview, ScenarioRunOu
 from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 
-from atlas_api.deps import CurrentUser, DbSession
+from atlas_api.deps import CurrentUser, DbSession, _check_iso3
 from atlas_api.services.scenario.service import (
     get_scenario,
     list_scenarios,
@@ -53,6 +53,7 @@ def post_preview(
     _: CurrentUser,
 ) -> ScenarioPreview:
     """Compute a scenario preview (no DB writes)."""
+    body.iso3 = _check_iso3(body.iso3)
     try:
         return preview_scenario(session, body.iso3, body.shocks)
     except ValueError as exc:
@@ -66,6 +67,7 @@ def post_save(
     user: CurrentUser,
 ) -> ScenarioRunOut:
     """Preview + persist a scenario run."""
+    body.iso3 = _check_iso3(body.iso3)
     try:
         preview = preview_scenario(session, body.iso3, body.shocks)
     except ValueError as exc:
@@ -99,4 +101,6 @@ def list_all(
     iso3: str | None = Query(None, min_length=3, max_length=3, description="Country ISO3 code"),
 ) -> list[ScenarioRunOut]:
     """List saved scenarios, optionally filtered by country."""
+    if iso3:
+        iso3 = _check_iso3(iso3)
     return list_scenarios(session, iso3)

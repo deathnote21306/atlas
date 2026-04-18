@@ -8,7 +8,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import select
 
-from atlas_api.deps import CurrentUser, DbSession
+from atlas_api.deps import CurrentUser, DbSession, _check_iso3
 from atlas_api.models import NewsImpactScore, NewsItem
 
 router = APIRouter(prefix="/api/news", tags=["news"])
@@ -50,7 +50,8 @@ def list_news(
         NewsImpactScore, NewsItem.id == NewsImpactScore.news_item_id
     ).order_by(NewsItem.published_at.desc()).limit(limit)
     if iso3:
-        stmt = stmt.where(NewsItem.primary_iso3 == iso3.upper())
+        iso3 = _check_iso3(iso3)
+        stmt = stmt.where(NewsItem.primary_iso3 == iso3)
     rows = session.execute(stmt).all()
     return [_item_to_out(item, score) for item, score in rows]
 

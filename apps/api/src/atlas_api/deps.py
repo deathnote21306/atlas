@@ -1,3 +1,4 @@
+import re
 from collections.abc import Iterator
 from typing import Annotated
 
@@ -35,3 +36,14 @@ def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+_ISO3_RE = re.compile(r"^[A-Za-z]{3}$")
+
+
+def _check_iso3(iso3: str) -> str:
+    if not _ISO3_RE.match(iso3):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid ISO3 code: {iso3}",
+        )
+    return iso3.upper()
