@@ -9,6 +9,7 @@ import {
 } from "@atlas/design-system";
 import { ApiError, api } from "../api/client";
 import AppShell from "./AppShell";
+import { SkeletonLine, SkeletonCard } from "../components/Skeleton";
 import SynopsisCard, { type SynopsisData } from "../components/SynopsisCard";
 import NewsItemCard, { type NewsItemData } from "../components/NewsItemCard";
 
@@ -110,7 +111,18 @@ export default function CountryProfile() {
   });
 
   if (isLoading) {
-    return <AppShell><main className="p-8 text-ink-500">Loading\u2026</main></AppShell>;
+    return (
+      <AppShell>
+        <main className="mx-auto max-w-6xl p-6">
+          <div className="space-y-6">
+            <SkeletonLine className="h-8 w-1/4" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }, (_, i) => <SkeletonCard key={i} />)}
+            </div>
+          </div>
+        </main>
+      </AppShell>
+    );
   }
   if (error) {
     const msg = error instanceof ApiError && error.status === 404
