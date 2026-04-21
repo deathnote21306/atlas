@@ -217,8 +217,8 @@ def recompute_all(session: Session, countries: list[str] | None = None) -> dict[
             country.composite_risk_label = result["composite_label"]
             country.composite_risk_as_of = datetime.now(UTC)
 
-            stats["computed"] += 1  # type: ignore[operator]
-            stats["details"].append(  # type: ignore[operator]
+            stats["computed"] += 1
+            stats["details"].append(
                 {
                     "iso3": country.iso3,
                     "composite": result["composite_score"],
@@ -228,7 +228,7 @@ def recompute_all(session: Session, countries: list[str] | None = None) -> dict[
             log.info("risk_computed", iso3=country.iso3, composite=result["composite_score"])
         except Exception:
             log.exception("risk_compute_error", iso3=country.iso3)
-            stats["errors"] += 1  # type: ignore[operator]
+            stats["errors"] += 1
 
     session.commit()
     return stats

@@ -117,7 +117,7 @@ def _fetch(
                 log.warning("comtrade_http_error", status=resp.status_code, body=resp.text[:200])
                 return []
             data = resp.json()
-            return data.get("data", [])  # type: ignore[return-value]
+            return list(data.get("data", []))
         except httpx.TimeoutException:
             log.warning("comtrade_timeout", attempt=attempt)
             if attempt < 2:
@@ -322,7 +322,7 @@ def backfill(
     if years is None:
         years = [2020, 2021, 2022, 2023, 2024]
 
-    stats: dict[str, Any] = {
+    stats: dict[str, int | list[str]] = {
         "countries": len(countries),
         "years": len(years),
         "requests": 0,
@@ -343,7 +343,7 @@ def backfill(
         for iso3 in countries:
             code = COMTRADE_REPORTER_CODES.get(iso3)
             if code is None:
-                stats["errors"].append(f"{iso3}: no M49 code")  # type: ignore[operator]
+                stats["errors"].append(f"{iso3}: no M49 code")
                 continue
 
             for year in years:
@@ -351,30 +351,30 @@ def backfill(
                     # 1. Exports by commodity
                     time.sleep(0.2)
                     rows = _fetch(http, code, year, "X", "AG2")
-                    stats["requests"] += 1  # type: ignore[operator]
+                    stats["requests"] += 1
                     written = _store_commodity_rows(session, iso3, year, "X", rows, now)
-                    stats["rows_written"] += written  # type: ignore[operator]
+                    stats["rows_written"] += written
 
                     # 2. Imports by commodity
                     time.sleep(0.2)
                     rows = _fetch(http, code, year, "M", "AG2")
-                    stats["requests"] += 1  # type: ignore[operator]
+                    stats["requests"] += 1
                     written = _store_commodity_rows(session, iso3, year, "M", rows, now)
-                    stats["rows_written"] += written  # type: ignore[operator]
+                    stats["rows_written"] += written
 
                     # 3. Exports by partner (omit partnerCode to get breakdown)
                     time.sleep(0.2)
                     rows = _fetch(http, code, year, "X", "TOTAL", "")
-                    stats["requests"] += 1  # type: ignore[operator]
+                    stats["requests"] += 1
                     written = _store_partner_rows(session, iso3, year, "X", rows, now)
-                    stats["rows_written"] += written  # type: ignore[operator]
+                    stats["rows_written"] += written
 
                     # 4. Imports by partner
                     time.sleep(0.2)
                     rows = _fetch(http, code, year, "M", "TOTAL", "")
-                    stats["requests"] += 1  # type: ignore[operator]
+                    stats["requests"] += 1
                     written = _store_partner_rows(session, iso3, year, "M", rows, now)
-                    stats["rows_written"] += written  # type: ignore[operator]
+                    stats["rows_written"] += written
 
                     session.commit()
                     log.info(
@@ -385,7 +385,7 @@ def backfill(
                     )
                 except Exception as e:
                     log.exception("comtrade_error", iso3=iso3, year=year)
-                    stats["errors"].append(f"{iso3}/{year}: {e}")  # type: ignore[operator]
+                    stats["errors"].append(f"{iso3}/{year}: {e}")
 
     log.info("comtrade_backfill_complete", **{k: v for k, v in stats.items() if k != "errors"})
     return stats

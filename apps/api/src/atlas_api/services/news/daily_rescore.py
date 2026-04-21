@@ -25,7 +25,7 @@ DAILY_RESCORE_TOKEN_BUDGET = int(os.environ.get("DAILY_RESCORE_TOKEN_BUDGET", "1
 
 def run_daily_rescore() -> dict[str, Any]:
     """Re-score heuristic articles with Claude. Returns run stats."""
-    stats = {
+    stats: dict[str, Any] = {
         "ran_at": datetime.now(UTC).isoformat(),
         "articles_processed": 0,
         "articles_succeeded": 0,
@@ -64,11 +64,11 @@ def run_daily_rescore() -> dict[str, Any]:
         log.info("daily_rescore_start", candidates=len(rows), limit=DAILY_RESCORE_LIMIT)
 
         for score_row, item in rows:
-            if int(stats["tokens_used"]) >= DAILY_RESCORE_TOKEN_BUDGET:
+            if stats["tokens_used"] >= DAILY_RESCORE_TOKEN_BUDGET:  # type: ignore[operator]
                 log.info("daily_rescore_budget_reached", tokens=stats["tokens_used"])
                 break
 
-            stats["articles_processed"] += 1  # type: ignore[operator]
+            stats["articles_processed"] += 1
 
             # Delete existing heuristic score
             session.execute(delete(NewsImpactScore).where(NewsImpactScore.id == score_row.id))
@@ -85,19 +85,19 @@ def run_daily_rescore() -> dict[str, Any]:
                 )
 
                 if ai_score is not None:
-                    stats["articles_succeeded"] += 1  # type: ignore[operator]
-                    stats["tokens_used"] += 2000  # approximate  # type: ignore[operator]
+                    stats["articles_succeeded"] += 1
+                    stats["tokens_used"] += 2000  # approximate
                 else:
                     # Claude unavailable — restore heuristic
                     scores = score_impact(item.title, item.body_text or "")
                     persist_score(session, item.id, scores)
-                    stats["articles_failed"] += 1  # type: ignore[operator]
+                    stats["articles_failed"] += 1
                     log.warning("daily_rescore_claude_unavailable", item_id=str(item.id))
             except Exception:
                 # Restore heuristic on any error
                 scores = score_impact(item.title, item.body_text or "")
                 persist_score(session, item.id, scores)
-                stats["articles_failed"] += 1  # type: ignore[operator]
+                stats["articles_failed"] += 1
                 log.exception("daily_rescore_error", item_id=str(item.id))
 
             session.commit()

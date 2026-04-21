@@ -185,14 +185,14 @@ def run_reer_ingest(
     if countries is None:
         countries = list(ISO3_TO_ISO2.keys())
 
-    stats = {
+    stats: dict[str, int | str | list[dict[str, Any]]] = {
         "ran_at": datetime.now(UTC).isoformat(),
         "countries_attempted": len(countries),
         "countries_imf_ifs": 0,
         "countries_bis_fallback": 0,
         "countries_seed_only": 0,
         "countries_error": 0,
-        "details": [],  # type: ignore[dict-item]
+        "details": [],
     }
 
     now = datetime.now(UTC)
@@ -250,8 +250,8 @@ def run_reer_ingest(
                         latest["period"], datetime.min.time(), tzinfo=UTC
                     )
 
-                stats["countries_imf_ifs"] += 1  # type: ignore[operator]
-                stats["details"].append(  # type: ignore[operator]
+                stats["countries_imf_ifs"] += 1
+                stats["details"].append(
                     {
                         "iso3": iso3,
                         "source": "imf_ifs",
@@ -271,7 +271,7 @@ def run_reer_ingest(
         except Exception:
             log.exception("reer_ingest_error", iso3=iso3)
             imf_missed.append(iso3)
-            stats["countries_error"] += 1  # type: ignore[operator]
+            stats["countries_error"] += 1
 
     session.commit()
 
@@ -310,8 +310,8 @@ def run_reer_ingest(
                             latest["period"], datetime.min.time(), tzinfo=UTC
                         )
 
-                    stats["countries_bis_fallback"] += 1  # type: ignore[operator]
-                    stats["details"].append(  # type: ignore[operator]
+                    stats["countries_bis_fallback"] += 1
+                    stats["details"].append(
                         {
                             "iso3": iso3,
                             "source": source,
@@ -320,8 +320,8 @@ def run_reer_ingest(
                         }
                     )
                 else:
-                    stats["countries_seed_only"] += 1  # type: ignore[operator]
-                    stats["details"].append(  # type: ignore[operator]
+                    stats["countries_seed_only"] += 1
+                    stats["details"].append(
                         {
                             "iso3": iso3,
                             "source": "seed",
@@ -336,8 +336,8 @@ def run_reer_ingest(
             log.exception("reer_bis_fallback_error")
             for iso3 in imf_missed:
                 if not any(d["iso3"] == iso3 for d in stats["details"]):
-                    stats["countries_seed_only"] += 1  # type: ignore[operator]
-                    stats["details"].append(  # type: ignore[operator]
+                    stats["countries_seed_only"] += 1
+                    stats["details"].append(
                         {
                             "iso3": iso3,
                             "source": "seed",
