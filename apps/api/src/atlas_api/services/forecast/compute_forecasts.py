@@ -64,12 +64,14 @@ def get_forecasts(session: Session, iso3: str) -> dict[str, Any] | None:
         year_data = []
         for yr in horizon_years:
             baseline = _get_value_for_period(session, iso3, str(cfg["db_key"]), str(yr))
+            base_w = float(cfg["base_width"])  # type: ignore[arg-type]
+            clamp = (float(cfg["clamp"][0]), float(cfg["clamp"][1]))  # type: ignore[index]
             result = compute_scenario(
                 baseline,
-                cfg["base_width"],
+                base_w,
                 risk_multiplier,
-                cfg["direction"],
-                cfg["clamp"],
+                str(cfg["direction"]),
+                clamp,
             )
             result["year"] = yr
             result["current_value"] = current_val if yr == current_year else None
