@@ -104,28 +104,39 @@ class Country(BaseModel):
             ccy = raw["primary_currency"]
             regime = raw.get("fx_regime", "")
             regime_labels = {
-                "float": "Free Float", "managed_float": "Managed Float",
-                "crawling_peg": "Crawling Peg", "pegged": "Hard Peg",
-                "basket_peg": "Managed Float", "currency_board": "Currency Board",
+                "float": "Free Float",
+                "managed_float": "Managed Float",
+                "crawling_peg": "Crawling Peg",
+                "pegged": "Hard Peg",
+                "basket_peg": "Managed Float",
+                "currency_board": "Currency Board",
             }
 
             pp_val = raw.get("fx_parallel_premium")
             pp_severity = "—"
             if pp_val is not None:
                 pp_val = float(pp_val)
-                if pp_val > 25: pp_severity = "CRITICAL"
-                elif pp_val > 10: pp_severity = "ELEVATED"
-                elif pp_val > 2: pp_severity = "NOTABLE"
-                else: pp_severity = "TIGHT"
+                if pp_val > 25:
+                    pp_severity = "CRITICAL"
+                elif pp_val > 10:
+                    pp_severity = "ELEVATED"
+                elif pp_val > 2:
+                    pp_severity = "NOTABLE"
+                else:
+                    pp_severity = "TIGHT"
 
             reer = raw.get("fx_reer_deviation_pct")
             reer_label = "—"
             if reer is not None:
                 reer = float(reer)
-                if reer > 10: reer_label = "overvalued"
-                elif reer > -10: reer_label = "fair value"
-                elif reer > -25: reer_label = "undervalued"
-                else: reer_label = "extreme undervaluation"
+                if reer > 10:
+                    reer_label = "overvalued"
+                elif reer > -10:
+                    reer_label = "fair value"
+                elif reer > -25:
+                    reer_label = "undervalued"
+                else:
+                    reer_label = "extreme undervaluation"
 
             reer_as_of = raw.get("fx_reer_as_of")
             change_as_of = raw.get("fx_change_as_of")
@@ -136,14 +147,24 @@ class Country(BaseModel):
                 "regime": str(regime) if regime else None,
                 "regime_label": regime_labels.get(str(regime), str(regime)),
                 "change_ladder": {
-                    "1d": float(raw["fx_change_1d_pct"]) if raw.get("fx_change_1d_pct") is not None else None,
-                    "1w": float(raw["fx_change_1w_pct"]) if raw.get("fx_change_1w_pct") is not None else None,
-                    "1m": float(raw["fx_change_1m_pct"]) if raw.get("fx_change_1m_pct") is not None else None,
-                    "3m": float(raw["fx_change_3m_pct"]) if raw.get("fx_change_3m_pct") is not None else None,
+                    "1d": float(raw["fx_change_1d_pct"])
+                    if raw.get("fx_change_1d_pct") is not None
+                    else None,
+                    "1w": float(raw["fx_change_1w_pct"])
+                    if raw.get("fx_change_1w_pct") is not None
+                    else None,
+                    "1m": float(raw["fx_change_1m_pct"])
+                    if raw.get("fx_change_1m_pct") is not None
+                    else None,
+                    "3m": float(raw["fx_change_3m_pct"])
+                    if raw.get("fx_change_3m_pct") is not None
+                    else None,
                     "as_of": change_as_of.isoformat() if change_as_of else None,
                 },
                 "implied_vol": {
-                    "value": float(raw["fx_implied_vol_pct"]) if raw.get("fx_implied_vol_pct") is not None else None,
+                    "value": float(raw["fx_implied_vol_pct"])
+                    if raw.get("fx_implied_vol_pct") is not None
+                    else None,
                     "note": raw.get("fx_implied_vol_note"),
                 },
                 "parallel_premium": {

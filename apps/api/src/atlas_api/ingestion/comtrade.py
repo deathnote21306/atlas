@@ -16,26 +16,59 @@ import structlog
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from atlas_api.models import Country, TradeAnnual
+from atlas_api.models import TradeAnnual
 
 log = structlog.get_logger()
 
 BASE_URL = "https://comtradeapi.un.org/data/v1/get/C/A/HS"
 
 COMTRADE_REPORTER_CODES = {
-    "ETH": 231, "GHA": 288, "KEN": 404, "NGA": 566, "EGY": 818,
-    "ZAF": 710, "RWA": 646, "MAR": 504, "SEN": 686, "CIV": 384,
+    "ETH": 231,
+    "GHA": 288,
+    "KEN": 404,
+    "NGA": 566,
+    "EGY": 818,
+    "ZAF": 710,
+    "RWA": 646,
+    "MAR": 504,
+    "SEN": 686,
+    "CIV": 384,
 }
 
 # Reverse mapping for partner codes (common partners)
 M49_TO_ISO3 = {
-    156: "CHN", 356: "IND", 784: "ARE", 840: "USA", 276: "DEU",
-    826: "GBR", 528: "NLD", 250: "FRA", 724: "ESP", 380: "ITA",
-    682: "SAU", 392: "JPN", 56: "BEL", 756: "CHE", 76: "BRA",
-    792: "TUR", 643: "RUS", 800: "UGA", 586: "PAK", 180: "COD",
-    834: "TZA", 466: "MLI", 710: "ZAF", 404: "KEN", 566: "NGA",
-    231: "ETH", 288: "GHA", 818: "EGY", 504: "MAR", 686: "SEN",
-    384: "CIV", 646: "RWA",
+    156: "CHN",
+    356: "IND",
+    784: "ARE",
+    840: "USA",
+    276: "DEU",
+    826: "GBR",
+    528: "NLD",
+    250: "FRA",
+    724: "ESP",
+    380: "ITA",
+    682: "SAU",
+    392: "JPN",
+    56: "BEL",
+    756: "CHE",
+    76: "BRA",
+    792: "TUR",
+    643: "RUS",
+    800: "UGA",
+    586: "PAK",
+    180: "COD",
+    834: "TZA",
+    466: "MLI",
+    710: "ZAF",
+    404: "KEN",
+    566: "NGA",
+    231: "ETH",
+    288: "GHA",
+    818: "EGY",
+    504: "MAR",
+    686: "SEN",
+    384: "CIV",
+    646: "RWA",
 }
 
 
@@ -43,6 +76,7 @@ def _get_api_key() -> str:
     # Try config first (loads .env), then raw env var
     try:
         from atlas_api.config import settings
+
         key = getattr(settings, "comtrade_api_key", "") or os.environ.get("COMTRADE_API_KEY", "")
     except Exception:
         key = os.environ.get("COMTRADE_API_KEY", "")
@@ -87,7 +121,7 @@ def _fetch(
         except httpx.TimeoutException:
             log.warning("comtrade_timeout", attempt=attempt)
             if attempt < 2:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
         except Exception:
             log.exception("comtrade_fetch_error")
             return []
@@ -95,26 +129,60 @@ def _fetch(
 
 
 HS2_LABELS = {
-    "01": "Live animals", "02": "Meat", "03": "Fish and crustaceans", "04": "Dairy, eggs, honey",
-    "05": "Animal products n.e.s.", "06": "Live trees and cut flowers", "07": "Edible vegetables",
-    "08": "Edible fruit and nuts", "09": "Coffee, tea, maté and spices", "10": "Cereals",
-    "11": "Milling products", "12": "Oil seeds and oleaginous fruits", "13": "Lac; gums, resins",
-    "14": "Vegetable plaiting materials", "15": "Animal or vegetable fats", "16": "Preparations of meat/fish",
-    "17": "Sugars and confectionery", "18": "Cocoa and preparations", "19": "Preparations of cereals",
-    "20": "Preparations of vegetables/fruit", "21": "Misc. edible preparations", "22": "Beverages",
-    "23": "Food industry residues", "24": "Tobacco", "25": "Salt; sulphur; earths and stone",
-    "26": "Ores, slag and ash", "27": "Mineral fuels, oils", "28": "Inorganic chemicals",
-    "29": "Organic chemicals", "30": "Pharmaceutical products", "31": "Fertilizers",
-    "39": "Plastics", "40": "Rubber and articles", "41": "Raw hides and skins",
-    "44": "Wood and articles", "47": "Pulp of wood", "48": "Paper",
-    "52": "Cotton", "61": "Articles of apparel (knitted)", "62": "Articles of apparel (not knitted)",
-    "71": "Precious metals and stones", "72": "Iron and steel", "73": "Articles of iron/steel",
-    "84": "Machinery", "85": "Electrical machinery", "87": "Vehicles (not railway)",
-    "88": "Aircraft", "90": "Optical/medical instruments",
+    "01": "Live animals",
+    "02": "Meat",
+    "03": "Fish and crustaceans",
+    "04": "Dairy, eggs, honey",
+    "05": "Animal products n.e.s.",
+    "06": "Live trees and cut flowers",
+    "07": "Edible vegetables",
+    "08": "Edible fruit and nuts",
+    "09": "Coffee, tea, maté and spices",
+    "10": "Cereals",
+    "11": "Milling products",
+    "12": "Oil seeds and oleaginous fruits",
+    "13": "Lac; gums, resins",
+    "14": "Vegetable plaiting materials",
+    "15": "Animal or vegetable fats",
+    "16": "Preparations of meat/fish",
+    "17": "Sugars and confectionery",
+    "18": "Cocoa and preparations",
+    "19": "Preparations of cereals",
+    "20": "Preparations of vegetables/fruit",
+    "21": "Misc. edible preparations",
+    "22": "Beverages",
+    "23": "Food industry residues",
+    "24": "Tobacco",
+    "25": "Salt; sulphur; earths and stone",
+    "26": "Ores, slag and ash",
+    "27": "Mineral fuels, oils",
+    "28": "Inorganic chemicals",
+    "29": "Organic chemicals",
+    "30": "Pharmaceutical products",
+    "31": "Fertilizers",
+    "39": "Plastics",
+    "40": "Rubber and articles",
+    "41": "Raw hides and skins",
+    "44": "Wood and articles",
+    "47": "Pulp of wood",
+    "48": "Paper",
+    "52": "Cotton",
+    "61": "Articles of apparel (knitted)",
+    "62": "Articles of apparel (not knitted)",
+    "71": "Precious metals and stones",
+    "72": "Iron and steel",
+    "73": "Articles of iron/steel",
+    "84": "Machinery",
+    "85": "Electrical machinery",
+    "87": "Vehicles (not railway)",
+    "88": "Aircraft",
+    "90": "Optical/medical instruments",
 }
 
 
-def _store_commodity_rows(session: Session, iso3: str, year: int, flow: str, rows: list[dict], now: datetime) -> int:
+def _store_commodity_rows(
+    session: Session, iso3: str, year: int, flow: str, rows: list[dict], now: datetime
+) -> int:
     """Store commodity-level rows (exports/imports by HS2 chapter)."""
     count = 0
     for row in rows:
@@ -127,16 +195,30 @@ def _store_commodity_rows(session: Session, iso3: str, year: int, flow: str, row
 
         label = row.get("cmdDesc") or HS2_LABELS.get(code, f"HS {code}")
 
-        stmt = insert(TradeAnnual).values(
-            reporter_iso3=iso3, year=year, flow=flow,
-            partner_iso3=None, partner_name=None,
-            commodity_code=code, commodity_label=label,
-            trade_value_usd=int(value), source="comtrade",
-            source_period=str(year), ingested_at=now,
-        ).on_conflict_do_update(
-            constraint="uq_trade_annual_row",
-            set_={"trade_value_usd": int(value), "commodity_label": label,
-                   "source": "comtrade", "ingested_at": now},
+        stmt = (
+            insert(TradeAnnual)
+            .values(
+                reporter_iso3=iso3,
+                year=year,
+                flow=flow,
+                partner_iso3=None,
+                partner_name=None,
+                commodity_code=code,
+                commodity_label=label,
+                trade_value_usd=int(value),
+                source="comtrade",
+                source_period=str(year),
+                ingested_at=now,
+            )
+            .on_conflict_do_update(
+                constraint="uq_trade_annual_row",
+                set_={
+                    "trade_value_usd": int(value),
+                    "commodity_label": label,
+                    "source": "comtrade",
+                    "ingested_at": now,
+                },
+            )
         )
         session.execute(stmt)
         count += 1
@@ -144,18 +226,49 @@ def _store_commodity_rows(session: Session, iso3: str, year: int, flow: str, row
 
 
 M49_TO_NAME = {
-    156: "China", 356: "India", 784: "UAE", 840: "United States", 276: "Germany",
-    826: "United Kingdom", 528: "Netherlands", 250: "France", 724: "Spain", 380: "Italy",
-    682: "Saudi Arabia", 392: "Japan", 56: "Belgium", 756: "Switzerland", 76: "Brazil",
-    792: "Turkey", 643: "Russia", 800: "Uganda", 586: "Pakistan", 180: "DR Congo",
-    834: "Tanzania", 466: "Mali", 710: "South Africa", 404: "Kenya", 566: "Nigeria",
-    231: "Ethiopia", 288: "Ghana", 818: "Egypt", 504: "Morocco", 686: "Senegal",
-    384: "Côte d'Ivoire", 646: "Rwanda", 410: "South Korea", 764: "Thailand",
-    360: "Indonesia", 458: "Malaysia", 704: "Vietnam",
+    156: "China",
+    356: "India",
+    784: "UAE",
+    840: "United States",
+    276: "Germany",
+    826: "United Kingdom",
+    528: "Netherlands",
+    250: "France",
+    724: "Spain",
+    380: "Italy",
+    682: "Saudi Arabia",
+    392: "Japan",
+    56: "Belgium",
+    756: "Switzerland",
+    76: "Brazil",
+    792: "Turkey",
+    643: "Russia",
+    800: "Uganda",
+    586: "Pakistan",
+    180: "DR Congo",
+    834: "Tanzania",
+    466: "Mali",
+    710: "South Africa",
+    404: "Kenya",
+    566: "Nigeria",
+    231: "Ethiopia",
+    288: "Ghana",
+    818: "Egypt",
+    504: "Morocco",
+    686: "Senegal",
+    384: "Côte d'Ivoire",
+    646: "Rwanda",
+    410: "South Korea",
+    764: "Thailand",
+    360: "Indonesia",
+    458: "Malaysia",
+    704: "Vietnam",
 }
 
 
-def _store_partner_rows(session: Session, iso3: str, year: int, flow: str, rows: list[dict], now: datetime) -> int:
+def _store_partner_rows(
+    session: Session, iso3: str, year: int, flow: str, rows: list[dict], now: datetime
+) -> int:
     """Store partner-level rows (trade by partner country)."""
     count = 0
     for row in rows:
@@ -168,16 +281,30 @@ def _store_partner_rows(session: Session, iso3: str, year: int, flow: str, rows:
         if value is None:
             continue
 
-        stmt = insert(TradeAnnual).values(
-            reporter_iso3=iso3, year=year, flow=flow,
-            partner_iso3=partner_iso, partner_name=partner_name,
-            commodity_code=None, commodity_label=None,
-            trade_value_usd=int(value), source="comtrade",
-            source_period=str(year), ingested_at=now,
-        ).on_conflict_do_update(
-            constraint="uq_trade_annual_row",
-            set_={"trade_value_usd": int(value), "partner_name": partner_name,
-                   "source": "comtrade", "ingested_at": now},
+        stmt = (
+            insert(TradeAnnual)
+            .values(
+                reporter_iso3=iso3,
+                year=year,
+                flow=flow,
+                partner_iso3=partner_iso,
+                partner_name=partner_name,
+                commodity_code=None,
+                commodity_label=None,
+                trade_value_usd=int(value),
+                source="comtrade",
+                source_period=str(year),
+                ingested_at=now,
+            )
+            .on_conflict_do_update(
+                constraint="uq_trade_annual_row",
+                set_={
+                    "trade_value_usd": int(value),
+                    "partner_name": partner_name,
+                    "source": "comtrade",
+                    "ingested_at": now,
+                },
+            )
         )
         session.execute(stmt)
         count += 1
@@ -205,7 +332,12 @@ def backfill(
 
     now = datetime.now(UTC)
     total_requests = len(countries) * len(years) * 4
-    log.info("comtrade_backfill_start", countries=len(countries), years=years, estimated_requests=total_requests)
+    log.info(
+        "comtrade_backfill_start",
+        countries=len(countries),
+        years=years,
+        estimated_requests=total_requests,
+    )
 
     with httpx.Client() as http:
         for iso3 in countries:
@@ -245,7 +377,12 @@ def backfill(
                     stats["rows_written"] += written
 
                     session.commit()
-                    log.info("comtrade_country_year_done", iso3=iso3, year=year, requests=stats["requests"])
+                    log.info(
+                        "comtrade_country_year_done",
+                        iso3=iso3,
+                        year=year,
+                        requests=stats["requests"],
+                    )
                 except Exception as e:
                     log.exception("comtrade_error", iso3=iso3, year=year)
                     stats["errors"].append(f"{iso3}/{year}: {e}")

@@ -10,12 +10,11 @@ import csv
 import io
 import zipfile
 from datetime import UTC, date, datetime
-from decimal import Decimal
 from typing import Any
 
 import httpx
 import structlog
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
@@ -24,9 +23,16 @@ from atlas_api.models import Country, REERHistory
 log = structlog.get_logger()
 
 ISO3_TO_ISO2 = {
-    "ETH": "ET", "GHA": "GH", "KEN": "KE", "NGA": "NG",
-    "EGY": "EG", "ZAF": "ZA", "RWA": "RW", "MAR": "MA",
-    "SEN": "SN", "CIV": "CI",
+    "ETH": "ET",
+    "GHA": "GH",
+    "KEN": "KE",
+    "NGA": "NG",
+    "EGY": "EG",
+    "ZAF": "ZA",
+    "RWA": "RW",
+    "MAR": "MA",
+    "SEN": "SN",
+    "CIV": "CI",
 }
 
 IMF_IFS_URL = "https://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M.{iso2}.EREER_IX"
@@ -78,7 +84,9 @@ def fetch_imf_ifs(iso3: str, months_back: int = 24) -> list[dict[str, Any]]:
         try:
             resp = httpx.get(url, timeout=60, follow_redirects=True)
             if resp.status_code != 200:
-                log.warning("imf_ifs_http_error", iso3=iso3, status=resp.status_code, series=series_code)
+                log.warning(
+                    "imf_ifs_http_error", iso3=iso3, status=resp.status_code, series=series_code
+                )
                 continue
 
             data = resp.json()
@@ -132,13 +140,14 @@ def fetch_bis_bulk(iso3_list: list[str]) -> dict[str, list[dict[str, Any]]]:
                         year, month = period_str.split("-")
                         period = date(int(year), int(month), 1)
                         value = float(value_str)
-                        source = "bis_broad" if eer_type == "R" else "bis_narrow"
-                        result[ref_area].append({
-                            "period": period,
-                            "value": value,
-                            "base_period": "2010",
-                            "source_series_id": f"BIS.WS_EER.M.{ref_area}.{eer_type}",
-                        })
+                        result[ref_area].append(
+                            {
+                                "period": period,
+                                "value": value,
+                                "base_period": "2010",
+                                "source_series_id": f"BIS.WS_EER.M.{ref_area}.{eer_type}",
+                            }
+                        )
                     except (ValueError, IndexError):
                         continue
 
@@ -157,8 +166,9 @@ def compute_deviation(session: Session, iso3: str, latest_index: float) -> float
     """Compute REER deviation from 10-year trailing mean."""
     ten_years_ago = date(date.today().year - 10, date.today().month, 1)
     avg = session.execute(
-        select(func.avg(REERHistory.reer_index))
-        .where(REERHistory.iso3 == iso3, REERHistory.period >= ten_years_ago)
+        select(func.avg(REERHistory.reer_index)).where(
+            REERHistory.iso3 == iso3, REERHistory.period >= ten_years_ago
+        )
     ).scalar()
 
     if avg is None or float(avg) == 0:
@@ -194,29 +204,41 @@ def run_reer_ingest(
             obs = fetch_imf_ifs(iso3, months_back=24 if not force else 240)
             if obs:
                 for o in obs:
-                    stmt = insert(REERHistory).values(
-                        iso3=iso3,
-                        period=o["period"],
-                        reer_index=o["value"],
-                        base_period=o["base_period"],
-                        source="imf_ifs",
-                        source_series_id=o.get("source_series_id"),
-                        fetched_at=now,
-                    ).on_conflict_do_nothing(constraint="uq_reer_country_period_source")
+                    stmt = (
+                        insert(REERHistory)
+                        .values(
+                            iso3=iso3,
+                            period=o["period"],
+                            reer_index=o["value"],
+                            base_period=o["base_period"],
+                            source="imf_ifs",
+                            source_series_id=o.get("source_series_id"),
+                            fetched_at=now,
+                        )
+                        .on_conflict_do_nothing(constraint="uq_reer_country_period_source")
+                    )
                     session.execute(stmt)
 
                 # Compute deviation for latest observation
                 latest = max(obs, key=lambda x: x["period"])
                 dev = compute_deviation(session, iso3, latest["value"])
                 if dev is not None:
-                    stmt = insert(REERHistory).values(
-                        iso3=iso3, period=latest["period"], reer_index=latest["value"],
-                        reer_deviation_pct=dev, base_period=latest["base_period"],
-                        source="imf_ifs", source_series_id=latest.get("source_series_id"),
-                        fetched_at=now,
-                    ).on_conflict_do_update(
-                        constraint="uq_reer_country_period_source",
-                        set_={"reer_deviation_pct": dev},
+                    stmt = (
+                        insert(REERHistory)
+                        .values(
+                            iso3=iso3,
+                            period=latest["period"],
+                            reer_index=latest["value"],
+                            reer_deviation_pct=dev,
+                            base_period=latest["base_period"],
+                            source="imf_ifs",
+                            source_series_id=latest.get("source_series_id"),
+                            fetched_at=now,
+                        )
+                        .on_conflict_do_update(
+                            constraint="uq_reer_country_period_source",
+                            set_={"reer_deviation_pct": dev},
+                        )
                     )
                     session.execute(stmt)
 
@@ -224,11 +246,26 @@ def run_reer_ingest(
                 country = session.get(Country, iso3)
                 if country:
                     country.fx_reer_deviation_pct = dev
-                    country.fx_reer_as_of = datetime.combine(latest["period"], datetime.min.time(), tzinfo=UTC)
+                    country.fx_reer_as_of = datetime.combine(
+                        latest["period"], datetime.min.time(), tzinfo=UTC
+                    )
 
                 stats["countries_imf_ifs"] += 1
-                stats["details"].append({"iso3": iso3, "source": "imf_ifs", "latest_period": str(latest["period"]), "deviation_pct": dev})
-                log.info("reer_ingested", iso3=iso3, source="imf_ifs", period=str(latest["period"]), deviation=dev)
+                stats["details"].append(
+                    {
+                        "iso3": iso3,
+                        "source": "imf_ifs",
+                        "latest_period": str(latest["period"]),
+                        "deviation_pct": dev,
+                    }
+                )
+                log.info(
+                    "reer_ingested",
+                    iso3=iso3,
+                    source="imf_ifs",
+                    period=str(latest["period"]),
+                    deviation=dev,
+                )
             else:
                 imf_missed.append(iso3)
         except Exception:
@@ -248,15 +285,19 @@ def run_reer_ingest(
                 if obs:
                     source = "bis_broad"
                     for o in obs:
-                        stmt = insert(REERHistory).values(
-                            iso3=iso3,
-                            period=o["period"],
-                            reer_index=o["value"],
-                            base_period=o["base_period"],
-                            source=source,
-                            source_series_id=o.get("source_series_id"),
-                            fetched_at=now,
-                        ).on_conflict_do_nothing(constraint="uq_reer_country_period_source")
+                        stmt = (
+                            insert(REERHistory)
+                            .values(
+                                iso3=iso3,
+                                period=o["period"],
+                                reer_index=o["value"],
+                                base_period=o["base_period"],
+                                source=source,
+                                source_series_id=o.get("source_series_id"),
+                                fetched_at=now,
+                            )
+                            .on_conflict_do_nothing(constraint="uq_reer_country_period_source")
+                        )
                         session.execute(stmt)
 
                     latest = max(obs, key=lambda x: x["period"])
@@ -265,13 +306,29 @@ def run_reer_ingest(
                     country = session.get(Country, iso3)
                     if country and dev is not None:
                         country.fx_reer_deviation_pct = dev
-                        country.fx_reer_as_of = datetime.combine(latest["period"], datetime.min.time(), tzinfo=UTC)
+                        country.fx_reer_as_of = datetime.combine(
+                            latest["period"], datetime.min.time(), tzinfo=UTC
+                        )
 
                     stats["countries_bis_fallback"] += 1
-                    stats["details"].append({"iso3": iso3, "source": source, "latest_period": str(latest["period"]), "deviation_pct": dev})
+                    stats["details"].append(
+                        {
+                            "iso3": iso3,
+                            "source": source,
+                            "latest_period": str(latest["period"]),
+                            "deviation_pct": dev,
+                        }
+                    )
                 else:
                     stats["countries_seed_only"] += 1
-                    stats["details"].append({"iso3": iso3, "source": "seed", "latest_period": None, "deviation_pct": None})
+                    stats["details"].append(
+                        {
+                            "iso3": iso3,
+                            "source": "seed",
+                            "latest_period": None,
+                            "deviation_pct": None,
+                        }
+                    )
                     log.warning("reer_no_source", iso3=iso3)
 
             session.commit()
@@ -280,7 +337,14 @@ def run_reer_ingest(
             for iso3 in imf_missed:
                 if not any(d["iso3"] == iso3 for d in stats["details"]):
                     stats["countries_seed_only"] += 1
-                    stats["details"].append({"iso3": iso3, "source": "seed", "latest_period": None, "deviation_pct": None})
+                    stats["details"].append(
+                        {
+                            "iso3": iso3,
+                            "source": "seed",
+                            "latest_period": None,
+                            "deviation_pct": None,
+                        }
+                    )
 
     log.info("reer_ingest_complete", **{k: v for k, v in stats.items() if k != "details"})
     return stats

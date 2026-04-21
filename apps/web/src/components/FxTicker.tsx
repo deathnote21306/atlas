@@ -34,7 +34,7 @@ export default function FxTicker() {
     staleTime: 55_000,
   });
 
-  if (!data) return null;
+  if (!data || !data.quotes) return null;
 
   return (
     <div className="flex h-8 items-center border-b border-white/[0.06] bg-ink-950/95 px-4 text-xs">

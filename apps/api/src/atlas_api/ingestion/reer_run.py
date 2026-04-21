@@ -6,7 +6,6 @@ Usage:
 
 import argparse
 import json
-import sys
 
 from atlas_api.db import SessionLocal
 from atlas_api.ingestion.reer import run_reer_ingest

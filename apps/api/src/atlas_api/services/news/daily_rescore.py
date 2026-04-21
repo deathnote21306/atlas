@@ -110,9 +110,10 @@ def run_daily_rescore() -> dict:
 def get_scoring_status(session: Session) -> dict:
     """Return current scoring status for admin endpoint."""
     total = session.execute(select(func.count()).select_from(NewsImpactScore)).scalar() or 0
-    claude_scored = session.execute(
-        select(func.count()).where(NewsImpactScore.scorer != "heuristic")
-    ).scalar() or 0
+    claude_scored = (
+        session.execute(select(func.count()).where(NewsImpactScore.scorer != "heuristic")).scalar()
+        or 0
+    )
     heuristic_scored = total - claude_scored
 
     return {

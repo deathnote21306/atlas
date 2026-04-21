@@ -65,28 +65,38 @@ def get_forecasts(session: Session, iso3: str) -> dict[str, Any] | None:
         for yr in horizon_years:
             baseline = _get_value_for_period(session, iso3, cfg["db_key"], str(yr))
             result = compute_scenario(
-                baseline, cfg["base_width"], risk_multiplier,
-                cfg["direction"], cfg["clamp"],
+                baseline,
+                cfg["base_width"],
+                risk_multiplier,
+                cfg["direction"],
+                cfg["clamp"],
             )
             result["year"] = yr
             result["current_value"] = current_val if yr == current_year else None
-            result["source"] = source_label if result["baseline_provenance"] == "real" else "Not available"
+            result["source"] = (
+                source_label if result["baseline_provenance"] == "real" else "Not available"
+            )
             year_data.append(result)
 
-        indicators.append({
-            "key": cfg["key"],
-            "label": cfg["label"],
-            "unit": cfg["unit"],
-            "direction": cfg["direction"],
-            "base_width": cfg["base_width"],
-            "years": year_data,
-        })
+        indicators.append(
+            {
+                "key": cfg["key"],
+                "label": cfg["label"],
+                "unit": cfg["unit"],
+                "direction": cfg["direction"],
+                "base_width": cfg["base_width"],
+                "years": year_data,
+            }
+        )
 
     return {
         "horizon_years": horizon_years,
         "current_year": current_year,
         "methodology_version": "v1.0",
-        "methodology_note": f"Bull/Bear computed as baseline ± (base_width × composite_risk/50). Higher ATLAS risk produces wider uncertainty bands.",
+        "methodology_note": (
+            "Bull/Bear computed as baseline +/- (base_width x composite_risk/50)."
+            " Higher ATLAS risk produces wider uncertainty bands."
+        ),
         "risk_multiplier": risk_multiplier,
         "indicators": indicators,
     }

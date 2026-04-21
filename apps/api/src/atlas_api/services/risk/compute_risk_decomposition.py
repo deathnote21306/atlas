@@ -55,7 +55,9 @@ def _load_seed() -> dict[str, Any]:
 def _get_macro_value(session: Session, iso3: str, indicator: str) -> float | None:
     """Get latest non-null macro value for an indicator."""
     from sqlalchemy import select as sql_select
+
     from atlas_api.models import MacroIndicatorVintage
+
     row = session.execute(
         sql_select(MacroIndicatorVintage)
         .where(
@@ -71,6 +73,7 @@ def _get_macro_value(session: Session, iso3: str, indicator: str) -> float | Non
 
 def _get_reer_provenance(session: Session, iso3: str) -> str:
     from sqlalchemy import select
+
     row = session.execute(
         select(REERHistory.source)
         .where(REERHistory.iso3 == iso3)
@@ -99,7 +102,9 @@ def compute_for_country(session: Session, country: Country, seed_data: dict) -> 
     pp = float(country.fx_parallel_premium) if country.fx_parallel_premium else 0
     reer = float(country.fx_reer_deviation_pct) if country.fx_reer_deviation_pct else 0
     iv = float(country.fx_implied_vol_pct) if country.fx_implied_vol_pct else None
-    regime = country.fx_regime.value if hasattr(country.fx_regime, "value") else str(country.fx_regime)
+    regime = (
+        country.fx_regime.value if hasattr(country.fx_regime, "value") else str(country.fx_regime)
+    )
     imf_active = country.imf_program_code is not None
     imf_type = country.imf_program_code
     pod = seed_data.get("pod_override_active", False)
@@ -116,13 +121,18 @@ def compute_for_country(session: Session, country: Country, seed_data: dict) -> 
     results["fx"] = fx_risk(
         pp, reer, iv, regime, si.get("fx_market_liquidity_flag", "thin"), reer_prov
     )
-    results["growth"] = growth_risk(gdp_g, si.get("gdp_volatility_5yr", 2.0), si.get("data_quality_flag", "medium"))
+    results["growth"] = growth_risk(
+        gdp_g, si.get("gdp_volatility_5yr", 2.0), si.get("data_quality_flag", "medium")
+    )
     results["political"] = political_risk(
         si.get("political_stability_index", 0.0), si.get("active_conflict_flag", False), imf_active
     )
     results["liquidity"] = liquidity_risk(
-        si.get("market_access_flag", "limited"), reserves_bn, imf_type,
-        si.get("restructuring_overhang_flag", False), pod
+        si.get("market_access_flag", "limited"),
+        reserves_bn,
+        imf_type,
+        si.get("restructuring_overhang_flag", False),
+        pod,
     )
 
     # Build dimensions array
@@ -204,11 +214,13 @@ def recompute_all(session: Session, countries: list[str] | None = None) -> dict[
             country.composite_risk_as_of = datetime.now(UTC)
 
             stats["computed"] += 1
-            stats["details"].append({
-                "iso3": country.iso3,
-                "composite": result["composite_score"],
-                "label": result["composite_label"],
-            })
+            stats["details"].append(
+                {
+                    "iso3": country.iso3,
+                    "composite": result["composite_score"],
+                    "label": result["composite_label"],
+                }
+            )
             log.info("risk_computed", iso3=country.iso3, composite=result["composite_score"])
         except Exception:
             log.exception("risk_compute_error", iso3=country.iso3)

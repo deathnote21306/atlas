@@ -79,9 +79,14 @@ def fx_risk(
     premium_component = min(premium * 1.5, 40)
     reer_component = min(abs(reer_dev) * 0.6, 30)
     regime_map = {
-        "pegged": 0, "hard_peg": 0, "currency_board": 0,
-        "managed_float": 10, "basket_peg": 8, "float": 5,
-        "crawling_peg": 15, "multiple_regime": 25,
+        "pegged": 0,
+        "hard_peg": 0,
+        "currency_board": 0,
+        "managed_float": 10,
+        "basket_peg": 8,
+        "float": 5,
+        "crawling_peg": 15,
+        "multiple_regime": 25,
     }
     regime_component = regime_map.get(regime, 10)
     liquidity_map = {"liquid": 0, "thin": 10, "illiquid": 20}
@@ -113,7 +118,9 @@ def growth_risk(
     # elevated risk. Calibrated on ETH growth target=60.
     growth_component = _clip(60 - (growth * 5))
     volatility_component = min(vol * 7, 25)
-    quality_penalty = 15 if data_quality_flag == "low" else (5 if data_quality_flag == "medium" else 0)
+    quality_penalty = (
+        15 if data_quality_flag == "low" else (5 if data_quality_flag == "medium" else 0)
+    )
 
     score = _clip(growth_component + volatility_component + quality_penalty)
 
@@ -159,7 +166,9 @@ def liquidity_risk(
     imf_anchor_discount = -5 if imf_program_type else 0
     restructuring_overhang = 15 if restructuring_overhang_flag else 0
 
-    score = _clip(access_component + reserves_component + imf_anchor_discount + restructuring_overhang)
+    score = _clip(
+        access_component + reserves_component + imf_anchor_discount + restructuring_overhang
+    )
 
     if pod_override_active:
         score = max(score, 95)

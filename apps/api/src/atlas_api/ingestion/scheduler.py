@@ -1,10 +1,10 @@
 """AsyncIO scheduler for nightly ingestion and news polling."""
 
+import os
+
 import structlog
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-
-import os
 
 from atlas_api.config import settings
 from atlas_api.ingestion.orchestrator import run_nightly

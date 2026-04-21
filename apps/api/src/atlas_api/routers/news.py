@@ -47,9 +47,12 @@ def list_news(
     iso3: str | None = Query(None),
     limit: int = Query(30, ge=1, le=100),
 ) -> list[dict[str, Any]]:
-    stmt = select(NewsItem, NewsImpactScore).outerjoin(
-        NewsImpactScore, NewsItem.id == NewsImpactScore.news_item_id
-    ).order_by(NewsItem.published_at.desc()).limit(limit)
+    stmt = (
+        select(NewsItem, NewsImpactScore)
+        .outerjoin(NewsImpactScore, NewsItem.id == NewsImpactScore.news_item_id)
+        .order_by(NewsItem.published_at.desc())
+        .limit(limit)
+    )
     if iso3:
         iso3 = _check_iso3(iso3)
         stmt = stmt.where(NewsItem.primary_iso3 == iso3)
@@ -63,9 +66,11 @@ def get_news_item(
     session: DbSession,
     _: CurrentUser,
 ) -> dict[str, Any]:
-    stmt = select(NewsItem, NewsImpactScore).outerjoin(
-        NewsImpactScore, NewsItem.id == NewsImpactScore.news_item_id
-    ).where(NewsItem.id == news_id)
+    stmt = (
+        select(NewsItem, NewsImpactScore)
+        .outerjoin(NewsImpactScore, NewsItem.id == NewsImpactScore.news_item_id)
+        .where(NewsItem.id == news_id)
+    )
     row = session.execute(stmt).first()
     if row is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news item not found")
@@ -80,10 +85,10 @@ def scoring_status(session: DbSession, _: CurrentUser) -> dict[str, Any]:
 
 @router.get("/reer-status")
 def reer_status(session: DbSession, _: CurrentUser) -> dict[str, Any]:
-    from atlas_api.models import REERHistory
     from sqlalchemy import func as sqlfunc
 
-    coverage = []
+    from atlas_api.models import REERHistory
+
     rows = session.execute(
         select(
             REERHistory.iso3,
@@ -98,9 +103,17 @@ def reer_status(session: DbSession, _: CurrentUser) -> dict[str, Any]:
     for iso3, period, source in rows:
         if iso3 not in seen or source in ("imf_ifs",):
             dev = session.execute(
-                select(REERHistory.reer_deviation_pct)
-                .where(REERHistory.iso3 == iso3, REERHistory.period == period, REERHistory.source == source)
+                select(REERHistory.reer_deviation_pct).where(
+                    REERHistory.iso3 == iso3,
+                    REERHistory.period == period,
+                    REERHistory.source == source,
+                )
             ).scalar()
-            seen[iso3] = {"iso": iso3, "latest_period": str(period), "source": source, "deviation_pct": float(dev) if dev else None}
+            seen[iso3] = {
+                "iso": iso3,
+                "latest_period": str(period),
+                "source": source,
+                "deviation_pct": float(dev) if dev else None,
+            }
 
     return {"coverage": list(seen.values())}

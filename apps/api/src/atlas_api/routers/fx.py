@@ -3,11 +3,11 @@ from time import monotonic
 
 from fastapi import APIRouter
 from pydantic import BaseModel
+from sqlalchemy import select
 
 from atlas_api.deps import CurrentUser, DbSession
 from atlas_api.models import FxRate
 from atlas_api.services.country.indicators import ISO3_TO_CCY
-from sqlalchemy import select
 
 router = APIRouter(prefix="/api/fx", tags=["fx"])
 

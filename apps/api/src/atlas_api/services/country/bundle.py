@@ -9,9 +9,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from atlas_api.models import REERHistory, Synopsis
-from atlas_api.services.country.economic_structure import get_economic_structure
-from atlas_api.services.forecast.compute_forecasts import get_forecasts
 from atlas_api.services.country.composite_rating import composite_score
+from atlas_api.services.country.economic_structure import get_economic_structure
 from atlas_api.services.country.queries import (
     compute_fx_deltas,
     get_country,
@@ -21,6 +20,7 @@ from atlas_api.services.country.queries import (
 )
 from atlas_api.services.country.risk_score import compute_risk_score
 from atlas_api.services.country.staleness import classify_staleness
+from atlas_api.services.forecast.compute_forecasts import get_forecasts
 
 _TILE_LABELS: dict[MacroIndicator, str] = {
     MacroIndicator.GDP_USD: "GDP (USD, current)",
@@ -42,14 +42,16 @@ def _macro_tiles(session: Session, iso3: str) -> list[MacroTile]:
     tiles: list[MacroTile] = []
     for indicator, label in _TILE_LABELS.items():
         row = get_latest(session, iso3, indicator.value)
-        tiles.append(MacroTile(
-            indicator=indicator,
-            label=label,
-            value=float(row.value) if row is not None and row.value is not None else None,
-            period=row.period if row is not None else None,
-            source=row.source if row is not None else None,
-            staleness=classify_staleness(row.ingested_at if row is not None else None),
-        ))
+        tiles.append(
+            MacroTile(
+                indicator=indicator,
+                label=label,
+                value=float(row.value) if row is not None and row.value is not None else None,
+                period=row.period if row is not None else None,
+                source=row.source if row is not None else None,
+                staleness=classify_staleness(row.ingested_at if row is not None else None),
+            )
+        )
     return tiles
 
 
@@ -80,9 +82,13 @@ def _ratings_section(session: Session, iso3: str) -> RatingsSection:
     for row in history:
         if row.agency not in latest_per_agency:
             latest_per_agency[row.agency] = RatingAction(
-                iso3=row.iso3, agency=row.agency, rating=row.rating,
-                outlook=row.outlook, action=row.action,
-                action_date=row.action_date, source_url=row.source_url,
+                iso3=row.iso3,
+                agency=row.agency,
+                rating=row.rating,
+                outlook=row.outlook,
+                action=row.action,
+                action_date=row.action_date,
+                source_url=row.source_url,
             )
     rating_dict = {a: r.rating for a, r in latest_per_agency.items()}
     return RatingsSection(
@@ -90,9 +96,15 @@ def _ratings_section(session: Session, iso3: str) -> RatingsSection:
         composite_score=composite_score(rating_dict) if rating_dict else None,
         history=[
             RatingAction(
-                iso3=r.iso3, agency=r.agency, rating=r.rating, outlook=r.outlook,
-                action=r.action, action_date=r.action_date, source_url=r.source_url,
-            ) for r in history
+                iso3=r.iso3,
+                agency=r.agency,
+                rating=r.rating,
+                outlook=r.outlook,
+                action=r.action,
+                action_date=r.action_date,
+                source_url=r.source_url,
+            )
+            for r in history
         ],
     )
 
@@ -138,8 +150,14 @@ def get_country_bundle(session: Session, iso3: str) -> CountryBundle | None:
     econ = get_economic_structure(session, iso3)
     if econ:
         econ["diversification_score"] = country.economic_diversification_score
-        econ["diversification_hhi"] = float(country.economic_diversification_hhi) if country.economic_diversification_hhi else None
-        econ["commodity_dependency_pct"] = float(country.commodity_dependency_pct) if country.commodity_dependency_pct else None
+        econ["diversification_hhi"] = (
+            float(country.economic_diversification_hhi)
+            if country.economic_diversification_hhi
+            else None
+        )
+        econ["commodity_dependency_pct"] = (
+            float(country.commodity_dependency_pct) if country.commodity_dependency_pct else None
+        )
         country.economic_structure = econ  # type: ignore[attr-defined]
 
     # Enrich with REER source info for the schema validator

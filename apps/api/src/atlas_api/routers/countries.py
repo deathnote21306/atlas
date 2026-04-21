@@ -50,6 +50,7 @@ def get_risk_provenance(iso3: str, session: DbSession, _: CurrentUser) -> dict:
     iso3 = _check_iso3(iso3)
     from atlas_api.services.country import get_country
     from atlas_api.services.risk.provenance import summarize_provenance
+
     c = get_country(session, iso3)
     if c is None:
         raise HTTPException(status_code=404, detail=f"country {iso3} not found")
@@ -62,7 +63,9 @@ def get_risk_provenance(iso3: str, session: DbSession, _: CurrentUser) -> dict:
     summary = summarize_provenance(all_inputs)
     summary["composite_score"] = rd.get("composite_score")
     summary["methodology_version"] = rd.get("methodology_version")
-    summary["computed_at"] = rd["dimensions"][0].get("computed_at") if rd.get("dimensions") else None
+    summary["computed_at"] = (
+        rd["dimensions"][0].get("computed_at") if rd.get("dimensions") else None
+    )
     return summary
 
 
@@ -79,15 +82,20 @@ def get_fx_history(
         raise HTTPException(status_code=404, detail=f"No currency mapping for {iso3}")
 
     from datetime import date, timedelta
+
     months = {"3m": 90, "6m": 180, "12m": 365, "24m": 730}
     days_back = months[window]
     cutoff = date.today() - timedelta(days=days_back)
 
-    rows = session.execute(
-        select(FxRate)
-        .where(FxRate.iso3 == iso3, FxRate.observation_date >= cutoff)
-        .order_by(FxRate.observation_date.asc())
-    ).scalars().all()
+    rows = (
+        session.execute(
+            select(FxRate)
+            .where(FxRate.iso3 == iso3, FxRate.observation_date >= cutoff)
+            .order_by(FxRate.observation_date.asc())
+        )
+        .scalars()
+        .all()
+    )
 
     points = []
     source_counts: dict[str, int] = {}
@@ -95,11 +103,13 @@ def get_fx_history(
     for r in rows:
         usd_per_ccy = float(r.usd_per_ccy)
         if usd_per_ccy != 0:
-            points.append(FxHistoryPoint(
-                date=r.observation_date.isoformat(),
-                value=round(1.0 / usd_per_ccy, 2),
-                source=r.source,
-            ))
+            points.append(
+                FxHistoryPoint(
+                    date=r.observation_date.isoformat(),
+                    value=round(1.0 / usd_per_ccy, 2),
+                    source=r.source,
+                )
+            )
             source_counts[r.source] = source_counts.get(r.source, 0) + 1
             if r.source in ("seed_approximation", "cfa_computed"):
                 has_synthetic = True

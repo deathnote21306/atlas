@@ -6,10 +6,16 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Query
-from sqlalchemy import select, func, desc
+from sqlalchemy import select
 
 from atlas_api.deps import CurrentUser, DbSession
-from atlas_api.models import Country, MacroIndicatorVintage, NewsImpactScore, NewsItem, RatingHistory
+from atlas_api.models import (
+    Country,
+    MacroIndicatorVintage,
+    NewsImpactScore,
+    NewsItem,
+    RatingHistory,
+)
 from atlas_api.services.country.staleness import classify_staleness
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
@@ -17,8 +23,11 @@ router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 WATCH_TAGS = {"DISTRESSED", "RESTRUCTURING", "WATCHLIST"}
 
 COMPOSITE_LABELS = [
-    (85, "Severe Risk"), (70, "High Risk"), (50, "Elevated Risk"),
-    (30, "Moderate Risk"), (0, "Low Risk"),
+    (85, "Severe Risk"),
+    (70, "High Risk"),
+    (50, "Elevated Risk"),
+    (30, "Moderate Risk"),
+    (0, "Low Risk"),
 ]
 
 
@@ -34,16 +43,24 @@ def dashboard_summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
     countries = list(session.execute(select(Country).order_by(Country.iso3)).scalars())
 
     # Countries under watch
-    elevated = [c for c in countries if c.status_tags and any(t in WATCH_TAGS for t in c.status_tags)]
+    elevated = [
+        c for c in countries if c.status_tags and any(t in WATCH_TAGS for t in c.status_tags)
+    ]
 
     # Portfolio risk
     scores = [c.composite_risk_score for c in countries if c.composite_risk_score is not None]
     avg_score = round(sum(scores) / len(scores), 1) if scores else 0
 
     # Staleness index
-    indicators = ["GDP_GROWTH_PCT", "INFLATION_PCT", "FISCAL_BALANCE_PCT_GDP",
-                   "CURRENT_ACCOUNT_PCT_GDP", "PUBLIC_DEBT_PCT_GDP", "EXTERNAL_DEBT_PCT_GNI",
-                   "FX_RESERVES_MO_IMPORTS"]
+    indicators = [
+        "GDP_GROWTH_PCT",
+        "INFLATION_PCT",
+        "FISCAL_BALANCE_PCT_GDP",
+        "CURRENT_ACCOUNT_PCT_GDP",
+        "PUBLIC_DEBT_PCT_GDP",
+        "EXTERNAL_DEBT_PCT_GNI",
+        "FX_RESERVES_MO_IMPORTS",
+    ]
     fresh = 0
     stale = 0
     very_stale = 0
@@ -53,8 +70,11 @@ def dashboard_summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
             total_ind += 1
             row = session.execute(
                 select(MacroIndicatorVintage.ingested_at)
-                .where(MacroIndicatorVintage.iso3 == c.iso3, MacroIndicatorVintage.indicator == ind,
-                       MacroIndicatorVintage.value.isnot(None))
+                .where(
+                    MacroIndicatorVintage.iso3 == c.iso3,
+                    MacroIndicatorVintage.indicator == ind,
+                    MacroIndicatorVintage.value.isnot(None),
+                )
                 .order_by(MacroIndicatorVintage.ingested_at.desc())
                 .limit(1)
             ).scalar()
@@ -76,35 +96,44 @@ def dashboard_summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
     ranking = []
     for i, c in enumerate(ranked[:10]):
         score = c.composite_risk_score or 0
-        ranking.append({
-            "rank": i + 1,
-            "iso": c.iso3,
-            "name": c.name,
-            "score": score,
-            "label": _label(score),
-            "status_tags": c.status_tags or [],
-        })
+        ranking.append(
+            {
+                "rank": i + 1,
+                "iso": c.iso3,
+                "name": c.name,
+                "score": score,
+                "label": _label(score),
+                "status_tags": c.status_tags or [],
+            }
+        )
 
     # Recent rating actions
-    ratings = list(session.execute(
-        select(RatingHistory).order_by(RatingHistory.action_date.desc()).limit(10)
-    ).scalars())
+    ratings = list(
+        session.execute(
+            select(RatingHistory).order_by(RatingHistory.action_date.desc()).limit(10)
+        ).scalars()
+    )
 
     rating_actions = []
     for r in ratings:
         action_lower = (r.action or "").lower()
-        action_type = "downgrade" if "down" in action_lower or "default" in action_lower or "restrict" in action_lower \
+        action_type = (
+            "downgrade"
+            if "down" in action_lower or "default" in action_lower or "restrict" in action_lower
             else ("upgrade" if "up" in action_lower else "affirm")
-        rating_actions.append({
-            "date": r.action_date.isoformat() if r.action_date else None,
-            "iso": r.iso3,
-            "country_name": next((c.name for c in countries if c.iso3 == r.iso3), r.iso3),
-            "agency": r.agency,
-            "action": r.action,
-            "rating": r.rating,
-            "outlook": r.outlook,
-            "action_type": action_type,
-        })
+        )
+        rating_actions.append(
+            {
+                "date": r.action_date.isoformat() if r.action_date else None,
+                "iso": r.iso3,
+                "country_name": next((c.name for c in countries if c.iso3 == r.iso3), r.iso3),
+                "agency": r.agency,
+                "action": r.action,
+                "rating": r.rating,
+                "outlook": r.outlook,
+                "action_type": action_type,
+            }
+        )
 
     return {
         "as_of": datetime.now(UTC).isoformat(),
@@ -174,17 +203,19 @@ def intelligence_feed(
         country = session.get(Country, item.primary_iso3)
         country_name = country.name if country else item.primary_iso3
 
-        articles.append({
-            "id": str(item.id),
-            "headline": item.title,
-            "source": item.source,
-            "published_at": item.published_at.isoformat() if item.published_at else None,
-            "country_iso": item.primary_iso3,
-            "country_name": country_name,
-            "overall_impact": overall,
-            "impact_scores": impacts,
-            "tag_highlights": highlights,
-        })
+        articles.append(
+            {
+                "id": str(item.id),
+                "headline": item.title,
+                "source": item.source,
+                "published_at": item.published_at.isoformat() if item.published_at else None,
+                "country_iso": item.primary_iso3,
+                "country_name": country_name,
+                "overall_impact": overall,
+                "impact_scores": impacts,
+                "tag_highlights": highlights,
+            }
+        )
 
         if len(articles) >= limit:
             break

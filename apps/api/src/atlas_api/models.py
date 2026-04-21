@@ -79,10 +79,14 @@ class Country(Base):
     composite_risk_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     composite_risk_label: Mapped[str | None] = mapped_column(String(32), nullable=True)
     composite_risk_trend: Mapped[str | None] = mapped_column(String(16), nullable=True)
-    composite_risk_as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    composite_risk_as_of: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     atlas_spread_bps: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    atlas_spread_as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    atlas_spread_as_of: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     imf_program_code: Mapped[str | None] = mapped_column(String(8), nullable=True)
     imf_program_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
@@ -116,8 +120,14 @@ class Country(Base):
 class TradeAnnual(Base):
     __tablename__ = "trade_annual"
     __table_args__ = (
-        UniqueConstraint("reporter_iso3", "year", "flow", "partner_iso3", "commodity_code",
-                        name="uq_trade_annual_row"),
+        UniqueConstraint(
+            "reporter_iso3",
+            "year",
+            "flow",
+            "partner_iso3",
+            "commodity_code",
+            name="uq_trade_annual_row",
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -134,7 +144,10 @@ class TradeAnnual(Base):
     source: Mapped[str] = mapped_column(String(32), nullable=False, default="comtrade")
     source_period: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
     ingested_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC), server_default=func.now()
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
     )
 
 
@@ -145,7 +158,9 @@ class REERHistory(Base):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    iso3: Mapped[str] = mapped_column(String(3), ForeignKey("country.iso3", ondelete="CASCADE"), nullable=False)
+    iso3: Mapped[str] = mapped_column(
+        String(3), ForeignKey("country.iso3", ondelete="CASCADE"), nullable=False
+    )
     period: Mapped[datetime] = mapped_column(Date, nullable=False)
     reer_index: Mapped[float] = mapped_column(Numeric, nullable=False)
     reer_deviation_pct: Mapped[float | None] = mapped_column(Numeric, nullable=True)
@@ -153,7 +168,10 @@ class REERHistory(Base):
     source: Mapped[str] = mapped_column(String(32), nullable=False)
     source_series_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
     fetched_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC), server_default=func.now()
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
     )
 
 
@@ -217,12 +235,8 @@ class IngestionCircuit(Base):
 
     source: Mapped[str] = mapped_column(String(32), primary_key=True)
     consecutive_failures: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    last_failure_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    last_success_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    last_failure_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_success_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     state: Mapped[str] = mapped_column(String(16), nullable=False, default="closed")
 
 
@@ -283,9 +297,7 @@ class NewsItem(Base):
     url_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     title: Mapped[str] = mapped_column(Text, nullable=False)
     source: Mapped[str] = mapped_column(String(200), nullable=False)
-    published_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     body_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     primary_iso3: Mapped[str | None] = mapped_column(
         String(3), ForeignKey("country.iso3"), nullable=True
@@ -307,8 +319,10 @@ class NewsImpactScore(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     news_item_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("news_item.id", ondelete="CASCADE"),
-        nullable=False, unique=True,
+        UUID(as_uuid=True),
+        ForeignKey("news_item.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
     )
     fiscal_impact: Mapped[str] = mapped_column(String(1), nullable=False)
     external_impact: Mapped[str] = mapped_column(String(1), nullable=False)
@@ -370,15 +384,11 @@ class Synopsis(Base):
     prompt_trace_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("prompt_trace.id"), nullable=True
     )
-    approval_state: Mapped[str] = mapped_column(
-        String(40), nullable=False, default="proposed"
-    )
+    approval_state: Mapped[str] = mapped_column(String(40), nullable=False, default="proposed")
     approved_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("user.id"), nullable=True
     )
-    approved_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         nullable=False,

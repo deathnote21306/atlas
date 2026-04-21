@@ -53,8 +53,11 @@ def compute_scenario(
 ) -> dict[str, Any]:
     if baseline is None:
         return {
-            "bull": None, "baseline": None, "bear": None,
-            "bull_clamped": False, "bear_clamped": False,
+            "bull": None,
+            "baseline": None,
+            "bear": None,
+            "bull_clamped": False,
+            "bear_clamped": False,
             "baseline_provenance": "missing",
         }
 
