@@ -70,7 +70,7 @@ class Country(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def _assemble_nested(cls, data: dict | object) -> dict | object:
+    def _assemble_nested(cls, data: dict[str, Any] | object) -> dict[str, Any] | object:
         """Map flat DB columns to nested objects when deserializing from ORM."""
         if isinstance(data, dict):
             raw = data

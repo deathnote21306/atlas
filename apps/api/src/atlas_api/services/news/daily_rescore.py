@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 from datetime import UTC, datetime
+from typing import Any
 
 import structlog
 from sqlalchemy import delete, func, select
@@ -22,7 +23,7 @@ DAILY_RESCORE_LIMIT = int(os.environ.get("DAILY_RESCORE_LIMIT", "50"))
 DAILY_RESCORE_TOKEN_BUDGET = int(os.environ.get("DAILY_RESCORE_TOKEN_BUDGET", "150000"))
 
 
-def run_daily_rescore() -> dict:
+def run_daily_rescore() -> dict[str, Any]:
     """Re-score heuristic articles with Claude. Returns run stats."""
     stats = {
         "ran_at": datetime.now(UTC).isoformat(),
@@ -63,11 +64,11 @@ def run_daily_rescore() -> dict:
         log.info("daily_rescore_start", candidates=len(rows), limit=DAILY_RESCORE_LIMIT)
 
         for score_row, item in rows:
-            if stats["tokens_used"] >= DAILY_RESCORE_TOKEN_BUDGET:
+            if int(stats["tokens_used"]) >= DAILY_RESCORE_TOKEN_BUDGET:
                 log.info("daily_rescore_budget_reached", tokens=stats["tokens_used"])
                 break
 
-            stats["articles_processed"] += 1
+            stats["articles_processed"] += 1  # type: ignore[operator]
 
             # Delete existing heuristic score
             session.execute(delete(NewsImpactScore).where(NewsImpactScore.id == score_row.id))
@@ -84,19 +85,19 @@ def run_daily_rescore() -> dict:
                 )
 
                 if ai_score is not None:
-                    stats["articles_succeeded"] += 1
-                    stats["tokens_used"] += 2000  # approximate
+                    stats["articles_succeeded"] += 1  # type: ignore[operator]
+                    stats["tokens_used"] += 2000  # approximate  # type: ignore[operator]
                 else:
                     # Claude unavailable — restore heuristic
                     scores = score_impact(item.title, item.body_text or "")
                     persist_score(session, item.id, scores)
-                    stats["articles_failed"] += 1
+                    stats["articles_failed"] += 1  # type: ignore[operator]
                     log.warning("daily_rescore_claude_unavailable", item_id=str(item.id))
             except Exception:
                 # Restore heuristic on any error
                 scores = score_impact(item.title, item.body_text or "")
                 persist_score(session, item.id, scores)
-                stats["articles_failed"] += 1
+                stats["articles_failed"] += 1  # type: ignore[operator]
                 log.exception("daily_rescore_error", item_id=str(item.id))
 
             session.commit()
@@ -107,7 +108,7 @@ def run_daily_rescore() -> dict:
         session.close()
 
 
-def get_scoring_status(session: Session) -> dict:
+def get_scoring_status(session: Session) -> dict[str, Any]:
     """Return current scoring status for admin endpoint."""
     total = session.execute(select(func.count()).select_from(NewsImpactScore)).scalar() or 0
     claude_scored = (

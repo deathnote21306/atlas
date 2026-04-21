@@ -41,7 +41,7 @@ IMF_SERIES_CODES = ["EREER_IX", "EREER_IX_CPI"]
 BIS_BULK_URL = "https://data.bis.org/static/bulk/WS_EER_D_csv_col.zip"
 
 
-def _parse_imf_response(data: dict) -> list[dict[str, Any]]:
+def _parse_imf_response(data: dict[str, Any]) -> list[dict[str, Any]]:
     """Extract observations from IMF SDMX-JSON response."""
     observations = []
     try:
@@ -192,7 +192,7 @@ def run_reer_ingest(
         "countries_bis_fallback": 0,
         "countries_seed_only": 0,
         "countries_error": 0,
-        "details": [],
+        "details": [],  # type: ignore[dict-item]
     }
 
     now = datetime.now(UTC)
@@ -250,8 +250,8 @@ def run_reer_ingest(
                         latest["period"], datetime.min.time(), tzinfo=UTC
                     )
 
-                stats["countries_imf_ifs"] += 1
-                stats["details"].append(
+                stats["countries_imf_ifs"] += 1  # type: ignore[operator]
+                stats["details"].append(  # type: ignore[operator]
                     {
                         "iso3": iso3,
                         "source": "imf_ifs",
@@ -271,7 +271,7 @@ def run_reer_ingest(
         except Exception:
             log.exception("reer_ingest_error", iso3=iso3)
             imf_missed.append(iso3)
-            stats["countries_error"] += 1
+            stats["countries_error"] += 1  # type: ignore[operator]
 
     session.commit()
 
@@ -310,8 +310,8 @@ def run_reer_ingest(
                             latest["period"], datetime.min.time(), tzinfo=UTC
                         )
 
-                    stats["countries_bis_fallback"] += 1
-                    stats["details"].append(
+                    stats["countries_bis_fallback"] += 1  # type: ignore[operator]
+                    stats["details"].append(  # type: ignore[operator]
                         {
                             "iso3": iso3,
                             "source": source,
@@ -320,8 +320,8 @@ def run_reer_ingest(
                         }
                     )
                 else:
-                    stats["countries_seed_only"] += 1
-                    stats["details"].append(
+                    stats["countries_seed_only"] += 1  # type: ignore[operator]
+                    stats["details"].append(  # type: ignore[operator]
                         {
                             "iso3": iso3,
                             "source": "seed",
@@ -336,8 +336,8 @@ def run_reer_ingest(
             log.exception("reer_bis_fallback_error")
             for iso3 in imf_missed:
                 if not any(d["iso3"] == iso3 for d in stats["details"]):
-                    stats["countries_seed_only"] += 1
-                    stats["details"].append(
+                    stats["countries_seed_only"] += 1  # type: ignore[operator]
+                    stats["details"].append(  # type: ignore[operator]
                         {
                             "iso3": iso3,
                             "source": "seed",

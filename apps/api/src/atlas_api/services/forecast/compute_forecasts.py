@@ -59,11 +59,11 @@ def get_forecasts(session: Session, iso3: str) -> dict[str, Any] | None:
 
     indicators = []
     for cfg in INDICATOR_CONFIG:
-        current_val = _get_current_value(session, iso3, cfg["db_key"])
+        current_val = _get_current_value(session, iso3, str(cfg["db_key"]))
 
         year_data = []
         for yr in horizon_years:
-            baseline = _get_value_for_period(session, iso3, cfg["db_key"], str(yr))
+            baseline = _get_value_for_period(session, iso3, str(cfg["db_key"]), str(yr))
             result = compute_scenario(
                 baseline,
                 cfg["base_width"],

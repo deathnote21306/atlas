@@ -52,7 +52,7 @@ def get_economic_structure(session: Session, iso3: str) -> dict[str, Any] | None
 
     top_exports = []
     for i, r in enumerate(export_rows):
-        share = (r.trade_value_usd / all_export_val * 100) if all_export_val > 0 else 0
+        share = (int(r.trade_value_usd or 0) / int(all_export_val) * 100) if all_export_val and all_export_val > 0 else 0  # noqa: E501
         top_exports.append({
             "rank": i + 1,
             "commodity_code": r.commodity_code,
@@ -88,7 +88,7 @@ def get_economic_structure(session: Session, iso3: str) -> dict[str, Any] | None
 
     top_import_sources = []
     for i, r in enumerate(import_rows):
-        share = (r.trade_value_usd / all_import_val * 100) if all_import_val > 0 else 0
+        share = (int(r.trade_value_usd or 0) / int(all_import_val) * 100) if all_import_val and all_import_val > 0 else 0  # noqa: E501
         top_import_sources.append({
             "rank": i + 1,
             "partner_iso3": r.partner_iso3,

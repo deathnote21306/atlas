@@ -47,7 +47,7 @@ COMPOSITE_LABELS = [
 
 def _load_seed() -> dict[str, Any]:
     try:
-        return json.loads(SEED_PATH.read_text())
+        return dict(json.loads(SEED_PATH.read_text()))
     except FileNotFoundError:
         return {}
 
@@ -190,7 +190,7 @@ def recompute_all(session: Session, countries: list[str] | None = None) -> dict[
     else:
         rows = list(session.execute(select(Country).order_by(Country.iso3)).scalars())
 
-    stats = {"computed": 0, "errors": 0, "details": []}
+    stats: dict[str, Any] = {"computed": 0, "errors": 0, "details": []}
 
     for country in rows:
         try:
@@ -217,8 +217,8 @@ def recompute_all(session: Session, countries: list[str] | None = None) -> dict[
             country.composite_risk_label = result["composite_label"]
             country.composite_risk_as_of = datetime.now(UTC)
 
-            stats["computed"] += 1
-            stats["details"].append(
+            stats["computed"] += 1  # type: ignore[operator]
+            stats["details"].append(  # type: ignore[operator]
                 {
                     "iso3": country.iso3,
                     "composite": result["composite_score"],
@@ -228,7 +228,7 @@ def recompute_all(session: Session, countries: list[str] | None = None) -> dict[
             log.info("risk_computed", iso3=country.iso3, composite=result["composite_score"])
         except Exception:
             log.exception("risk_compute_error", iso3=country.iso3)
-            stats["errors"] += 1
+            stats["errors"] += 1  # type: ignore[operator]
 
     session.commit()
     return stats

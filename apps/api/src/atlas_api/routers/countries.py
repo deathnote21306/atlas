@@ -1,3 +1,5 @@
+from typing import Any
+
 from atlas_schemas.bundle import CountryBundle
 from atlas_schemas.country import Country as CountrySchema
 from fastapi import APIRouter, HTTPException, Query, status
@@ -46,7 +48,7 @@ class FxHistoryResponse(BaseModel):
 
 
 @router.get("/{iso3}/risk-decomposition/provenance")
-def get_risk_provenance(iso3: str, session: DbSession, _: CurrentUser) -> dict:
+def get_risk_provenance(iso3: str, session: DbSession, _: CurrentUser) -> dict[str, Any]:
     iso3 = _check_iso3(iso3)
     from atlas_api.services.country import get_country
     from atlas_api.services.risk.provenance import summarize_provenance
@@ -114,7 +116,7 @@ def get_fx_history(
             if r.source in ("seed_approximation", "cfa_computed"):
                 has_synthetic = True
 
-    primary_source = max(source_counts, key=source_counts.get) if source_counts else "unknown"
+    primary_source = max(source_counts, key=lambda k: source_counts[k]) if source_counts else "unknown"  # noqa: E501
     if len(source_counts) > 1 and source_counts.get(primary_source, 0) < len(points) * 0.8:
         primary_source = "mixed"
 
