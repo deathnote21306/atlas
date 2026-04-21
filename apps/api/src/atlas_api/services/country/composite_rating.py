@@ -60,21 +60,23 @@ def rating_to_score(agency: str, rating: str) -> int:
     raise ValueError(f"unknown agency: {agency!r}")
 
 
+_UNRATED = {"NR", "WD", "WR", "N/A", ""}
+
+
 def composite_score(ratings: dict[str, str]) -> float | None:
     """ratings = {"S&P": "B", "Moodys": "Caa1", "Fitch": "B-"} → weighted score on 22-step scale.
 
-    Missing agencies: rescale remaining weights so they sum to 1.
+    Missing agencies or NR/WD ratings: rescale remaining weights so they sum to 1.
     Empty input: None.
     """
     if not ratings:
         return None
-    present_weight = sum(AGENCY_WEIGHTS[a] for a in ratings if a in AGENCY_WEIGHTS)
-    if present_weight == 0:
-        raise ValueError(f"no known agencies in ratings: {list(ratings)}")
+    scored = {a: r for a, r in ratings.items() if a in AGENCY_WEIGHTS and r not in _UNRATED}
+    if not scored:
+        return None
+    present_weight = sum(AGENCY_WEIGHTS[a] for a in scored)
     total = 0.0
-    for agency, rating in ratings.items():
-        if agency not in AGENCY_WEIGHTS:
-            raise ValueError(f"unknown agency: {agency!r}")
+    for agency, rating in scored.items():
         w = AGENCY_WEIGHTS[agency] / present_weight
         total += w * rating_to_score(agency, rating)
     return round(total, 4)

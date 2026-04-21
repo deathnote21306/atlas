@@ -63,6 +63,7 @@ interface CountryBundle {
     iso3: string; name: string; capital: string; region: string;
     tags: string[]; tier: string; status: string; fx_regime: string;
     fx_regime_notes: string | null; fx_parallel_premium: number | null;
+    composite_risk: { score: number; label: string; trend: string; as_of: string | null } | null;
   };
   macro: MacroTile[];
   fx: FxDeltas | null;
@@ -163,23 +164,26 @@ export default function CountryComparison() {
   const indicatorRows: { label: string; render: (b: CountryBundle) => React.ReactNode }[] = [
     {
       label: "ATLAS Risk Score",
-      render: (b) => (
-        <span className={`font-mono font-semibold ${riskColor(b.risk.composite)}`}>
-          {b.risk.composite.toFixed(1)}
-        </span>
-      ),
+      render: (b) => {
+        const score = b.country.composite_risk?.score ?? b.risk.composite;
+        return (
+          <span className={`font-mono font-semibold ${riskColor(score)}`}>
+            {score.toFixed(1)}
+          </span>
+        );
+      },
     },
     {
       label: "GDP Growth",
-      render: (b) => <span className="font-mono">{fmtPct(getMacroValue(b.macro, "gdp_growth"))}</span>,
+      render: (b) => <span className="font-mono">{fmtPct(getMacroValue(b.macro, "GDP_GROWTH_PCT"))}</span>,
     },
     {
       label: "Inflation",
-      render: (b) => <span className="font-mono">{fmtPct(getMacroValue(b.macro, "inflation_cpi"))}</span>,
+      render: (b) => <span className="font-mono">{fmtPct(getMacroValue(b.macro, "INFLATION_PCT"))}</span>,
     },
     {
       label: "Debt/GDP",
-      render: (b) => <span className="font-mono">{fmtPct(getMacroValue(b.macro, "debt_to_gdp"))}</span>,
+      render: (b) => <span className="font-mono">{fmtPct(getMacroValue(b.macro, "PUBLIC_DEBT_PCT_GDP"))}</span>,
     },
     {
       label: "FX Rate",

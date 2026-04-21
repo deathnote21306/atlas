@@ -17,14 +17,14 @@ GDELT_DOC_API = "https://api.gdeltproject.org/api/v2/doc/doc"
 
 # Map our 10 countries to GDELT search terms
 COUNTRY_QUERIES: dict[str, str] = {
-    "CIV": "Ivory Coast OR Cote d'Ivoire",
+    "CIV": '"Ivory Coast" OR "Cote Ivoire"',
     "GHA": "Ghana",
     "KEN": "Kenya",
     "NGA": "Nigeria",
     "SEN": "Senegal",
     "ETH": "Ethiopia",
     "RWA": "Rwanda",
-    "ZAF": "South Africa",
+    "ZAF": '"South Africa"',
     "MAR": "Morocco",
     "EGY": "Egypt",
 }
@@ -37,23 +37,34 @@ RETRY = AsyncRetrying(
 )
 
 
-async def poll_gdelt(http: httpx.AsyncClient) -> list[RawArticle]:
+async def poll_gdelt(
+    http: httpx.AsyncClient,
+    *,
+    english_only: bool = False,
+    timespan: str = "",
+    max_records: int = 50,
+) -> list[RawArticle]:
     """Query GDELT DOC API for each country and return raw articles."""
     articles: list[RawArticle] = []
 
     for iso3, query in COUNTRY_QUERIES.items():
         try:
+            full_query = f"{query} sourcelang:english" if english_only else query
+            params: dict[str, str] = {
+                "query": full_query,
+                "mode": "ArtList",
+                "format": "json",
+                "maxrecords": str(max_records),
+            }
+            if timespan:
+                params["timespan"] = timespan
+
             resp: httpx.Response | None = None
             async for attempt in RETRY:
                 with attempt:
                     resp = await http.get(
                         GDELT_DOC_API,
-                        params={
-                            "query": query,
-                            "mode": "ArtList",
-                            "format": "json",
-                            "maxrecords": "50",
-                        },
+                        params=params,
                         timeout=30.0,
                     )
                     resp.raise_for_status()

@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     ai_model: str = "claude-sonnet-4-5"
     ai_daily_token_cap: int = 200_000
 
+    # -- Comtrade (Phase 3a) --
+    comtrade_api_key: str = ""
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"

@@ -13,7 +13,7 @@ interface NewsScore {
   external_impact: string;
   fx_impact: string;
   political_impact: string;
-  rationale: string;
+  rationale: any;
   scorer: string;
   scored_at: string;
 }
@@ -204,7 +204,7 @@ function ArticleCard({ article }: { article: NewsArticle }) {
           </button>
           {showRationale && (
             <p className="mt-1 rounded bg-white/[0.03] border border-white/[0.05] p-2 text-xs text-ink-300 leading-relaxed">
-              {score.rationale}
+              {typeof score.rationale === "string" ? score.rationale : Object.entries(score.rationale).map(([k, v]) => `${k}: ${v}`).join(". ")}
             </p>
           )}
         </div>

@@ -18,3 +18,12 @@ class RatingAction(BaseModel):
     action: str
     action_date: date
     source_url: str | None
+
+
+class AgencyRating(BaseModel):
+    grade: str
+    outlook: str | None
+    action: str
+    date: date
+    status: str
+    history: list[RatingAction] = []

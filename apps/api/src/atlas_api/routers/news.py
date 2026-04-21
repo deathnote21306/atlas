@@ -1,4 +1,4 @@
-"""News endpoints: list by country, get single item with impact score."""
+"""News endpoints: list by country, get single item with impact score, admin scoring status."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from sqlalchemy import select
 
 from atlas_api.deps import CurrentUser, DbSession, _check_iso3
 from atlas_api.models import NewsImpactScore, NewsItem
+from atlas_api.services.news.daily_rescore import get_scoring_status
 
 router = APIRouter(prefix="/api/news", tags=["news"])
 
@@ -70,3 +71,36 @@ def get_news_item(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="news item not found")
     item, score = row
     return _item_to_out(item, score)
+
+
+@router.get("/scoring-status")
+def scoring_status(session: DbSession, _: CurrentUser) -> dict[str, Any]:
+    return get_scoring_status(session)
+
+
+@router.get("/reer-status")
+def reer_status(session: DbSession, _: CurrentUser) -> dict[str, Any]:
+    from atlas_api.models import REERHistory
+    from sqlalchemy import func as sqlfunc
+
+    coverage = []
+    rows = session.execute(
+        select(
+            REERHistory.iso3,
+            sqlfunc.max(REERHistory.period).label("latest_period"),
+            REERHistory.source,
+        )
+        .group_by(REERHistory.iso3, REERHistory.source)
+        .order_by(REERHistory.iso3)
+    ).all()
+
+    seen: dict[str, dict] = {}
+    for iso3, period, source in rows:
+        if iso3 not in seen or source in ("imf_ifs",):
+            dev = session.execute(
+                select(REERHistory.reer_deviation_pct)
+                .where(REERHistory.iso3 == iso3, REERHistory.period == period, REERHistory.source == source)
+            ).scalar()
+            seen[iso3] = {"iso": iso3, "latest_period": str(period), "source": source, "deviation_pct": float(dev) if dev else None}
+
+    return {"coverage": list(seen.values())}

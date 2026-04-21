@@ -5,9 +5,12 @@ from atlas_schemas.country import Country as CountrySchema
 from atlas_schemas.fx import FxDeltas, FxObservation
 from atlas_schemas.macro import MacroIndicator
 from atlas_schemas.ratings import RatingAction
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from atlas_api.models import Synopsis
+from atlas_api.models import REERHistory, Synopsis
+from atlas_api.services.country.economic_structure import get_economic_structure
+from atlas_api.services.forecast.compute_forecasts import get_forecasts
 from atlas_api.services.country.composite_rating import composite_score
 from atlas_api.services.country.queries import (
     compute_fx_deltas,
@@ -125,6 +128,33 @@ def get_country_bundle(session: Session, iso3: str) -> CountryBundle | None:
     )
 
     synopsis_text = _latest_approved_synopsis(session, iso3)
+
+    # Enrich with forecasts
+    forecasts = get_forecasts(session, iso3)
+    if forecasts:
+        country.forecasts = forecasts  # type: ignore[attr-defined]
+
+    # Enrich with economic structure data
+    econ = get_economic_structure(session, iso3)
+    if econ:
+        econ["diversification_score"] = country.economic_diversification_score
+        econ["diversification_hhi"] = float(country.economic_diversification_hhi) if country.economic_diversification_hhi else None
+        econ["commodity_dependency_pct"] = float(country.commodity_dependency_pct) if country.commodity_dependency_pct else None
+        country.economic_structure = econ  # type: ignore[attr-defined]
+
+    # Enrich with REER source info for the schema validator
+    source_pref = ["imf_ifs", "bis_broad", "bis_narrow", "seed"]
+    for src in source_pref:
+        reer_row = session.execute(
+            select(REERHistory)
+            .where(REERHistory.iso3 == iso3, REERHistory.source == src)
+            .order_by(REERHistory.period.desc())
+            .limit(1)
+        ).scalar_one_or_none()
+        if reer_row:
+            country.reer_source = reer_row.source  # type: ignore[attr-defined]
+            country.reer_base_period = reer_row.base_period  # type: ignore[attr-defined]
+            break
 
     return CountryBundle(
         country=CountrySchema.model_validate(country, from_attributes=True),

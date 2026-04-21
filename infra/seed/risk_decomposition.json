@@ -1,0 +1,214 @@
+{
+  "ETH": {
+    "pod_override_active": true,
+    "pod_override_reason": "Active debt restructuring — liquidity risk set to maximum",
+    "seeded_inputs": {
+      "revenue_quality_flag": "low",
+      "external_restructuring_flag": true,
+      "fx_market_liquidity_flag": "illiquid",
+      "data_quality_flag": "low",
+      "political_stability_index": -1.5,
+      "active_conflict_flag": false,
+      "market_access_flag": "none",
+      "restructuring_overhang_flag": true,
+      "gdp_volatility_5yr": 3.5
+    },
+    "dimensions": {
+      "fiscal": {
+        "description": "Fiscal deficit moderating but reconstruction spending creates off-budget risks. Revenue collection improving from conflict lows. Data quality limits ATLAS confidence — applies uncertainty discount.",
+        "sub_drivers": ["Reconstruction fiscal pressure", "Revenue base damage", "Data quality uncertainty"],
+        "warning": "Data quality flag: all fiscal indicators have ±30% uncertainty band"
+      },
+      "external": {
+        "description": "Acute external financing constraints following debt moratorium. G20 Common Framework restructuring ongoing with official creditors. Reserves critically low at ~1.4 months import cover. Parallel market premium at 35% signals rationing.",
+        "sub_drivers": ["Debt restructuring overhang", "Critical reserve depletion", "Parallel market premium", "Limited market access"],
+        "warning": "Active restructuring — external access effectively closed to private markets"
+      },
+      "fx": {
+        "description": "Birr devaluation July 2024 (+30%) was a structural step, but managed float implementation is fragile. Parallel market re-emerging with 35% premium. REER shows extreme undervaluation at -42.5%, suggesting further adjustment pressure.",
+        "sub_drivers": ["Parallel market premium >25%", "Post-devaluation adjustment", "Illiquid FX market", "REER extreme undervaluation"],
+        "warning": "Illiquid market — no reliable implied volatility pricing available"
+      },
+      "growth": {
+        "description": "Growth recovering post-conflict but data reliability is severely limited. IMF estimates 5.5% but ATLAS applies a ±2pp uncertainty band. Agricultural sector showing peace dividend; services sector reconstruction-driven.",
+        "sub_drivers": ["Post-conflict recovery", "Data quality uncertainty", "Agricultural potential"],
+        "warning": null
+      },
+      "political": {
+        "description": "Post-Pretoria Peace Agreement stabilization progressing. Regional tensions persist in Amhara and Oromia. IMF ECF program provides institutional anchor. No active armed conflict in 2026 but political fragmentation risk remains elevated.",
+        "sub_drivers": ["Post-conflict fragmentation", "Regional tensions", "IMF program anchor"],
+        "warning": null
+      },
+      "liquidity": {
+        "description": "No market access — Ethiopia is effectively locked out of international capital markets during restructuring. Reserves critically low. IMF ECF provides the only significant external financing anchor. PoD override forces maximum liquidity risk score.",
+        "sub_drivers": ["No market access", "Restructuring overhang", "Critical reserves", "IMF-only financing"],
+        "warning": "PoD override active: Liquidity Risk forced to ≥95 during active restructuring"
+      }
+    }
+  },
+  "GHA": {
+    "pod_override_active": false,
+    "pod_override_reason": null,
+    "seeded_inputs": {
+      "revenue_quality_flag": "medium",
+      "external_restructuring_flag": false,
+      "fx_market_liquidity_flag": "thin",
+      "data_quality_flag": "medium",
+      "political_stability_index": -0.2,
+      "active_conflict_flag": false,
+      "market_access_flag": "limited",
+      "restructuring_overhang_flag": true,
+      "gdp_volatility_5yr": 2.8
+    },
+    "dimensions": {
+      "fiscal": {
+        "description": "Post-restructuring fiscal consolidation progressing under IMF ECF targets. Revenue mobilization improving but expenditure discipline remains the binding constraint. Domestic debt exchange losses absorbed by banking sector.",
+        "sub_drivers": ["Post-restructuring consolidation", "Revenue mobilization", "IMF fiscal targets"],
+        "warning": null
+      },
+      "external": {
+        "description": "External debt restructuring completed in 2024. Current account deficit narrowing on improved gold and cocoa exports. Reserves rebuilding but still below pre-crisis levels.",
+        "sub_drivers": ["Post-restructuring recovery", "Cocoa/gold export anchor", "Reserve rebuilding"],
+        "warning": null
+      },
+      "fx": {
+        "description": "Cedi stabilizing after 2022 crisis but depreciation pressure persists. Parallel market premium at ~7% — notable but not critical. FX market thin with limited interbank activity.",
+        "sub_drivers": ["Post-crisis stabilization", "Thin FX market", "Moderate parallel premium"],
+        "warning": null
+      },
+      "growth": {
+        "description": "Growth recovering from 2022 crisis trough. IMF projects gradual improvement toward 4% by 2026. Mining and cocoa sectors providing the primary growth impulse.",
+        "sub_drivers": ["Post-crisis recovery", "Mining sector growth", "Cocoa production"],
+        "warning": null
+      },
+      "political": {
+        "description": "Stable democratic governance with smooth power transitions. 2024 election conducted peacefully. Strong institutional credibility by regional standards. IMF program provides policy anchor.",
+        "sub_drivers": ["Democratic stability", "Peaceful transitions", "IMF anchor"],
+        "warning": null
+      },
+      "liquidity": {
+        "description": "Limited market access post-restructuring — Eurobond issuance likely feasible by 2027. IMF ECF and bilateral support providing bridge financing. Restructuring overhang still affects investor confidence.",
+        "sub_drivers": ["Limited market access", "IMF bridge financing", "Restructuring overhang"],
+        "warning": null
+      }
+    }
+  },
+  "KEN": {
+    "pod_override_active": false,
+    "pod_override_reason": null,
+    "seeded_inputs": {
+      "revenue_quality_flag": "medium",
+      "external_restructuring_flag": false,
+      "fx_market_liquidity_flag": "thin",
+      "data_quality_flag": "high",
+      "political_stability_index": -0.5,
+      "active_conflict_flag": false,
+      "market_access_flag": "full",
+      "restructuring_overhang_flag": false,
+      "gdp_volatility_5yr": 2.0
+    },
+    "dimensions": {
+      "fiscal": { "description": "Twin deficit persists with fiscal balance under pressure from debt service obligations. Revenue mobilization through Finance Act 2023 improved fiscal metrics but generated political backlash. High interest expenditure-to-revenue ratio.", "sub_drivers": ["Twin deficit pressure", "High debt service", "Revenue reform backlash"], "warning": null },
+      "external": { "description": "Eurobond maturity wall 2024-2027 is the primary external risk. Current account deficit manageable at ~5% GDP. Reserves adequate at ~4 months import cover. Diaspora remittances provide steady FX inflow.", "sub_drivers": ["Eurobond maturity concentration", "Adequate reserves", "Remittance buffer"], "warning": null },
+      "fx": { "description": "Shilling depreciation managed by CBK with relatively tight parallel market premium. FX market more liquid than most SSA peers. REER near fair value suggesting no major misalignment.", "sub_drivers": ["Managed depreciation", "Tight parallel market", "Near fair-value REER"], "warning": null },
+      "growth": { "description": "Diversified economy reduces single-commodity exposure. Services sector (tech, finance, tourism) providing structural growth support. Agriculture remains vulnerable to climate shocks.", "sub_drivers": ["Economic diversification", "Tech sector growth", "Climate vulnerability"], "warning": null },
+      "political": { "description": "Political stability moderate with 2027 election cycle approaching. Institutional quality above SSA average. Finance Act protests in 2023 demonstrated social pressure constraints on fiscal policy.", "sub_drivers": ["Election cycle approaching", "Institutional credibility", "Social pressure risks"], "warning": null },
+      "liquidity": { "description": "Full market access maintained — Kenya successfully tapped Eurobond markets in 2024. IMF EFF program provides policy anchor. Debt sustainability adequate but sensitive to interest rate shocks.", "sub_drivers": ["Eurobond market access", "IMF EFF anchor", "Interest rate sensitivity"], "warning": null }
+    }
+  },
+  "NGA": {
+    "pod_override_active": false,
+    "pod_override_reason": null,
+    "seeded_inputs": {
+      "revenue_quality_flag": "low",
+      "external_restructuring_flag": false,
+      "fx_market_liquidity_flag": "thin",
+      "data_quality_flag": "medium",
+      "political_stability_index": -0.8,
+      "active_conflict_flag": false,
+      "market_access_flag": "full",
+      "restructuring_overhang_flag": false,
+      "gdp_volatility_5yr": 2.5
+    },
+    "dimensions": {
+      "fiscal": { "description": "Fuel subsidy removal saves ~2% GDP annually, materially improving fiscal space. Revenue-to-GDP ratio remains among the lowest globally. Oil revenue volatility and production below OPEC quota constrain the upside.", "sub_drivers": ["Subsidy removal fiscal gain", "Low revenue-to-GDP", "Oil production shortfall"], "warning": null },
+      "external": { "description": "Oil exports provide hard currency anchor but production below quota limits the benefit. Dangote refinery reducing fuel import bill structurally. Parallel market premium narrowing post-FX unification.", "sub_drivers": ["Oil export anchor", "Dangote refinery impact", "FX reform progress"], "warning": null },
+      "fx": { "description": "Post-June 2023 FX unification narrowing the parallel market premium from >60% to ~8%. CBN reserves include swaps — net position weaker than headline. Market remains thin with limited price discovery.", "sub_drivers": ["FX unification progress", "Swap-adjusted reserves", "Thin market liquidity"], "warning": "CBN reserves include swaps — net figure lower than headline" },
+      "growth": { "description": "Large domestic market with demographic dividend. Non-oil growth improving in agriculture and services. Security challenges in the north affecting agricultural productivity in key regions.", "sub_drivers": ["Demographic dividend", "Non-oil diversification", "Northern security constraints"], "warning": null },
+      "political": { "description": "Tinubu administration's reform momentum is the key variable. FX and subsidy reforms signal willingness to act but social pressure is building from inflation pass-through. Security challenges in the north persist.", "sub_drivers": ["Reform momentum", "Inflation social pressure", "Northern insecurity"], "warning": null },
+      "liquidity": { "description": "Full market access — Nigeria retains Eurobond issuance capacity. No IMF program (signaling self-sufficiency preference). Oil revenue provides base-case financing anchor.", "sub_drivers": ["Eurobond access", "No IMF dependency", "Oil revenue base"], "warning": null }
+    }
+  },
+  "CIV": {
+    "pod_override_active": false, "pod_override_reason": null,
+    "seeded_inputs": { "revenue_quality_flag": "high", "external_restructuring_flag": false, "fx_market_liquidity_flag": "illiquid", "data_quality_flag": "high", "political_stability_index": 0.1, "active_conflict_flag": false, "market_access_flag": "full", "restructuring_overhang_flag": false, "gdp_volatility_5yr": 1.5 },
+    "dimensions": {
+      "fiscal": { "description": "Prudent fiscal management with debt-to-GDP below WAEMU convergence criteria. Infrastructure investment rising but financed through concessional channels. CFA membership constrains fiscal-monetary coordination.", "sub_drivers": ["WAEMU fiscal discipline", "Concessional financing", "Infrastructure pipeline"], "warning": null },
+      "external": { "description": "Cocoa export concentration creates commodity risk. CFA peg provides FX stability but limits external adjustment flexibility. Current account manageable.", "sub_drivers": ["Cocoa concentration", "CFA peg stability", "Manageable current account"], "warning": null },
+      "fx": { "description": "CFA franc hard peg to EUR eliminates FX volatility risk but also removes the exchange rate as an adjustment mechanism. No parallel market. REER near equilibrium.", "sub_drivers": ["Hard peg eliminates volatility", "No parallel market", "REER equilibrium"], "warning": null },
+      "growth": { "description": "Strongest WAEMU performer with 6%+ GDP growth. Infrastructure investment and Abidjan urbanization driving services growth. Cocoa sector climate vulnerability is the primary downside risk.", "sub_drivers": ["6%+ growth trajectory", "Infrastructure-led", "Cocoa climate risk"], "warning": null },
+      "political": { "description": "Post-2020 election normalization progressing. Political succession risk as post-Ouattara transition approaches. Institutional quality above West African average.", "sub_drivers": ["Political normalization", "Succession risk", "Institutional quality"], "warning": null },
+      "liquidity": { "description": "Full market access with successful Eurobond issuance history. WAEMU regional bond market provides additional financing channel. No restructuring overhang.", "sub_drivers": ["Eurobond access", "Regional bond market", "No restructuring risk"], "warning": null }
+    }
+  },
+  "SEN": {
+    "pod_override_active": false, "pod_override_reason": null,
+    "seeded_inputs": { "revenue_quality_flag": "medium", "external_restructuring_flag": false, "fx_market_liquidity_flag": "illiquid", "data_quality_flag": "medium", "political_stability_index": -0.1, "active_conflict_flag": false, "market_access_flag": "full", "restructuring_overhang_flag": false, "gdp_volatility_5yr": 1.8 },
+    "dimensions": {
+      "fiscal": { "description": "Fiscal data revisions raised credibility concerns. Debt levels elevated from infrastructure spending. Hydrocarbon revenue expected to improve fiscal trajectory from 2026.", "sub_drivers": ["Data revision credibility gap", "Infrastructure debt", "Hydrocarbon revenue upside"], "warning": "Fiscal data revisions in 2024 — credibility rebuilding" },
+      "external": { "description": "Sangomar oil and GTA gas coming online transform the external balance outlook. Remittances remain critical. Current account deficit expected to narrow materially.", "sub_drivers": ["Oil/gas production ramp", "Remittance dependence", "Current account improvement"], "warning": null },
+      "fx": { "description": "CFA franc peg provides stability. No parallel market activity. REER near equilibrium. Hydrocarbon inflows may create appreciation pressure medium-term.", "sub_drivers": ["CFA peg anchor", "No parallel market", "Potential appreciation pressure"], "warning": null },
+      "growth": { "description": "Young demographic with urbanization momentum. Hydrocarbon sector providing structural growth uplift. Traditional sectors (fishing, agriculture, remittances) remain important.", "sub_drivers": ["Demographic dividend", "Hydrocarbon uplift", "Diversified base"], "warning": null },
+      "political": { "description": "New political leadership following 2024 election signaling policy continuity. Anti-corruption agenda may create short-term uncertainty. Institutional quality adequate.", "sub_drivers": ["New leadership", "Policy continuity signals", "Anti-corruption agenda"], "warning": null },
+      "liquidity": { "description": "Full market access via Eurobond and WAEMU regional markets. No restructuring risk. Hydrocarbon revenue expected to improve debt sustainability metrics.", "sub_drivers": ["Eurobond access", "WAEMU regional market", "Improving debt metrics"], "warning": null }
+    }
+  },
+  "RWA": {
+    "pod_override_active": false, "pod_override_reason": null,
+    "seeded_inputs": { "revenue_quality_flag": "high", "external_restructuring_flag": false, "fx_market_liquidity_flag": "illiquid", "data_quality_flag": "high", "political_stability_index": 0.2, "active_conflict_flag": false, "market_access_flag": "limited", "restructuring_overhang_flag": false, "gdp_volatility_5yr": 2.0 },
+    "dimensions": {
+      "fiscal": { "description": "Prudent fiscal management with strong governance metrics. Limited fiscal space for countercyclical policy due to small economy. Concessional financing access is a strength.", "sub_drivers": ["Strong governance", "Limited fiscal space", "Concessional access"], "warning": null },
+      "external": { "description": "Small open economy vulnerable to external shocks. Mining exports provide some hard currency. EAC trade integration deepening.", "sub_drivers": ["Small-economy vulnerability", "Mining exports", "EAC integration"], "warning": null },
+      "fx": { "description": "BNR manages RWF against USD with minimal parallel market activity. FX market illiquid but stable. REER near equilibrium.", "sub_drivers": ["Managed float", "Minimal parallel activity", "Stable REER"], "warning": null },
+      "growth": { "description": "Technology-led growth strategy diversifying from agriculture. Kigali Innovation City and conference tourism providing new growth vectors. Strong governance supports investment climate.", "sub_drivers": ["Tech-led diversification", "Tourism growth", "Investment climate"], "warning": null },
+      "political": { "description": "Strong governance and business environment rankings. Concentration of political power provides policy consistency but raises long-term transition risk.", "sub_drivers": ["Strong governance", "Policy consistency", "Transition concentration risk"], "warning": null },
+      "liquidity": { "description": "Limited market access — no Eurobond history. Concessional and bilateral lending are primary financing channels. Small economy limits private market appetite.", "sub_drivers": ["Limited market access", "Concessional reliance", "Small market size"], "warning": null }
+    }
+  },
+  "ZAF": {
+    "pod_override_active": false, "pod_override_reason": null,
+    "seeded_inputs": { "revenue_quality_flag": "high", "external_restructuring_flag": false, "fx_market_liquidity_flag": "liquid", "data_quality_flag": "high", "political_stability_index": 0.0, "active_conflict_flag": false, "market_access_flag": "full", "restructuring_overhang_flag": false, "gdp_volatility_5yr": 2.2 },
+    "dimensions": {
+      "fiscal": { "description": "SOE contingent liabilities (Eskom, Transnet) are the primary fiscal risk. Revenue administration strong (SARS). Fiscal consolidation constrained by political coalition dynamics.", "sub_drivers": ["Eskom contingent liabilities", "Strong revenue admin", "Coalition fiscal constraints"], "warning": null },
+      "external": { "description": "Deep and liquid capital markets provide structural financing advantage. Current account near balance. AGOA trade preferences provide export market access.", "sub_drivers": ["Deep capital markets", "Balanced current account", "AGOA access"], "warning": null },
+      "fx": { "description": "Rand floats freely with deep FX market liquidity. No parallel market. Implied volatility market exists and functions. REER moderately undervalued.", "sub_drivers": ["Free float", "Deep liquidity", "Functioning vol market"], "warning": null },
+      "growth": { "description": "Load-shedding energy crisis constraining GDP growth below potential. Renewable energy transition creating investment wave. High unemployment (>30%) limiting demand-side recovery.", "sub_drivers": ["Energy crisis drag", "Renewable transition", "Structural unemployment"], "warning": null },
+      "political": { "description": "GNU coalition providing policy stability signal after 2024 election. Institutional quality strong by EM standards. Political fragmentation risk moderate but manageable.", "sub_drivers": ["GNU stability signal", "Strong institutions", "Manageable fragmentation"], "warning": null },
+      "liquidity": { "description": "Full market access with deep domestic bond market and regular international issuance. No restructuring risk. SARB credibility strong.", "sub_drivers": ["Deep bond market", "International access", "SARB credibility"], "warning": null }
+    }
+  },
+  "MAR": {
+    "pod_override_active": false, "pod_override_reason": null,
+    "seeded_inputs": { "revenue_quality_flag": "high", "external_restructuring_flag": false, "fx_market_liquidity_flag": "thin", "data_quality_flag": "high", "political_stability_index": 0.3, "active_conflict_flag": false, "market_access_flag": "full", "restructuring_overhang_flag": false, "gdp_volatility_5yr": 1.5 },
+    "dimensions": {
+      "fiscal": { "description": "Earthquake reconstruction adds temporary fiscal pressure but within manageable bounds. Strong institutional capacity for fiscal management. Dirham basket peg constrains fiscal-monetary coordination.", "sub_drivers": ["Earthquake reconstruction", "Institutional fiscal capacity", "Peg fiscal constraint"], "warning": null },
+      "external": { "description": "Diversified export base (automotive, phosphates, agriculture, tourism). EU proximity provides structural trade advantage. Current account manageable.", "sub_drivers": ["Diversified exports", "EU proximity", "Manageable current account"], "warning": null },
+      "fx": { "description": "Dirham managed within ±5% band against EUR/USD basket. No parallel market. FX market moderately liquid. REER near equilibrium, slightly overvalued.", "sub_drivers": ["Basket peg stability", "No parallel market", "Near-equilibrium REER"], "warning": null },
+      "growth": { "description": "Manufacturing hub for European nearshoring (automotive, aerospace). 2030 FIFA World Cup co-hosting driving infrastructure investment. Water stress and drought are structural agricultural risks.", "sub_drivers": ["Nearshoring hub", "World Cup stimulus", "Water stress risk"], "warning": null },
+      "political": { "description": "Stable monarchy with gradual institutional reform. Strong governance metrics by MENA/Africa standards. Social reform agenda progressing.", "sub_drivers": ["Monarchical stability", "Institutional reform", "Social progress"], "warning": null },
+      "liquidity": { "description": "Full market access with investment-grade adjacent credit quality. Deep domestic bond market. Eurobond issuance regular and well-received.", "sub_drivers": ["IG-adjacent access", "Deep domestic market", "Regular Eurobond issuance"], "warning": null }
+    }
+  },
+  "EGY": {
+    "pod_override_active": false, "pod_override_reason": null,
+    "seeded_inputs": { "revenue_quality_flag": "medium", "external_restructuring_flag": false, "fx_market_liquidity_flag": "thin", "data_quality_flag": "medium", "political_stability_index": -0.3, "active_conflict_flag": false, "market_access_flag": "full", "restructuring_overhang_flag": false, "gdp_volatility_5yr": 1.8 },
+    "dimensions": {
+      "fiscal": { "description": "Mega-project spending straining fiscal position. Interest expenditure-to-revenue ratio elevated. Ras El-Hekma deal provides one-off fiscal relief but structural deficit persists.", "sub_drivers": ["Mega-project spending", "High interest burden", "Ras El-Hekma relief"], "warning": null },
+      "external": { "description": "Suez Canal revenue disrupted by Red Sea rerouting. Tourism recovering but geopolitically sensitive. Gulf FDI (UAE, Saudi) providing financing anchor. Gas exports plateauing.", "sub_drivers": ["Suez Canal disruption", "Gulf FDI anchor", "Gas export plateau"], "warning": null },
+      "fx": { "description": "Post-March 2024 devaluation (~60%) narrowed parallel market gap significantly. EGP managed float with CBE intervention. Market remains thin with limited price discovery.", "sub_drivers": ["Post-devaluation normalization", "CBE management", "Thin market"], "warning": null },
+      "growth": { "description": "Large domestic market with young demographic. Tourism and Suez Canal traditionally key growth drivers. Inflation pass-through from devaluation constraining real income growth.", "sub_drivers": ["Demographic potential", "Tourism recovery", "Inflation drag"], "warning": null },
+      "political": { "description": "Centralized governance provides policy consistency. IMF EFF program conditions testing reform commitment on privatization and competition. Regional geopolitical exposure elevated.", "sub_drivers": ["Policy consistency", "IMF reform conditionality", "Geopolitical exposure"], "warning": null },
+      "liquidity": { "description": "Full market access maintained through crisis. Gulf bilateral support + IMF EFF + Ras El-Hekma deal provide multi-layered financing. Eurobond market accessible at elevated spreads.", "sub_drivers": ["Gulf bilateral support", "IMF EFF anchor", "Eurobond access at premium"], "warning": null }
+    }
+  }
+}

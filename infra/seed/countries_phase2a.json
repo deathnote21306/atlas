@@ -1,0 +1,265 @@
+{
+  "ETH": {
+    "key_risks": [
+      "Active external debt restructuring (G20 Common Framework)",
+      "Post-conflict reconstruction fiscal pressure",
+      "Birr devaluation inflationary pass-through",
+      "Data availability and quality gaps"
+    ],
+    "key_opportunities": [
+      "Post-Pretoria reconstruction momentum",
+      "Nile Basin energy export potential (GERD)",
+      "IMF ECF program anchor",
+      "Agricultural potential with peace dividend"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 68, "weight": 25},
+        {"key": "external", "label": "External", "score": 88, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 92, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 60, "weight": 15},
+        {"key": "political", "label": "Political", "score": 75, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 95, "weight": 10}
+      ]
+    },
+    "macro_annotations": {
+      "GDP_GROWTH_PCT": "ATLAS applies ±2pp uncertainty band — conflict disruption makes data unreliable",
+      "INFLATION_PCT": "Birr devaluation Jul-2024 pass-through ongoing",
+      "FISCAL_BALANCE_PCT_GDP": "Data quality limited; reconstruction spending underreported",
+      "FX_RESERVES_MO_IMPORTS": "Below critical threshold. ATLAS staleness flag: 65 days",
+      "DEBT_SERVICE_PCT_EXPORTS": "Critically low. ADF threshold = 3 months",
+      "EXTERNAL_DEBT_PCT_GNI": "Post-conflict valuation uncertain"
+    }
+  },
+  "GHA": {
+    "key_risks": [
+      "Post-restructuring fiscal consolidation fragility",
+      "Cedi depreciation pressure despite IMF anchor",
+      "Elevated public debt-to-GDP despite exchange",
+      "Cocoa revenue concentration risk"
+    ],
+    "key_opportunities": [
+      "IMF ECF program provides credibility anchor",
+      "Domestic debt exchange completed — investor access resuming",
+      "Gold and cocoa export diversification",
+      "Improving current account trajectory"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 62, "weight": 25},
+        {"key": "external", "label": "External", "score": 70, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 65, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 45, "weight": 15},
+        {"key": "political", "label": "Political", "score": 40, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 72, "weight": 10}
+      ]
+    },
+    "macro_annotations": {
+      "FISCAL_BALANCE_PCT_GDP": "Post-restructuring fiscal targets under IMF monitoring"
+    }
+  },
+  "KEN": {
+    "key_risks": [
+      "Elevated external debt service burden (Eurobond maturity wall)",
+      "Shilling depreciation eroding real incomes",
+      "Political risk from 2027 election cycle",
+      "High fiscal deficit requiring continued IMF support"
+    ],
+    "key_opportunities": [
+      "IMF EFF program anchor with strong track record",
+      "Diversified economy reduces commodity shock exposure",
+      "Tech sector growth (Nairobi as regional hub)",
+      "EAC trade integration deepening"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 58, "weight": 25},
+        {"key": "external", "label": "External", "score": 62, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 50, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 38, "weight": 15},
+        {"key": "political", "label": "Political", "score": 52, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 55, "weight": 10}
+      ]
+    },
+    "macro_annotations": {
+      "DEBT_SERVICE_PCT_EXPORTS": "Eurobond repayment peak 2024-2027"
+    }
+  },
+  "NGA": {
+    "key_risks": [
+      "FX unification still incomplete — parallel market persists",
+      "Oil revenue volatility and production below quota",
+      "Inflationary pressure from Naira devaluation",
+      "Security challenges in north affecting agriculture"
+    ],
+    "key_opportunities": [
+      "FX reform signaling improves investor confidence",
+      "Dangote refinery reduces fuel import bill",
+      "Large domestic market with demographic dividend",
+      "Non-oil export growth potential (agriculture, tech)"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 55, "weight": 25},
+        {"key": "external", "label": "External", "score": 60, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 78, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 48, "weight": 15},
+        {"key": "political", "label": "Political", "score": 58, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 52, "weight": 10}
+      ]
+    },
+    "macro_annotations": {
+      "INFLATION_PCT": "Naira devaluation pass-through still unwinding",
+      "FX_RESERVES_MO_IMPORTS": "CBN reserves include swaps — net figure lower"
+    }
+  },
+  "CIV": {
+    "key_risks": [
+      "CFA peg limits monetary policy flexibility",
+      "Cocoa price volatility and climate risk",
+      "Political succession uncertainty post-2025"
+    ],
+    "key_opportunities": [
+      "CFA franc peg provides FX stability anchor",
+      "Strong growth trajectory (6%+ GDP growth)",
+      "Regional hub for Francophone West Africa",
+      "Infrastructure investment pipeline (Abidjan metro)"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 35, "weight": 25},
+        {"key": "external", "label": "External", "score": 30, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 15, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 20, "weight": 15},
+        {"key": "political", "label": "Political", "score": 45, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 38, "weight": 10}
+      ]
+    },
+    "macro_annotations": {}
+  },
+  "SEN": {
+    "key_risks": [
+      "Rising public debt from infrastructure spending",
+      "Fiscal data revisions raised credibility concerns",
+      "Dependency on remittances for external balance"
+    ],
+    "key_opportunities": [
+      "Sangomar oil and GTA gas production coming online",
+      "WAEMU integration provides monetary stability",
+      "Young demographic with urbanization momentum"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 42, "weight": 25},
+        {"key": "external", "label": "External", "score": 38, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 15, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 25, "weight": 15},
+        {"key": "political", "label": "Political", "score": 48, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 40, "weight": 10}
+      ]
+    },
+    "macro_annotations": {}
+  },
+  "RWA": {
+    "key_risks": [
+      "Small open economy vulnerable to external shocks",
+      "Limited fiscal space for countercyclical policy",
+      "Concentration of power raises governance perception risk"
+    ],
+    "key_opportunities": [
+      "Strong governance and business environment rankings",
+      "Technology-led growth strategy (Kigali Innovation City)",
+      "Tourism revenue diversification",
+      "EAC trade integration benefits"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 30, "weight": 25},
+        {"key": "external", "label": "External", "score": 35, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 28, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 22, "weight": 15},
+        {"key": "political", "label": "Political", "score": 35, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 32, "weight": 10}
+      ]
+    },
+    "macro_annotations": {}
+  },
+  "ZAF": {
+    "key_risks": [
+      "Load-shedding energy crisis constraining growth",
+      "High unemployment (>30%) limiting demand recovery",
+      "SOE contingent liabilities (Eskom, Transnet)",
+      "Political coalition fragility post-2024 election"
+    ],
+    "key_opportunities": [
+      "Deep and liquid capital markets",
+      "Renewable energy transition investment wave",
+      "GNU coalition providing policy stability signal",
+      "AGOA trade preferences with US"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 48, "weight": 25},
+        {"key": "external", "label": "External", "score": 35, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 42, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 55, "weight": 15},
+        {"key": "political", "label": "Political", "score": 45, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 30, "weight": 10}
+      ]
+    },
+    "macro_annotations": {
+      "GDP_GROWTH_PCT": "Load-shedding adjusted — actual output below potential"
+    }
+  },
+  "MAR": {
+    "key_risks": [
+      "Earthquake reconstruction fiscal burden",
+      "Water stress and agricultural drought risk",
+      "EU trade dependency concentration"
+    ],
+    "key_opportunities": [
+      "Investment-grade adjacent with strong institutions",
+      "Automotive and aerospace manufacturing hub",
+      "Renewable energy leader (Noor solar complex)",
+      "2030 FIFA World Cup co-host infrastructure stimulus"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 28, "weight": 25},
+        {"key": "external", "label": "External", "score": 25, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 20, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 22, "weight": 15},
+        {"key": "political", "label": "Political", "score": 30, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 25, "weight": 10}
+      ]
+    },
+    "macro_annotations": {}
+  },
+  "EGY": {
+    "key_risks": [
+      "Mega-project spending straining fiscal position",
+      "Inflation persistence post-devaluation",
+      "Suez Canal revenue volatility from Red Sea disruption",
+      "External financing gap requiring continued IMF support"
+    ],
+    "key_opportunities": [
+      "IMF EFF program anchor with Ras El-Hekma deal",
+      "Post-devaluation FX market normalization",
+      "Gas exports providing hard currency buffer",
+      "Tourism recovery post-pandemic"
+    ],
+    "risk_decomposition": {
+      "dimensions": [
+        {"key": "fiscal", "label": "Fiscal", "score": 55, "weight": 25},
+        {"key": "external", "label": "External", "score": 62, "weight": 20},
+        {"key": "fx", "label": "FX", "score": 58, "weight": 20},
+        {"key": "growth", "label": "Growth", "score": 42, "weight": 15},
+        {"key": "political", "label": "Political", "score": 50, "weight": 10},
+        {"key": "liquidity", "label": "Liquidity", "score": 60, "weight": 10}
+      ]
+    },
+    "macro_annotations": {
+      "INFLATION_PCT": "Post-devaluation inflation cooling but still elevated"
+    }
+  }
+}

@@ -70,6 +70,92 @@ class Country(Base):
     fx_regime_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     fx_parallel_premium: Mapped[float | None] = mapped_column(Float, nullable=True)
 
+    # Phase 1 extensions
+    iso_code_short: Mapped[str | None] = mapped_column(String(2), nullable=True)
+    sub_region: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    status_tags: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    context_tags: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+
+    composite_risk_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    composite_risk_label: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    composite_risk_trend: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    composite_risk_as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    atlas_spread_bps: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    atlas_spread_as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    imf_program_code: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    imf_program_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+
+    # Phase 2a extensions
+    key_risks: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    key_opportunities: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    risk_decomposition: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    macro_annotations: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+
+    # Phase 2b.1 — FX Intelligence
+    primary_currency: Mapped[str | None] = mapped_column(String(3), nullable=True)
+    fx_change_1d_pct: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
+    fx_change_1w_pct: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
+    fx_change_1m_pct: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
+    fx_change_3m_pct: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
+    fx_change_as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    fx_implied_vol_pct: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
+    fx_implied_vol_note: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    fx_reer_deviation_pct: Mapped[float | None] = mapped_column(Numeric(10, 4), nullable=True)
+    fx_reer_as_of: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    fx_last_bc_intervention: Mapped[datetime | None] = mapped_column(Date, nullable=True)
+
+    # Phase 3a — Economic Structure
+    economic_diversification_hhi: Mapped[float | None] = mapped_column(Numeric, nullable=True)
+    economic_diversification_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    economic_diversification_as_of: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    commodity_dependency_pct: Mapped[float | None] = mapped_column(Numeric, nullable=True)
+
+
+class TradeAnnual(Base):
+    __tablename__ = "trade_annual"
+    __table_args__ = (
+        UniqueConstraint("reporter_iso3", "year", "flow", "partner_iso3", "commodity_code",
+                        name="uq_trade_annual_row"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    reporter_iso3: Mapped[str] = mapped_column(String(3), nullable=False)
+    year: Mapped[int] = mapped_column(Integer, nullable=False)
+    flow: Mapped[str] = mapped_column(String(2), nullable=False)
+    partner_iso3: Mapped[str | None] = mapped_column(String(3), nullable=True)
+    partner_name: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+    commodity_code: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    commodity_label: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+    trade_value_usd: Mapped[int | None] = mapped_column(sa.BigInteger, nullable=True)
+    quantity: Mapped[float | None] = mapped_column(Numeric, nullable=True)
+    quantity_unit: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+    source: Mapped[str] = mapped_column(String(32), nullable=False, default="comtrade")
+    source_period: Mapped[str | None] = mapped_column(sa.Text, nullable=True)
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC), server_default=func.now()
+    )
+
+
+class REERHistory(Base):
+    __tablename__ = "reer_history"
+    __table_args__ = (
+        UniqueConstraint("iso3", "period", "source", name="uq_reer_country_period_source"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    iso3: Mapped[str] = mapped_column(String(3), ForeignKey("country.iso3", ondelete="CASCADE"), nullable=False)
+    period: Mapped[datetime] = mapped_column(Date, nullable=False)
+    reer_index: Mapped[float] = mapped_column(Numeric, nullable=False)
+    reer_deviation_pct: Mapped[float | None] = mapped_column(Numeric, nullable=True)
+    base_period: Mapped[str] = mapped_column(String(32), nullable=False)
+    source: Mapped[str] = mapped_column(String(32), nullable=False)
+    source_series_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    fetched_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(UTC), server_default=func.now()
+    )
+
 
 class DataVintage(Base):
     __tablename__ = "data_vintage"
