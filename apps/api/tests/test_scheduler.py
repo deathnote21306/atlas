@@ -15,12 +15,18 @@ def test_build_scheduler_enabled_registers_nightly_job(monkeypatch):
     monkeypatch.setattr(config_module.settings, "ingestion_schedule_enabled", True)
     monkeypatch.setattr(config_module.settings, "ingestion_cron", "0 3 * * *")
     scheduler = build_scheduler()
-    jobs = scheduler.get_jobs()
-    assert len(jobs) == 1
-    assert jobs[0].id == "nightly_ingestion"
+    job_ids = {j.id for j in scheduler.get_jobs()}
+    assert "nightly_ingestion" in job_ids
+    assert "nightly_risk_recompute" in job_ids
+    assert "daily_rescore" in job_ids
+    assert "monthly_reer" in job_ids
 
 
-def test_build_scheduler_disabled_registers_no_jobs(monkeypatch):
+def test_build_scheduler_disabled_has_always_on_jobs(monkeypatch):
     monkeypatch.setattr(config_module.settings, "ingestion_schedule_enabled", False)
     scheduler = build_scheduler()
-    assert scheduler.get_jobs() == []
+    job_ids = {j.id for j in scheduler.get_jobs()}
+    assert "nightly_ingestion" not in job_ids
+    assert "nightly_risk_recompute" in job_ids
+    assert "daily_rescore" in job_ids
+    assert "monthly_reer" in job_ids
