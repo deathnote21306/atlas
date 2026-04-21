@@ -185,7 +185,7 @@ def run_reer_ingest(
     if countries is None:
         countries = list(ISO3_TO_ISO2.keys())
 
-    stats: dict[str, int | str | list[dict[str, Any]]] = {
+    stats: dict[str, Any] = {
         "ran_at": datetime.now(UTC).isoformat(),
         "countries_attempted": len(countries),
         "countries_imf_ifs": 0,

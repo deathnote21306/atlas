@@ -64,7 +64,7 @@ def run_daily_rescore() -> dict[str, Any]:
         log.info("daily_rescore_start", candidates=len(rows), limit=DAILY_RESCORE_LIMIT)
 
         for score_row, item in rows:
-            if stats["tokens_used"] >= DAILY_RESCORE_TOKEN_BUDGET:  # type: ignore[operator]
+            if stats["tokens_used"] >= DAILY_RESCORE_TOKEN_BUDGET:
                 log.info("daily_rescore_budget_reached", tokens=stats["tokens_used"])
                 break
 

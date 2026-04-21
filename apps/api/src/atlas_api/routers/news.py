@@ -99,7 +99,7 @@ def reer_status(session: DbSession, _: CurrentUser) -> dict[str, Any]:
         .order_by(REERHistory.iso3)
     ).all()
 
-    seen: dict[str, dict] = {}
+    seen: dict[str, dict[str, Any]] = {}
     for iso3, period, source in rows:
         if iso3 not in seen or source in ("imf_ifs",):
             dev = session.execute(

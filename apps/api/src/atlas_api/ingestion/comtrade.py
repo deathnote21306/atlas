@@ -181,7 +181,7 @@ HS2_LABELS = {
 
 
 def _store_commodity_rows(
-    session: Session, iso3: str, year: int, flow: str, rows: list[dict], now: datetime
+    session: Session, iso3: str, year: int, flow: str, rows: list[dict[str, Any]], now: datetime
 ) -> int:
     """Store commodity-level rows (exports/imports by HS2 chapter)."""
     count = 0
@@ -267,7 +267,7 @@ M49_TO_NAME = {
 
 
 def _store_partner_rows(
-    session: Session, iso3: str, year: int, flow: str, rows: list[dict], now: datetime
+    session: Session, iso3: str, year: int, flow: str, rows: list[dict[str, Any]], now: datetime
 ) -> int:
     """Store partner-level rows (trade by partner country)."""
     count = 0
@@ -322,7 +322,7 @@ def backfill(
     if years is None:
         years = [2020, 2021, 2022, 2023, 2024]
 
-    stats: dict[str, int | list[str]] = {
+    stats: dict[str, Any] = {
         "countries": len(countries),
         "years": len(years),
         "requests": 0,
