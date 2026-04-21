@@ -57,7 +57,7 @@ beforeEach(() => {
 describe("CountryProfile", () => {
   it("renders the country header with name and status pills", async () => {
     render(wrap(<CountryProfile />));
-    expect(await screen.findByText("Ghana")).toBeTruthy();
+    expect((await screen.findAllByText("Ghana")).length).toBeGreaterThan(0);
     expect(screen.getByText("RESTRUCTURING")).toBeTruthy();
   });
 

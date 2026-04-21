@@ -60,12 +60,12 @@ class Country(BaseModel):
     imf_program: ImfProgram | None = None
     key_risks: list[str] | None = None
     key_opportunities: list[str] | None = None
-    risk_decomposition: dict | None = None
+    risk_decomposition: dict[str, Any] | None = None
     macro_annotations: dict[str, str] | None = None
     primary_currency: str | None = None
-    fx_intelligence: dict | None = None
-    economic_structure: dict | None = None
-    forecasts: dict | None = None
+    fx_intelligence: dict[str, Any] | None = None
+    economic_structure: dict[str, Any] | None = None
+    forecasts: dict[str, Any] | None = None
 
     @model_validator(mode="before")
     @classmethod

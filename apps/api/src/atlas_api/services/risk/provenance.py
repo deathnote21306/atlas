@@ -28,14 +28,14 @@ INPUT_PROVENANCE: dict[str, str] = {
 }
 
 
-def make_input(key: str, value: Any, source: str, provenance_override: str | None = None) -> dict:
+def make_input(key: str, value: Any, source: str, provenance_override: str | None = None) -> dict[str, Any]:
     prov = provenance_override or INPUT_PROVENANCE.get(key, "seeded")
     if value is None:
         prov = "missing"
     return {"key": key, "value": value, "source": source, "provenance": prov}
 
 
-def summarize_provenance(inputs: list[dict]) -> dict:
+def summarize_provenance(inputs: list[dict[str, Any]]) -> dict[str, Any]:
     counts = {"real": 0, "seeded": 0, "computed": 0, "missing": 0}
     seeded_keys = []
     for inp in inputs:
