@@ -28,7 +28,9 @@ INPUT_PROVENANCE: dict[str, str] = {
 }
 
 
-def make_input(key: str, value: Any, source: str, provenance_override: str | None = None) -> dict[str, Any]:
+def make_input(
+    key: str, value: Any, source: str, provenance_override: str | None = None
+) -> dict[str, Any]:
     prov = provenance_override or INPUT_PROVENANCE.get(key, "seeded")
     if value is None:
         prov = "missing"

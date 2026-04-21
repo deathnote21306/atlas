@@ -85,7 +85,9 @@ def _get_reer_provenance(session: Session, iso3: str) -> str:
     return "seeded"
 
 
-def compute_for_country(session: Session, country: Country, seed_data: dict[str, Any]) -> dict[str, Any]:
+def compute_for_country(
+    session: Session, country: Country, seed_data: dict[str, Any]
+) -> dict[str, Any]:
     """Compute full risk decomposition for a single country."""
     iso3 = country.iso3
     now = datetime.now(UTC)
@@ -181,7 +183,10 @@ def recompute_all(session: Session, countries: list[str] | None = None) -> dict[
 
     seed = _load_seed()
     if countries:
-        rows: list[Country] = [c for iso3 in countries if (c := session.get(Country, iso3)) is not None]
+        rows: list[Country] = [
+            c for iso3 in countries
+            if (c := session.get(Country, iso3)) is not None
+        ]
     else:
         rows = list(session.execute(select(Country).order_by(Country.iso3)).scalars())
 
