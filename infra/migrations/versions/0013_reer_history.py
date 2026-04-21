@@ -4,6 +4,7 @@ Revision ID: 0013_reer_history
 Revises: 0012_fx_intelligence_fields
 Create Date: 2026-04-19
 """
+
 from __future__ import annotations
 
 import sqlalchemy as sa
@@ -19,7 +20,9 @@ def upgrade() -> None:
     op.create_table(
         "reer_history",
         sa.Column("id", sa.BigInteger, primary_key=True, autoincrement=True),
-        sa.Column("iso3", sa.String(3), sa.ForeignKey("country.iso3", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "iso3", sa.String(3), sa.ForeignKey("country.iso3", ondelete="CASCADE"), nullable=False
+        ),
         sa.Column("period", sa.Date, nullable=False),
         sa.Column("reer_index", sa.Numeric, nullable=False),
         sa.Column("reer_deviation_pct", sa.Numeric, nullable=True),

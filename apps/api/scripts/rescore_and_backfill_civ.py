@@ -3,13 +3,10 @@ Fix 2: Backfill CIV articles with fixed GDELT query.
 """
 
 import asyncio
-import re
-import uuid
-from datetime import UTC, datetime
+import sys
 
 import httpx
 
-import sys
 sys.path.insert(0, "packages/schemas/src")
 sys.path.insert(0, "apps/api/src")
 
@@ -38,11 +35,11 @@ KEYWORDS = {
 async def backfill_civ() -> int:
     """Fetch CIV articles with fixed query."""
     from atlas_api.db import SessionLocal
-    from atlas_api.services.news.gdelt import poll_gdelt
-    from atlas_api.services.news.dedup import store_new_articles
-    from atlas_api.services.news.nlp import classify_event, extract_country
-    from atlas_api.services.news.heuristic_scorer import persist_score, score_impact
     from atlas_api.models import NewsImpactScore
+    from atlas_api.services.news.dedup import store_new_articles
+    from atlas_api.services.news.gdelt import poll_gdelt
+    from atlas_api.services.news.heuristic_scorer import persist_score, score_impact
+    from atlas_api.services.news.nlp import classify_event
     from sqlalchemy import select
 
     print("=== Backfilling CIV ===")
@@ -52,10 +49,11 @@ async def backfill_civ() -> int:
             articles = await poll_gdelt(http, english_only=True, max_records=40)
 
         # Filter to CIV-related only
-        civ_articles = [a for a in articles if any(
-            kw in (a.title + " " + (a.body_snippet or "")).lower()
-            for kw in KEYWORDS["CIV"]
-        )]
+        civ_articles = [
+            a
+            for a in articles
+            if any(kw in (a.title + " " + (a.body_snippet or "")).lower() for kw in KEYWORDS["CIV"])
+        ]
         print(f"CIV-relevant from GDELT: {len(civ_articles)}")
 
         new_items = store_new_articles(session, civ_articles)
@@ -68,9 +66,13 @@ async def backfill_civ() -> int:
             if event_type:
                 item.event_type = event_type
 
-            existing = session.execute(
-                select(NewsImpactScore).where(NewsImpactScore.news_item_id == item.id)
-            ).scalars().first()
+            existing = (
+                session.execute(
+                    select(NewsImpactScore).where(NewsImpactScore.news_item_id == item.id)
+                )
+                .scalars()
+                .first()
+            )
             if not existing:
                 scores = score_impact(item.title, item.body_text or "")
                 persist_score(session, item.id, scores)
@@ -84,10 +86,9 @@ async def backfill_civ() -> int:
 def rescore_batch(max_tokens: int = 40000) -> dict[str, int]:
     """Re-score heuristic articles with Claude, respecting token budget."""
     from atlas_api.db import SessionLocal
-    from atlas_api.models import NewsItem, NewsImpactScore
+    from atlas_api.models import NewsImpactScore, NewsItem
     from atlas_api.services.ai.news_scorer import score_with_ai
-    from atlas_api.services.ai.provider import token_counter
-    from sqlalchemy import select, delete
+    from sqlalchemy import delete, select
 
     stats = {"claude_scored": 0, "claude_failed": 0, "skipped_budget": 0, "total_tokens": 0}
 
@@ -107,7 +108,9 @@ def rescore_batch(max_tokens: int = 40000) -> dict[str, int]:
         for score_row, item in scored_items:
             remaining = max_tokens - stats["total_tokens"]
             if remaining < 2500:
-                stats["skipped_budget"] = len(scored_items) - stats["claude_scored"] - stats["claude_failed"]
+                stats["skipped_budget"] = (
+                    len(scored_items) - stats["claude_scored"] - stats["claude_failed"]
+                )
                 print(f"Token budget exhausted after {stats['claude_scored']} articles")
                 break
 
@@ -132,6 +135,7 @@ def rescore_batch(max_tokens: int = 40000) -> dict[str, int]:
             else:
                 # Claude failed — re-create heuristic score
                 from atlas_api.services.news.heuristic_scorer import persist_score, score_impact
+
                 scores = score_impact(item.title, item.body_text or "")
                 persist_score(session, item.id, scores)
                 stats["claude_failed"] += 1
@@ -146,15 +150,15 @@ def rescore_batch(max_tokens: int = 40000) -> dict[str, int]:
 
 async def main() -> None:
     # Fix 2: Backfill CIV
-    civ_count = await backfill_civ()
+    await backfill_civ()
 
     # Fix 1: Re-score batch 1 (~40k tokens, ~16-20 articles)
-    stats = rescore_batch(max_tokens=40000)
+    rescore_batch(max_tokens=40000)
 
     # Final audit
     from atlas_api.db import SessionLocal
-    from atlas_api.models import NewsItem, NewsImpactScore
-    from sqlalchemy import select, func
+    from atlas_api.models import NewsImpactScore, NewsItem
+    from sqlalchemy import func, select
 
     with SessionLocal() as s:
         print("\n=== FINAL COVERAGE ===")

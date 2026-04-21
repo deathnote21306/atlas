@@ -1,10 +1,10 @@
 """Seed fallback trade data for all 10 countries (2024)."""
 
+import sys
 from datetime import UTC, datetime
 
 from sqlalchemy.dialects.postgresql import insert
 
-import sys
 sys.path.insert(0, "packages/schemas/src")
 sys.path.insert(0, "apps/api/src")
 
@@ -270,12 +270,12 @@ def compute_hhi(exports: list[tuple[str, str, int]], total: int) -> tuple[float,
     if total == 0:
         return 0, 100, 0
     shares = [(val / total * 100) for _, _, val in exports]
-    hhi = sum(s ** 2 for s in shares)
+    hhi = sum(s**2 for s in shares)
     # Add remaining share as "other"
     top_share = sum(shares)
     if top_share < 100:
         other = 100 - top_share
-        hhi += other ** 2
+        hhi += other**2
     score = max(0, 100 - round(hhi / 100))
     # Commodity dependency: HS 01-27
     dep = sum(val for code, _, val in exports if code.isdigit() and int(code) <= 27) / total * 100
@@ -293,40 +293,85 @@ def main() -> None:
 
             # Exports by commodity
             for code, label, value in data["exports"]:
-                stmt = insert(TradeAnnual).values(
-                    reporter_iso3=iso3, year=year, flow="X",
-                    partner_iso3=None, partner_name=None,
-                    commodity_code=code, commodity_label=label,
-                    trade_value_usd=value, source="seed", ingested_at=now,
-                ).on_conflict_do_update(
-                    constraint="uq_trade_annual_row",
-                    set_={"trade_value_usd": value, "commodity_label": label, "source": "seed", "ingested_at": now},
+                stmt = (
+                    insert(TradeAnnual)
+                    .values(
+                        reporter_iso3=iso3,
+                        year=year,
+                        flow="X",
+                        partner_iso3=None,
+                        partner_name=None,
+                        commodity_code=code,
+                        commodity_label=label,
+                        trade_value_usd=value,
+                        source="seed",
+                        ingested_at=now,
+                    )
+                    .on_conflict_do_update(
+                        constraint="uq_trade_annual_row",
+                        set_={
+                            "trade_value_usd": value,
+                            "commodity_label": label,
+                            "source": "seed",
+                            "ingested_at": now,
+                        },
+                    )
                 )
                 s.execute(stmt)
 
             # Import sources (partner-level)
             for partner_iso, partner_name, value in data["import_sources"]:
-                stmt = insert(TradeAnnual).values(
-                    reporter_iso3=iso3, year=year, flow="M",
-                    partner_iso3=partner_iso, partner_name=partner_name,
-                    commodity_code=None, commodity_label=None,
-                    trade_value_usd=value, source="seed", ingested_at=now,
-                ).on_conflict_do_update(
-                    constraint="uq_trade_annual_row",
-                    set_={"trade_value_usd": value, "partner_name": partner_name, "source": "seed", "ingested_at": now},
+                stmt = (
+                    insert(TradeAnnual)
+                    .values(
+                        reporter_iso3=iso3,
+                        year=year,
+                        flow="M",
+                        partner_iso3=partner_iso,
+                        partner_name=partner_name,
+                        commodity_code=None,
+                        commodity_label=None,
+                        trade_value_usd=value,
+                        source="seed",
+                        ingested_at=now,
+                    )
+                    .on_conflict_do_update(
+                        constraint="uq_trade_annual_row",
+                        set_={
+                            "trade_value_usd": value,
+                            "partner_name": partner_name,
+                            "source": "seed",
+                            "ingested_at": now,
+                        },
+                    )
                 )
                 s.execute(stmt)
 
             # Export partners
             for partner_iso, partner_name, value in data["export_partners"]:
-                stmt = insert(TradeAnnual).values(
-                    reporter_iso3=iso3, year=year, flow="X",
-                    partner_iso3=partner_iso, partner_name=partner_name,
-                    commodity_code=None, commodity_label=None,
-                    trade_value_usd=value, source="seed", ingested_at=now,
-                ).on_conflict_do_update(
-                    constraint="uq_trade_annual_row",
-                    set_={"trade_value_usd": value, "partner_name": partner_name, "source": "seed", "ingested_at": now},
+                stmt = (
+                    insert(TradeAnnual)
+                    .values(
+                        reporter_iso3=iso3,
+                        year=year,
+                        flow="X",
+                        partner_iso3=partner_iso,
+                        partner_name=partner_name,
+                        commodity_code=None,
+                        commodity_label=None,
+                        trade_value_usd=value,
+                        source="seed",
+                        ingested_at=now,
+                    )
+                    .on_conflict_do_update(
+                        constraint="uq_trade_annual_row",
+                        set_={
+                            "trade_value_usd": value,
+                            "partner_name": partner_name,
+                            "source": "seed",
+                            "ingested_at": now,
+                        },
+                    )
                 )
                 s.execute(stmt)
 
@@ -340,7 +385,9 @@ def main() -> None:
                 country.economic_diversification_as_of = year
                 country.commodity_dependency_pct = dep_pct
 
-            print(f"{iso3}: HHI={hhi:.0f}, score={div_score}, dep={dep_pct:.0f}%, exports={total_exports/1e9:.1f}bn, imports={total_imports/1e9:.1f}bn")
+            print(
+                f"{iso3}: HHI={hhi:.0f}, score={div_score}, dep={dep_pct:.0f}%, exports={total_exports / 1e9:.1f}bn, imports={total_imports / 1e9:.1f}bn"  # noqa: E501
+            )
 
         s.commit()
         print("Done")

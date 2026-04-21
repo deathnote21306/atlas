@@ -20,9 +20,13 @@ def main() -> None:
                 r["composite_risk_as_of"] = now
             if r.get("atlas_spread_bps") is not None and "atlas_spread_as_of" not in r:
                 r["atlas_spread_as_of"] = now - timedelta(hours=16)
-            stmt = insert(Country).values(**r).on_conflict_do_update(
-                index_elements=["iso3"],
-                set_={k: r[k] for k in r if k != "iso3"},
+            stmt = (
+                insert(Country)
+                .values(**r)
+                .on_conflict_do_update(
+                    index_elements=["iso3"],
+                    set_={k: r[k] for k in r if k != "iso3"},
+                )
             )
             s.execute(stmt)
         s.commit()

@@ -6,20 +6,18 @@ These are demo-quality values — flagged for replacement when a historical
 source supporting African currencies is available.
 """
 
-import math
 import random
+import sys
 import uuid
 from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy.dialects.postgresql import insert
 
-import sys
 sys.path.insert(0, "packages/schemas/src")
 sys.path.insert(0, "apps/api/src")
 
 from atlas_api.db import SessionLocal
 from atlas_api.models import FxRate
-from atlas_api.services.country.indicators import ISO3_TO_CCY
 
 # Current approximate spot rates (CCY per USD) as of April 2026
 # and annual depreciation % for generating historical curve
@@ -32,7 +30,7 @@ CURRENCY_PARAMS = {
     "SEN": {"ccy": "XOF", "spot": 610.0, "annual_depr_pct": 1.0},  # CFA peg
     "RWA": {"ccy": "RWF", "spot": 1457.0, "annual_depr_pct": 5.0},
     "ZAF": {"ccy": "ZAR", "spot": 18.5, "annual_depr_pct": 6.0},
-    "MAR": {"ccy": "MAD", "spot": 9.95, "annual_depr_pct": 2.0},   # basket peg
+    "MAR": {"ccy": "MAD", "spot": 9.95, "annual_depr_pct": 2.0},  # basket peg
     "EGY": {"ccy": "EGP", "spot": 50.25, "annual_depr_pct": 12.0},
 }
 
@@ -46,7 +44,7 @@ def generate_history(spot_now: float, annual_depr_pct: float, days: int = 365) -
     values = [spot_now]
     random.seed(42)  # reproducible
 
-    for d in range(1, days + 1):
+    for _d in range(1, days + 1):
         prev = values[-1]
         base_step = prev * daily_depr
         noise = random.gauss(0, abs(base_step) * 0.3)
@@ -72,7 +70,7 @@ def main() -> None:
             history = generate_history(spot, depr, 365)
             current_date = start_date
 
-            for i, ccy_per_usd in enumerate(history):
+            for _i, ccy_per_usd in enumerate(history):
                 if current_date > end_date:
                     break
                 # Skip weekends
@@ -82,15 +80,19 @@ def main() -> None:
 
                 usd_per_ccy = 1.0 / ccy_per_usd
 
-                stmt = insert(FxRate).values(
-                    id=uuid.uuid4(),
-                    iso3=iso3,
-                    ccy=ccy,
-                    usd_per_ccy=usd_per_ccy,
-                    observation_date=current_date,
-                    source="seed_approximation",
-                    ingested_at=now,
-                ).on_conflict_do_nothing(constraint="uq_fx_daily")
+                stmt = (
+                    insert(FxRate)
+                    .values(
+                        id=uuid.uuid4(),
+                        iso3=iso3,
+                        ccy=ccy,
+                        usd_per_ccy=usd_per_ccy,
+                        observation_date=current_date,
+                        source="seed_approximation",
+                        ingested_at=now,
+                    )
+                    .on_conflict_do_nothing(constraint="uq_fx_daily")
+                )
 
                 result = s.execute(stmt)
                 if result.rowcount > 0:
@@ -102,10 +104,15 @@ def main() -> None:
         print(f"Inserted {inserted} FX observations (seed approximations)")
 
         # Verify
-        from sqlalchemy import select, func
+        from sqlalchemy import func, select
+
         rows = s.execute(
-            select(FxRate.iso3, func.count(), func.min(FxRate.observation_date), func.max(FxRate.observation_date))
-            .group_by(FxRate.iso3)
+            select(
+                FxRate.iso3,
+                func.count(),
+                func.min(FxRate.observation_date),
+                func.max(FxRate.observation_date),
+            ).group_by(FxRate.iso3)
         ).all()
         print("\nFX history per country:")
         for iso, cnt, mn, mx in rows:

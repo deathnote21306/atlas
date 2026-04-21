@@ -4,13 +4,13 @@ Source: frankfurter.app — provides historical EUR-based rates. We convert to U
 This is a one-time backfill; daily ingestion continues from open.er-api.com.
 """
 
+import sys
 import uuid
 from datetime import UTC, date, datetime, timedelta
 
 import httpx
 from sqlalchemy.dialects.postgresql import insert
 
-import sys
 sys.path.insert(0, "packages/schemas/src")
 sys.path.insert(0, "apps/api/src")
 
@@ -27,7 +27,9 @@ def main() -> None:
     currencies = list(set(ISO3_TO_CCY.values()))
     symbols = ",".join(currencies + ["USD"])
 
-    print(f"Fetching {start_date} to {end_date} for {len(currencies)} currencies from frankfurter.app...")
+    print(
+        f"Fetching {start_date} to {end_date} for {len(currencies)} currencies from frankfurter.app..."  # noqa: E501
+    )
 
     resp = httpx.get(
         f"https://api.frankfurter.dev/v1/{start_date.isoformat()}..{end_date.isoformat()}",
@@ -61,15 +63,19 @@ def main() -> None:
                 ccy_per_usd = ccy_per_eur / usd_per_eur
                 usd_per_ccy = 1.0 / ccy_per_usd
 
-                stmt = insert(FxRate).values(
-                    id=uuid.uuid4(),
-                    iso3=iso3,
-                    ccy=ccy,
-                    usd_per_ccy=usd_per_ccy,
-                    observation_date=obs_date,
-                    source="frankfurter.app",
-                    ingested_at=now,
-                ).on_conflict_do_nothing(constraint="uq_fx_daily")
+                stmt = (
+                    insert(FxRate)
+                    .values(
+                        id=uuid.uuid4(),
+                        iso3=iso3,
+                        ccy=ccy,
+                        usd_per_ccy=usd_per_ccy,
+                        observation_date=obs_date,
+                        source="frankfurter.app",
+                        ingested_at=now,
+                    )
+                    .on_conflict_do_nothing(constraint="uq_fx_daily")
+                )
 
                 result = s.execute(stmt)
                 if result.rowcount > 0:
@@ -79,10 +85,15 @@ def main() -> None:
         print(f"Inserted {inserted} FX observations")
 
         # Verify
-        from sqlalchemy import select, func
+        from sqlalchemy import func, select
+
         rows = s.execute(
-            select(FxRate.iso3, func.count(), func.min(FxRate.observation_date), func.max(FxRate.observation_date))
-            .group_by(FxRate.iso3)
+            select(
+                FxRate.iso3,
+                func.count(),
+                func.min(FxRate.observation_date),
+                func.max(FxRate.observation_date),
+            ).group_by(FxRate.iso3)
         ).all()
         print("\nFX history per country:")
         for iso, cnt, mn, mx in rows:

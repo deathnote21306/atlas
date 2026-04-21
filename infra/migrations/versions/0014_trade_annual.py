@@ -4,6 +4,7 @@ Revision ID: 0014_trade_annual
 Revises: 0013_reer_history
 Create Date: 2026-04-20
 """
+
 from __future__ import annotations
 
 import sqlalchemy as sa
@@ -32,10 +33,18 @@ def upgrade() -> None:
         sa.Column("source", sa.String, server_default="comtrade"),
         sa.Column("source_period", sa.String, nullable=True),
         sa.Column("ingested_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
-        sa.UniqueConstraint("reporter_iso3", "year", "flow", "partner_iso3", "commodity_code",
-                           name="uq_trade_annual_row"),
+        sa.UniqueConstraint(
+            "reporter_iso3",
+            "year",
+            "flow",
+            "partner_iso3",
+            "commodity_code",
+            name="uq_trade_annual_row",
+        ),
     )
-    op.create_index("ix_trade_annual_reporter_year", "trade_annual", ["reporter_iso3", sa.text("year DESC")])
+    op.create_index(
+        "ix_trade_annual_reporter_year", "trade_annual", ["reporter_iso3", sa.text("year DESC")]
+    )
     op.create_index("ix_trade_annual_partner", "trade_annual", ["partner_iso3"])
     op.create_index("ix_trade_annual_commodity", "trade_annual", ["commodity_code"])
 

@@ -1,13 +1,11 @@
-"""Backfill news: fetch English + non-English articles, translate non-English titles, NER + score."""
+"""Backfill news: fetch English + non-English articles, translate non-English titles, NER + score."""  # noqa: E501
 
 import asyncio
 import re
-import uuid
-from datetime import UTC, datetime
+import sys
 
 import httpx
 
-import sys
 sys.path.insert(0, "packages/schemas/src")
 sys.path.insert(0, "apps/api/src")
 
@@ -22,8 +20,8 @@ def is_mostly_latin(text: str) -> bool:
 async def translate_titles(titles: list[str]) -> list[str]:
     """Translate non-English titles using Claude."""
     try:
-        from atlas_api.config import settings
         import anthropic
+        from atlas_api.config import settings
 
         if not settings.anthropic_api_key:
             print("No Anthropic API key — skipping translation")
@@ -32,8 +30,8 @@ async def translate_titles(titles: list[str]) -> list[str]:
         client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
         # Batch all titles in one call for efficiency
-        numbered = "\n".join(f"{i+1}. {t}" for i, t in enumerate(titles))
-        prompt = f"""Translate each of the following news headlines to English. Keep the same numbered format. Only output the translations, nothing else.
+        numbered = "\n".join(f"{i + 1}. {t}" for i, t in enumerate(titles))
+        prompt = f"""Translate each headline to English. Keep numbered format.
 
 {numbered}"""
 
@@ -44,7 +42,7 @@ async def translate_titles(titles: list[str]) -> list[str]:
         )
 
         text = response.content[0].text
-        lines = [l.strip() for l in text.strip().split("\n") if l.strip()]
+        lines = [line.strip() for line in text.strip().split("\n") if line.strip()]
 
         translated = []
         for line in lines:
@@ -59,7 +57,7 @@ async def translate_titles(titles: list[str]) -> list[str]:
         while len(translated) < len(titles):
             translated.append(titles[len(translated)])
 
-        return translated[:len(titles)]
+        return translated[: len(titles)]
     except Exception as e:
         print(f"Translation failed: {e} — keeping original titles")
         return titles
@@ -67,13 +65,13 @@ async def translate_titles(titles: list[str]) -> list[str]:
 
 async def main() -> None:
     from atlas_api.db import SessionLocal
-    from atlas_api.models import NewsItem, NewsImpactScore
-    from atlas_api.services.news.gdelt import poll_gdelt
-    from atlas_api.services.news.rss import poll_rss
+    from atlas_api.models import NewsImpactScore, NewsItem
     from atlas_api.services.news.dedup import store_new_articles
-    from atlas_api.services.news.nlp import classify_event, extract_country
+    from atlas_api.services.news.gdelt import poll_gdelt
     from atlas_api.services.news.heuristic_scorer import persist_score, score_impact
-    from sqlalchemy import select, func
+    from atlas_api.services.news.nlp import classify_event, extract_country
+    from atlas_api.services.news.rss import poll_rss
+    from sqlalchemy import func, select
 
     session = SessionLocal()
 
@@ -103,7 +101,7 @@ async def main() -> None:
         if non_english:
             original_titles = [item.title for item in non_english]
             translated = await translate_titles(original_titles)
-            for item, new_title in zip(non_english, translated):
+            for item, new_title in zip(non_english, translated, strict=False):
                 if new_title != item.title:
                     item.title = new_title
             session.commit()
@@ -114,11 +112,18 @@ async def main() -> None:
         event_count = 0
         scored_count = 0
 
-        KEYWORDS = {
+        keywords = {
             "KEN": ["kenya", "kenyan", "nairobi", "shilling", "kenyatta"],
             "CIV": ["ivory coast", "ivoire", "abidjan", "ivorian", "ouattara"],
             "SEN": ["senegal", "senegalese", "dakar"],
-            "ZAF": ["south africa", "south african", "pretoria", "johannesburg", "rand", "ramaphosa"],
+            "ZAF": [
+                "south africa",
+                "south african",
+                "pretoria",
+                "johannesburg",
+                "rand",
+                "ramaphosa",
+            ],
             "MAR": ["morocco", "moroccan", "rabat", "casablanca", "dirham"],
             "EGY": ["egypt", "egyptian", "cairo", "suez", "sisi"],
             "ETH": ["ethiopia", "ethiopian", "addis", "abiy"],
@@ -137,7 +142,7 @@ async def main() -> None:
 
                 if not iso3:
                     text_lower = (item.title + " " + (item.body_text or "")).lower()
-                    for code, kws in KEYWORDS.items():
+                    for code, kws in keywords.items():
                         if any(kw in text_lower for kw in kws):
                             iso3 = code
                             break
@@ -157,9 +162,13 @@ async def main() -> None:
                     pass
 
             # Heuristic scoring
-            existing = session.execute(
-                select(NewsImpactScore).where(NewsImpactScore.news_item_id == item.id)
-            ).scalars().first()
+            existing = (
+                session.execute(
+                    select(NewsImpactScore).where(NewsImpactScore.news_item_id == item.id)
+                )
+                .scalars()
+                .first()
+            )
             if not existing:
                 scores = score_impact(item.title, item.body_text or "")
                 persist_score(session, item.id, scores)

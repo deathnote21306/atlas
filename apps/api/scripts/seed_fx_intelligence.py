@@ -1,10 +1,9 @@
-"""Seed FX Intelligence fields for all 10 countries + compute change ladder from existing FxRate data."""
+"""Seed FX Intelligence fields for all 10 countries + compute change ladder from existing FxRate data."""  # noqa: E501
 
 from datetime import UTC, date, datetime, timedelta
 
 from atlas_api.db import SessionLocal
 from atlas_api.models import Country, FxRate
-from atlas_api.services.country.indicators import ISO3_TO_CCY
 from sqlalchemy import select
 
 FX_INTEL = {
@@ -119,7 +118,12 @@ def compute_change_ladder(session, iso3: str) -> dict:
     spot_usd_per_local = 1.0 / base_val
 
     result = {"fx_change_as_of": datetime.now(UTC)}
-    windows = [("fx_change_1d_pct", 1), ("fx_change_1w_pct", 7), ("fx_change_1m_pct", 30), ("fx_change_3m_pct", 90)]
+    windows = [
+        ("fx_change_1d_pct", 1),
+        ("fx_change_1w_pct", 7),
+        ("fx_change_1m_pct", 30),
+        ("fx_change_3m_pct", 90),
+    ]
 
     for field, days in windows:
         target_date = base_date - timedelta(days=days)

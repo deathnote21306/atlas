@@ -1,17 +1,15 @@
-"""Process unscored news items: NER country extraction + event classification + heuristic scoring."""
+"""Process unscored news items: NER country extraction + event classification + heuristic scoring."""  # noqa: E501
 
 from atlas_api.db import SessionLocal
-from atlas_api.models import NewsItem, NewsImpactScore
-from atlas_api.services.news.nlp import classify_event, extract_country
+from atlas_api.models import NewsImpactScore, NewsItem
 from atlas_api.services.news.heuristic_scorer import persist_score, score_impact
+from atlas_api.services.news.nlp import classify_event, extract_country
 from sqlalchemy import select
 
 
 def main() -> None:
     with SessionLocal() as s:
-        items = s.execute(
-            select(NewsItem).order_by(NewsItem.published_at.desc())
-        ).scalars().all()
+        items = s.execute(select(NewsItem).order_by(NewsItem.published_at.desc())).scalars().all()
 
         ner_assigned = 0
         events_classified = 0
@@ -33,9 +31,11 @@ def main() -> None:
                     events_classified += 1
 
             # Heuristic scoring (skip if already scored)
-            existing = s.execute(
-                select(NewsImpactScore).where(NewsImpactScore.news_item_id == item.id)
-            ).scalars().first()
+            existing = (
+                s.execute(select(NewsImpactScore).where(NewsImpactScore.news_item_id == item.id))
+                .scalars()
+                .first()
+            )
             if not existing:
                 scores = score_impact(item.title, item.body_text or "")
                 persist_score(s, item.id, scores)
@@ -50,6 +50,7 @@ def main() -> None:
 
         # Per-country counts
         from sqlalchemy import func
+
         rows = s.execute(
             select(NewsItem.primary_iso3, func.count())
             .group_by(NewsItem.primary_iso3)
