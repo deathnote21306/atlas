@@ -41,7 +41,7 @@ function fmtVal(v: number | null, unit: string): string {
 export default function ForecastsTab({ data, countryName }: ForecastsTabProps) {
   if (!data) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] py-16">
+      <div className="flex items-center justify-center rounded-lg bg-[#161b22] py-16">
         <p className="text-sm text-ink-500">Forecasts temporarily unavailable for {countryName}</p>
       </div>
     );
@@ -66,11 +66,11 @@ export default function ForecastsTab({ data, countryName }: ForecastsTabProps) {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-lg border border-white/[0.06] bg-white/[0.03]">
+      <div className="overflow-hidden rounded-lg bg-[#161b22]">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-white/[0.04] text-left text-[11px] uppercase tracking-wider text-ink-500">
+              <tr className="bg-[#161b22] text-left text-[11px] uppercase tracking-wider text-ink-500">
                 <th className="px-4 py-3">Indicator</th>
                 <th className="px-4 py-3">Year</th>
                 <th className="px-4 py-3 text-right">Current</th>
@@ -85,8 +85,8 @@ export default function ForecastsTab({ data, countryName }: ForecastsTabProps) {
                 ind.years.map((yr, yrIdx) => (
                   <tr
                     key={`${ind.key}-${yr.year}`}
-                    className={`border-b border-white/[0.03] ${
-                      yrIdx === 0 && indIdx > 0 ? "border-t-2 border-t-white/[0.06]" : ""
+                    className={`border-b border-[#21262d] ${
+                      yrIdx === 0 && indIdx > 0 ? "border-t-2 border-t-[#21262d]" : ""
                     }`}
                   >
                     <td className="px-4 py-3 text-ink-200">

@@ -51,7 +51,7 @@ function impactBadgeColor(score: number): string {
   if (score >= 80) return "bg-red-500/20 text-red-400 border-red-500/30";
   if (score >= 60) return "bg-orange-500/20 text-orange-400 border-orange-500/30";
   if (score >= 40) return "bg-amber-500/20 text-amber-400 border-amber-500/30";
-  return "bg-white/[0.04] text-ink-400 border-white/[0.06]";
+  return "bg-[#21262d] text-ink-400 border-[#21262d]";
 }
 
 function axisColor(level: string): string {
@@ -150,7 +150,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-8 text-center">
+      <div className="rounded-lg bg-[#161b22] p-8 text-center">
         <p className="text-ink-400">Unable to load news — try again</p>
       </div>
     );
@@ -182,7 +182,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
 
       {/* Empty state */}
       {filtered.length === 0 && (
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-8 text-center">
+        <div className="rounded-lg bg-[#161b22] p-8 text-center">
           <p className="text-ink-400">No news articles for this country in the selected time range.</p>
           {dateRange !== "all" && (
             <button
@@ -204,7 +204,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
               key={article.id}
               type="button"
               onClick={() => openArticle(article.id)}
-              className="w-full rounded-lg border border-white/[0.06] bg-white/[0.03] p-5 text-left transition-colors hover:bg-white/[0.05]"
+              className="w-full rounded-lg bg-[#161b22] p-5 text-left transition-colors hover:bg-[#1c2129]"
             >
               <div className="flex gap-4">
                 {/* Impact badge */}
@@ -237,7 +237,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
                       ).map(([label, level]) => (
                         <div
                           key={label}
-                          className="rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-1.5 text-center"
+                          className="rounded-md border border-[#21262d] bg-[#131920] px-2 py-1.5 text-center"
                         >
                           <div className="text-[10px] uppercase tracking-wider text-ink-500">{label}</div>
                           <div className={`mt-0.5 tabular-nums text-base ${axisColor(level)}`}>
@@ -252,7 +252,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
                   <div className="mt-3 flex items-center justify-between">
                     <div className="flex flex-wrap gap-1">
                       {article.event_type && (
-                        <span className="rounded bg-white/[0.04] px-2 py-0.5 text-xs text-ink-400">
+                        <span className="rounded bg-[#21262d] px-2 py-0.5 text-xs text-ink-400">
                           {article.event_type}
                         </span>
                       )}
@@ -275,7 +275,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
       {selectedArticle && (
         <>
           <div className="fixed inset-0 z-50 bg-black/40" onClick={closePanel} />
-          <div className="fixed bottom-0 right-0 top-0 z-50 w-[500px] overflow-y-auto border-l border-white/[0.06] bg-ink-900 p-6">
+          <div className="fixed bottom-0 right-0 top-0 z-50 w-[500px] overflow-y-auto border-l border-[#21262d] bg-[#0d1117] p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-ink-100">{selectedArticle.title}</h3>
               <button onClick={closePanel} className="rounded p-1 text-ink-500 hover:text-ink-200">
@@ -304,7 +304,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
                       ["Political", selectedArticle.score.political_impact],
                     ] as const
                   ).map(([label, level]) => (
-                    <div key={label} className="rounded-md border border-white/[0.06] bg-white/[0.03] p-3 text-center">
+                    <div key={label} className="rounded-md bg-[#161b22] p-3 text-center">
                       <div className="text-[10px] uppercase tracking-wider text-ink-500">{label}</div>
                       <div className={`mt-1 text-xl font-bold tabular-nums ${axisColor(level)}`}>
                         {impactToNum(level)}
@@ -335,7 +335,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
 
             {/* Lineage */}
             {selectedArticle.score && (
-              <p className={`mt-6 border-t border-white/[0.06] pt-3 text-[11px] ${
+              <p className={`mt-6 border-t border-[#21262d] pt-3 text-[11px] ${
                 selectedArticle.score.scorer === "heuristic" ? "text-ink-600" : "text-ink-500"
               }`}>
                 {selectedArticle.score.scorer === "heuristic"

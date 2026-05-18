@@ -107,11 +107,11 @@ export default function ScenarioView() {
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-400">
               Shock Inputs
             </h2>
-            <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
+            <div className="rounded-lg bg-[#161b22] p-4">
               <table className="w-full text-sm">
                 <tbody>
                   {(Object.keys(SHOCK_LABELS) as (keyof ShockVector)[]).map((key) => (
-                    <tr key={key} className="border-b border-white/[0.04] last:border-0">
+                    <tr key={key} className="border-b border-[#21262d] last:border-0">
                       <td className="py-2 text-ink-300">{SHOCK_LABELS[key].label}</td>
                       <td className="py-2 text-right font-mono text-ink-100">
                         {shocks[key] >= 0 ? "+" : ""}{shocks[key].toFixed(1)} {SHOCK_LABELS[key].unit}
@@ -131,13 +131,13 @@ export default function ScenarioView() {
             <div className="space-y-3">
               {/* Risk comparison */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3 text-center">
+                <div className="rounded-lg bg-[#161b22] p-3 text-center">
                   <div className="text-xs text-ink-400">Baseline Risk</div>
                   <div className="mt-1 font-mono text-xl text-ink-100">
                     {outputs.baseline_risk_score.toFixed(1)}
                   </div>
                 </div>
-                <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3 text-center">
+                <div className="rounded-lg bg-[#161b22] p-3 text-center">
                   <div className="text-xs text-ink-400">Shocked Risk</div>
                   <div
                     className={`mt-1 font-mono text-xl ${
@@ -154,7 +154,7 @@ export default function ScenarioView() {
               </div>
 
               {/* PoD */}
-              <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3">
+              <div className="rounded-lg bg-[#161b22] p-3">
                 <div className="text-xs text-ink-400">Probability of Debt Distress</div>
                 <div className="mt-1 font-mono text-ink-100">
                   {outputs.distress_probability != null
@@ -164,10 +164,10 @@ export default function ScenarioView() {
               </div>
 
               {/* Deltas */}
-              <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-3">
+              <div className="rounded-lg bg-[#161b22] p-3">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/[0.06] text-left text-xs text-ink-400">
+                    <tr className="border-b border-[#21262d] text-left text-xs text-ink-400">
                       <th className="pb-1">Metric</th>
                       <th className="pb-1 text-right">Baseline</th>
                       <th className="pb-1 text-right">Shocked</th>

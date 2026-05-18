@@ -66,7 +66,7 @@ function relativeTime(iso: string): string {
 export default function RiskDecompositionTab({ data }: RiskDecompositionTabProps) {
   if (!data) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] py-16">
+      <div className="flex items-center justify-center rounded-lg bg-[#161b22] py-16">
         <p className="text-sm text-ink-500">Risk decomposition not yet computed for this country</p>
       </div>
     );
@@ -77,7 +77,7 @@ export default function RiskDecompositionTab({ data }: RiskDecompositionTabProps
   return (
     <div className="space-y-4">
       {/* Methodology header */}
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+      <div className="rounded-lg bg-[#161b22] p-6">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-[10px] uppercase tracking-[0.14em] text-ink-500">ATLAS Composite Risk Score</p>
@@ -116,7 +116,7 @@ export default function RiskDecompositionTab({ data }: RiskDecompositionTabProps
         const hasSeeded = seededCount > 0 || dim.inputs.some((i) => i.provenance === "missing");
 
         return (
-          <div key={dim.key} className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+          <div key={dim.key} className="rounded-lg bg-[#161b22] p-6">
             {/* Header row */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -134,10 +134,10 @@ export default function RiskDecompositionTab({ data }: RiskDecompositionTabProps
             </div>
 
             {/* Divider */}
-            <div className="my-3 border-t border-white/[0.06]" />
+            <div className="my-3 border-t border-[#21262d]" />
 
             {/* Progress bar */}
-            <div className="h-1.5 rounded-full bg-white/[0.06]">
+            <div className="h-1.5 rounded-full bg-[#21262d]">
               <div
                 className={`h-full rounded-full ${barColor(dim.score)} transition-all duration-500`}
                 style={{ width: `${dim.score}%` }}
@@ -155,7 +155,7 @@ export default function RiskDecompositionTab({ data }: RiskDecompositionTabProps
                 {dim.sub_drivers.map((sd) => (
                   <span
                     key={sd}
-                    className="rounded-md border border-white/[0.06] bg-white/[0.04] px-2.5 py-1 text-xs text-ink-300"
+                    className="rounded-md border border-[#21262d] bg-[#21262d] px-2.5 py-1 text-xs text-ink-300"
                   >
                     {sd}
                   </span>
@@ -172,7 +172,7 @@ export default function RiskDecompositionTab({ data }: RiskDecompositionTabProps
             )}
 
             {/* Provenance footer */}
-            <div className="mt-4 border-t border-white/[0.04] pt-3">
+            <div className="mt-4 border-t border-[#21262d] pt-3">
               <span className={`text-[11px] ${hasSeeded ? "text-amber-500/70" : "text-ink-500"}`}>
                 Inputs: {realCount} real{seededCount > 0 ? `, ${seededCount} seeded` : ""}
                 {computedCount > 0 ? `, ${computedCount} computed` : ""}

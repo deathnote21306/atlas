@@ -30,6 +30,41 @@ COMPOSITE_LABELS = [
     (0, "Low Risk"),
 ]
 
+REGION_MAP: dict[str, str] = {
+    "ETH": "SSA", "GHA": "SSA", "KEN": "SSA", "NGA": "SSA",
+    "CIV": "SSA", "SEN": "SSA", "RWA": "SSA", "ZAF": "SSA",
+    "MAR": "MENA", "EGY": "MENA",
+}
+
+THEMATIC_GROUPS: list[dict[str, Any]] = [
+    {
+        "title": "Fiscal Consolidation Watch",
+        "color": "amber",
+        "filter": lambda c: (c.composite_risk_score or 0) >= 50 and c.imf_program_code is not None,
+        "template": "IMF program compliance under pressure in {names}. ATLAS tracking {count} countries with fiscal risk score > 65.",
+    },
+    {
+        "title": "FX & External Positioning",
+        "color": "amber",
+        "filter": lambda c: c.fx_parallel_premium is not None and c.fx_parallel_premium > 5,
+        "template": "External position under structural pressure. {names}. ATLAS monitoring FX reserves and parallel premium divergence.",
+    },
+    {
+        "title": "Restructuring & Recovery",
+        "color": "green",
+        "filter": lambda c: c.status_tags and any(t in {"RESTRUCTURING", "DISTRESSED"} for t in c.status_tags),
+        "template": "Active restructuring or post-distress recovery. {names}. ATLAS applies no PoD override for restructuring countries.",
+    },
+    {
+        "title": "Catalyst Watch",
+        "color": "green",
+        "filter": lambda c: (c.composite_risk_score or 100) < 55 or (
+            c.status_tags and "CATALYST" in c.status_tags
+        ),
+        "template": "Positive catalysts emerging. {names}. Key drivers: diversification programs, infrastructure mandates, reform momentum.",
+    },
+]
+
 
 def _label(score: int) -> str:
     for threshold, label in COMPOSITE_LABELS:
@@ -38,28 +73,94 @@ def _label(score: int) -> str:
     return "Low Risk"
 
 
+def _generate_alerts(countries: list[Any], session: Any) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    for c in countries:
+        score = c.composite_risk_score or 0
+        spread = c.atlas_spread_bps or 0
+        premium = c.fx_parallel_premium
+
+        # Check reserves from macro data
+        reserves_row = session.execute(
+            select(MacroIndicatorVintage.value)
+            .where(
+                MacroIndicatorVintage.iso3 == c.iso3,
+                MacroIndicatorVintage.indicator == "FX_RESERVES_MO_IMPORTS",
+                MacroIndicatorVintage.value.isnot(None),
+            )
+            .order_by(MacroIndicatorVintage.ingested_at.desc())
+            .limit(1)
+        ).scalar()
+
+        if spread > 1500:
+            alerts.append({
+                "severity": "CRITICAL",
+                "iso3": c.iso3,
+                "country": c.name,
+                "message": f"{c.name} ATLAS Spread Exceeds {spread}bps",
+            })
+        if premium is not None and premium > 10:
+            alerts.append({
+                "severity": "WARNING",
+                "iso3": c.iso3,
+                "country": c.name,
+                "message": f"{c.name} Parallel FX Premium Elevated — {premium}%",
+            })
+        if reserves_row is not None and float(reserves_row) < 3:
+            alerts.append({
+                "severity": "CRITICAL",
+                "iso3": c.iso3,
+                "country": c.name,
+                "message": f"{c.name} Import Cover Below 3m — Critical",
+            })
+        if score >= 75:
+            alerts.append({
+                "severity": "WARNING",
+                "iso3": c.iso3,
+                "country": c.name,
+                "message": f"{c.name} Composite Risk Score Elevated — {score}",
+            })
+    alerts.sort(key=lambda a: 0 if a["severity"] == "CRITICAL" else 1)
+    return alerts
+
+
+def _build_thematic(countries: list[Any]) -> list[dict[str, Any]]:
+    results = []
+    for group in THEMATIC_GROUPS:
+        matched = [c for c in countries if group["filter"](c)]
+        if not matched:
+            continue
+        names = ", ".join(c.name for c in matched[:4])
+        isos = [c.iso3 for c in matched[:4]]
+        results.append({
+            "title": group["title"],
+            "color": group["color"],
+            "countries": isos,
+            "description": group["template"].format(
+                names=names,
+                count=len(matched),
+            ),
+        })
+    return results
+
+
 @router.get("/summary")
 def dashboard_summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
     countries = list(session.execute(select(Country).order_by(Country.iso3)).scalars())
 
-    # Countries under watch
     elevated = [
         c for c in countries if c.status_tags and any(t in WATCH_TAGS for t in c.status_tags)
     ]
 
-    # Portfolio risk
     scores = [c.composite_risk_score for c in countries if c.composite_risk_score is not None]
     avg_score = round(sum(scores) / len(scores), 1) if scores else 0
 
-    # Staleness index
+    imf_count = sum(1 for c in countries if c.imf_program_code is not None)
+
     indicators = [
-        "GDP_GROWTH_PCT",
-        "INFLATION_PCT",
-        "FISCAL_BALANCE_PCT_GDP",
-        "CURRENT_ACCOUNT_PCT_GDP",
-        "PUBLIC_DEBT_PCT_GDP",
-        "EXTERNAL_DEBT_PCT_GNI",
-        "FX_RESERVES_MO_IMPORTS",
+        "GDP_GROWTH_PCT", "INFLATION_PCT", "FISCAL_BALANCE_PCT_GDP",
+        "CURRENT_ACCOUNT_PCT_GDP", "PUBLIC_DEBT_PCT_GDP",
+        "EXTERNAL_DEBT_PCT_GNI", "FX_RESERVES_MO_IMPORTS",
     ]
     fresh = 0
     stale = 0
@@ -91,23 +192,36 @@ def dashboard_summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
 
     fresh_pct = round((fresh / total_ind * 100) if total_ind > 0 else 0, 1)
 
-    # Portfolio risk ranking
     ranked = sorted(countries, key=lambda c: c.composite_risk_score or 0, reverse=True)
+    deteriorating = []
+    improving = []
+    for c in ranked:
+        score = c.composite_risk_score or 0
+        entry = {
+            "iso": c.iso3,
+            "name": c.name,
+            "score": score,
+            "region": REGION_MAP.get(c.iso3, "SSA"),
+            "spread_bps": c.atlas_spread_bps,
+        }
+        if score >= 55:
+            deteriorating.append(entry)
+        else:
+            improving.append(entry)
+    improving.sort(key=lambda x: x["score"])
+
     ranking = []
     for i, c in enumerate(ranked[:10]):
         score = c.composite_risk_score or 0
-        ranking.append(
-            {
-                "rank": i + 1,
-                "iso": c.iso3,
-                "name": c.name,
-                "score": score,
-                "label": _label(score),
-                "status_tags": c.status_tags or [],
-            }
-        )
+        ranking.append({
+            "rank": i + 1,
+            "iso": c.iso3,
+            "name": c.name,
+            "score": score,
+            "label": _label(score),
+            "status_tags": c.status_tags or [],
+        })
 
-    # Recent rating actions
     ratings = list(
         session.execute(
             select(RatingHistory).order_by(RatingHistory.action_date.desc()).limit(10)
@@ -122,18 +236,25 @@ def dashboard_summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
             if "down" in action_lower or "default" in action_lower or "restrict" in action_lower
             else ("upgrade" if "up" in action_lower else "affirm")
         )
-        rating_actions.append(
-            {
-                "date": r.action_date.isoformat() if r.action_date else None,
-                "iso": r.iso3,
-                "country_name": next((c.name for c in countries if c.iso3 == r.iso3), r.iso3),
-                "agency": r.agency,
-                "action": r.action,
-                "rating": r.rating,
-                "outlook": r.outlook,
-                "action_type": action_type,
-            }
-        )
+        rating_actions.append({
+            "date": r.action_date.isoformat() if r.action_date else None,
+            "iso": r.iso3,
+            "country_name": next((c.name for c in countries if c.iso3 == r.iso3), r.iso3),
+            "agency": r.agency,
+            "action": r.action,
+            "rating": r.rating,
+            "outlook": r.outlook,
+            "action_type": action_type,
+        })
+
+    alerts = _generate_alerts(countries, session)
+    thematic = _build_thematic(countries)
+
+    coverage_risk_map = [
+        {"iso": c.iso3, "score": c.composite_risk_score or 0}
+        for c in ranked
+        if c.composite_risk_score is not None
+    ]
 
     return {
         "as_of": datetime.now(UTC).isoformat(),
@@ -145,9 +266,8 @@ def dashboard_summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
         "portfolio_risk": {
             "average_score": avg_score,
             "count": len(scores),
-            "history_delta_30d": None,
-            "history_available": False,
         },
+        "imf_program_count": imf_count,
         "staleness_index": {
             "fresh_count": fresh,
             "stale_count": stale,
@@ -155,9 +275,13 @@ def dashboard_summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
             "total_count": total_ind,
             "fresh_pct": fresh_pct,
         },
-        "active_alerts": {"status": "pending", "phase": "4c"},
+        "alerts": alerts,
+        "top_deteriorating": deteriorating[:4],
+        "top_improving": improving[:4],
         "portfolio_risk_ranking": ranking,
         "recent_rating_actions": rating_actions,
+        "thematic_intelligence": thematic,
+        "coverage_risk_map": coverage_risk_map,
     }
 
 
@@ -199,23 +323,20 @@ def intelligence_feed(
             if val >= 40:
                 highlights.append({"axis": axis, "level": "H" if val >= 70 else "M"})
 
-        # Get country name
         country = session.get(Country, item.primary_iso3)
         country_name = country.name if country else item.primary_iso3
 
-        articles.append(
-            {
-                "id": str(item.id),
-                "headline": item.title,
-                "source": item.source,
-                "published_at": item.published_at.isoformat() if item.published_at else None,
-                "country_iso": item.primary_iso3,
-                "country_name": country_name,
-                "overall_impact": overall,
-                "impact_scores": impacts,
-                "tag_highlights": highlights,
-            }
-        )
+        articles.append({
+            "id": str(item.id),
+            "headline": item.title,
+            "source": item.source,
+            "published_at": item.published_at.isoformat() if item.published_at else None,
+            "country_iso": item.primary_iso3,
+            "country_name": country_name,
+            "overall_impact": overall,
+            "impact_scores": impacts,
+            "tag_highlights": highlights,
+        })
 
         if len(articles) >= limit:
             break

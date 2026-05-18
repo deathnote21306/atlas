@@ -243,7 +243,7 @@ export default function CountryComparison() {
                 <select
                   value={iso3}
                   onChange={(e) => updateSlot(i, e.target.value)}
-                  className="rounded-md border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-sm text-ink-100 backdrop-blur-xl focus:border-atlas-500 focus:outline-none focus:ring-1 focus:ring-atlas-500"
+                  className="rounded-md border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-ink-100 focus:border-atlas-500 focus:outline-none focus:ring-1 focus:ring-atlas-500"
                   disabled={countriesLoading}
                 >
                   <option value="" className="bg-surface-800 text-ink-300">
@@ -259,7 +259,7 @@ export default function CountryComparison() {
               {selected.length > 1 && (
                 <button
                   onClick={() => removeSlot(i)}
-                  className="rounded-md px-2 py-2 text-xs text-ink-500 hover:bg-white/[0.04] hover:text-ink-300"
+                  className="rounded-md px-2 py-2 text-xs text-ink-500 hover:bg-[#1c2129] hover:text-ink-300"
                   title="Remove"
                 >
                   &times;
@@ -270,7 +270,7 @@ export default function CountryComparison() {
           {selected.length < MAX_SLOTS && (
             <button
               onClick={addSlot}
-              className="rounded-md border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-sm text-ink-400 hover:bg-white/[0.05] hover:text-ink-200"
+              className="rounded-md border border-[#21262d] bg-[#161b22] px-3 py-2 text-sm text-ink-400 hover:bg-[#1c2129] hover:text-ink-200"
             >
               + Add country
             </button>
@@ -279,14 +279,14 @@ export default function CountryComparison() {
 
         {/* Empty state */}
         {activeBundles.length === 0 && !anyLoading && (
-          <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] p-12 text-center backdrop-blur-xl">
+          <div className="rounded-lg bg-[#161b22] p-12 text-center">
             <p className="text-ink-400">Select countries above to compare</p>
           </div>
         )}
 
         {/* Loading skeleton */}
         {anyLoading && activeBundles.length === 0 && (
-          <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] p-4 backdrop-blur-xl">
+          <div className="rounded-lg bg-[#161b22] p-4">
             <div className="space-y-3">
               {Array.from({ length: 8 }, (_, i) => (
                 <div key={i} className="flex gap-4">
@@ -304,19 +304,18 @@ export default function CountryComparison() {
         {activeBundles.length > 0 && (
           <section className="mb-8">
             <div
-              className="overflow-x-auto rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl"
-              style={{ boxShadow: "0 4px 30px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+              className="overflow-x-auto rounded-lg bg-[#161b22]"
             >
               <table className="w-full text-sm">
                 <thead>
                   <tr>
-                    <th className="bg-white/[0.04] px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-ink-400">
+                    <th className="bg-[#161b22] px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-ink-400">
                       Indicator
                     </th>
                     {activeBundles.map((b) => (
                       <th
                         key={b.country.iso3}
-                        className="bg-white/[0.04] px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-ink-400"
+                        className="bg-[#161b22] px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-ink-400"
                       >
                         {b.country.name}
                         <span className="ml-1.5 font-mono text-ink-500">{b.country.iso3}</span>
@@ -326,7 +325,7 @@ export default function CountryComparison() {
                 </thead>
                 <tbody>
                   {indicatorRows.map((row) => (
-                    <tr key={row.label} className="border-t border-white/[0.03]">
+                    <tr key={row.label} className="border-t border-[#21262d]">
                       <td className="px-4 py-2.5 text-xs font-medium text-ink-400">{row.label}</td>
                       {activeBundles.map((b) => (
                         <td key={b.country.iso3} className="px-4 py-2.5 text-ink-300">

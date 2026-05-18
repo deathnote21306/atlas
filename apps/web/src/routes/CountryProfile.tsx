@@ -236,7 +236,7 @@ export default function CountryProfile() {
               </h1>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 rounded-md border border-white/[0.06] bg-white/[0.03] px-3 py-1.5">
+              <div className="flex items-center gap-2 rounded-md bg-[#161b22] px-3 py-1.5">
                 <Search className="h-3.5 w-3.5 text-ink-500" />
                 <span className="text-sm text-ink-500">Search countries...</span>
               </div>
@@ -250,13 +250,13 @@ export default function CountryProfile() {
         </div>
 
         {/* Country card (hero) */}
-        <div className="mb-6 rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+        <div className="mb-6 rounded-lg bg-[#161b22] p-6">
           <div className="flex gap-6">
             {/* Left column */}
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 {/* Country code badge */}
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-white/[0.06] bg-ink-800 text-lg font-semibold text-white">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-[#21262d] bg-ink-800 text-lg font-semibold text-white">
                   {country.iso_code_short ?? country.iso3.slice(0, 2)}
                 </div>
 

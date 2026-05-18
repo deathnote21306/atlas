@@ -76,7 +76,7 @@ export default function EventsTab({ iso3 }: EventsTabProps) {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-8 text-center">
+      <div className="rounded-lg bg-[#161b22] p-8 text-center">
         <p className="text-ink-400">Unable to load events — try again</p>
       </div>
     );
@@ -106,7 +106,7 @@ export default function EventsTab({ iso3 }: EventsTabProps) {
 
       {/* Empty state */}
       {displayEvents.length === 0 && (
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-8 text-center">
+        <div className="rounded-lg bg-[#161b22] p-8 text-center">
           <p className="text-ink-400">No events for this country.</p>
           {range !== "all" && (
             <button
@@ -126,7 +126,7 @@ export default function EventsTab({ iso3 }: EventsTabProps) {
           return (
             <div
               key={event.id}
-              className="flex gap-4 rounded-lg border border-white/[0.06] bg-white/[0.03] p-5"
+              className="flex gap-4 rounded-lg bg-[#161b22] p-5"
             >
               {/* Date block */}
               {date && (

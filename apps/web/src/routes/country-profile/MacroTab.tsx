@@ -86,7 +86,7 @@ function MacroCard({ label, value, unit, staleness, period, source, warning, spa
   const chartData = sparkData?.map((v, i) => ({ i, v }));
 
   return (
-    <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-4">
+    <div className="rounded-lg bg-[#161b22] p-4">
       {/* Header */}
       <div className="flex items-start justify-between">
         <span className="text-[13px] text-ink-400">{label}</span>

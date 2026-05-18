@@ -76,7 +76,7 @@ function severityPillColor(severity: string): string {
     case "CRITICAL": return "bg-red-500/10 text-red-500 border-red-500/30";
     case "ELEVATED": return "bg-orange-500/10 text-orange-500 border-orange-500/30";
     case "NOTABLE": return "bg-amber-500/10 text-amber-500 border-amber-500/30";
-    default: return "bg-white/[0.04] text-ink-400 border-white/[0.06]";
+    default: return "bg-[#21262d] text-ink-400 border-[#21262d]";
   }
 }
 
@@ -109,7 +109,7 @@ export default function FxIntelligenceTab({ iso3, fxIntel, spotRate, spotAsOf, s
 
   if (!fxIntel) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] py-16">
+      <div className="flex items-center justify-center rounded-lg bg-[#161b22] py-16">
         <p className="text-sm text-ink-500">No FX intelligence data available</p>
       </div>
     );
@@ -128,7 +128,7 @@ export default function FxIntelligenceTab({ iso3, fxIntel, spotRate, spotAsOf, s
       </div>
 
       {/* Main card */}
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+      <div className="rounded-lg bg-[#161b22] p-6">
         {/* Top section: spot + change ladder */}
         <div className="flex items-start gap-8">
           {/* Spot level */}
@@ -152,7 +152,7 @@ export default function FxIntelligenceTab({ iso3, fxIntel, spotRate, spotAsOf, s
           {/* Change ladder */}
           <div className="grid w-3/5 grid-cols-4 gap-3">
             {(["1d", "1w", "1m", "3m"] as const).map((window) => (
-              <div key={window} className="rounded-md border border-white/[0.06] bg-white/[0.02] px-3 py-3 text-center">
+              <div key={window} className="rounded-md border border-[#21262d] bg-[#131920] px-3 py-3 text-center">
                 <div className="text-[11px] uppercase tracking-wider text-ink-500">{window.toUpperCase()}</div>
                 <div className={`mt-1 text-lg font-semibold tabular-nums ${changeLadderColor(ladder[window])}`}>
                   {formatChange(ladder[window])}
@@ -163,12 +163,12 @@ export default function FxIntelligenceTab({ iso3, fxIntel, spotRate, spotAsOf, s
         </div>
 
         {/* Divider */}
-        <div className="my-5 border-t border-white/[0.06]" />
+        <div className="my-5 border-t border-[#21262d]" />
 
         {/* Indicator table */}
         <div className="space-y-0">
           {/* Implied Volatility */}
-          <div className="flex items-center justify-between border-b border-white/[0.06] py-3">
+          <div className="flex items-center justify-between border-b border-[#21262d] py-3">
             <span className="text-sm text-ink-400">Implied Volatility</span>
             <span className="text-sm tabular-nums text-ink-200">
               {fxIntel.implied_vol.value != null
@@ -179,7 +179,7 @@ export default function FxIntelligenceTab({ iso3, fxIntel, spotRate, spotAsOf, s
           </div>
 
           {/* Parallel Market Premium */}
-          <div className="flex items-center justify-between border-b border-white/[0.06] py-3">
+          <div className="flex items-center justify-between border-b border-[#21262d] py-3">
             <span className="text-sm text-ink-400">Parallel Market Premium</span>
             <div className="flex items-center gap-2">
               <span className="text-sm tabular-nums text-ink-200">
@@ -197,7 +197,7 @@ export default function FxIntelligenceTab({ iso3, fxIntel, spotRate, spotAsOf, s
           </div>
 
           {/* REER Deviation */}
-          <div className="border-b border-white/[0.06] py-3">
+          <div className="border-b border-[#21262d] py-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-ink-400">REER Deviation</span>
               <div className="flex items-center gap-2">
@@ -225,7 +225,7 @@ export default function FxIntelligenceTab({ iso3, fxIntel, spotRate, spotAsOf, s
           </div>
 
           {/* FX Reserves */}
-          <div className="flex items-center justify-between border-b border-white/[0.06] py-3">
+          <div className="flex items-center justify-between border-b border-[#21262d] py-3">
             <span className="text-sm text-ink-400">FX Reserves</span>
             <span className="text-sm tabular-nums text-ink-200">
               {fxIntel.reserves_usd_bn != null
@@ -250,7 +250,7 @@ export default function FxIntelligenceTab({ iso3, fxIntel, spotRate, spotAsOf, s
 
       {/* FX History chart card */}
       {history && history.points.length > 1 && (
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+        <div className="rounded-lg bg-[#161b22] p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-semibold text-ink-200">{fxIntel.pair} &mdash; 12-month history</h4>

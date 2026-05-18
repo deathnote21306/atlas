@@ -52,10 +52,10 @@ export default function AdminSynopses() {
         {isLoading && (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4 space-y-3">
-                <div className="h-4 w-1/3 animate-pulse rounded bg-white/[0.06]" />
-                <div className="h-3 w-full animate-pulse rounded bg-white/[0.06]" />
-                <div className="h-3 w-2/3 animate-pulse rounded bg-white/[0.06]" />
+              <div key={i} className="rounded-lg bg-[#161b22] p-4 space-y-3">
+                <div className="h-4 w-1/3 animate-pulse rounded bg-[#21262d]" />
+                <div className="h-3 w-full animate-pulse rounded bg-[#21262d]" />
+                <div className="h-3 w-2/3 animate-pulse rounded bg-[#21262d]" />
               </div>
             ))}
           </div>
@@ -73,7 +73,7 @@ export default function AdminSynopses() {
 
         <div className="space-y-4">
           {synopses?.map((s) => (
-            <div key={s.id} className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
+            <div key={s.id} className="rounded-lg bg-[#161b22] p-4">
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-sm font-medium text-ink-100">{s.iso3}</span>

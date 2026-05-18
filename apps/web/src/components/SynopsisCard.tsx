@@ -17,7 +17,7 @@ export default function SynopsisCard({ synopsis }: { synopsis: SynopsisData | nu
 
   if (!synopsis) {
     return (
-      <div className="rounded-[10px] border border-dashed border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4 text-sm text-ink-400">
+      <div className="rounded-[10px] border border-dashed border-[#21262d] bg-[#161b22] p-4 text-sm text-ink-400">
         AI synopsis pending review.
       </div>
     );
@@ -28,7 +28,7 @@ export default function SynopsisCard({ synopsis }: { synopsis: SynopsisData | nu
   const hasMore = paragraphs.length > 1 || preview.length > 300;
 
   return (
-    <div className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
+    <div className="rounded-[10px] border border-[#21262d] bg-[#161b22] p-4">
       <div className="mb-2 flex items-center justify-between">
         <span className="rounded bg-positive/10 px-2 py-0.5 text-xs font-medium text-positive">
           {(synopsis.approval_state ?? "").replace(/_/g, " ")}

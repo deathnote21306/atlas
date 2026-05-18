@@ -60,7 +60,7 @@ const VALID_TABS = [
 
 function Placeholder({ message }: { message: string }) {
   return (
-    <div className="flex items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] py-16">
+    <div className="flex items-center justify-center rounded-lg bg-[#161b22] py-16">
       <p className="text-sm text-ink-500">{message}</p>
     </div>
   );

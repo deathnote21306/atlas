@@ -76,7 +76,7 @@ function scoreColor(score: number): string {
 export default function EconomicStructureTab({ data, countryName }: EconomicStructureTabProps) {
   if (!data) {
     return (
-      <div className="flex items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.03] py-16">
+      <div className="flex items-center justify-center rounded-lg bg-[#161b22] py-16">
         <p className="text-sm text-ink-500">
           Economic structure data not yet available for {countryName}. Comtrade reporting may be delayed.
         </p>
@@ -90,7 +90,7 @@ export default function EconomicStructureTab({ data, countryName }: EconomicStru
   return (
     <div className="space-y-6">
       {/* Summary card */}
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+      <div className="rounded-lg bg-[#161b22] p-6">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-ink-100">Economic Structure</h3>
           <span className="text-xs text-ink-500">Data as of {data.year}</span>
@@ -139,7 +139,7 @@ export default function EconomicStructureTab({ data, countryName }: EconomicStru
       {/* Exports + Import Sources */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Top Exports */}
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+        <div className="rounded-lg bg-[#161b22] p-6">
           <h4 className="mb-4 text-sm font-semibold text-ink-300">Top Exports</h4>
           <div className="space-y-3">
             {data.top_exports.map((item) => (
@@ -150,7 +150,7 @@ export default function EconomicStructureTab({ data, countryName }: EconomicStru
                   </span>
                   <span className="ml-2 shrink-0 tabular-nums text-ink-400">{Number(item.share_pct).toFixed(1)}%</span>
                 </div>
-                <div className="mt-1 h-1.5 rounded-full bg-white/[0.06]">
+                <div className="mt-1 h-1.5 rounded-full bg-[#21262d]">
                   <div
                     className="h-full rounded-full bg-amber-500/80"
                     style={{ width: `${Math.min(item.share_pct, 100)}%` }}
@@ -162,21 +162,21 @@ export default function EconomicStructureTab({ data, countryName }: EconomicStru
         </div>
 
         {/* Top Import Sources */}
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+        <div className="rounded-lg bg-[#161b22] p-6">
           <h4 className="mb-4 text-sm font-semibold text-ink-300">Top Import Sources</h4>
           <div className="space-y-3">
             {data.top_import_sources.map((item) => (
               <div key={item.partner_iso3}>
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-7 items-center justify-center rounded bg-ink-700 text-[9px] font-semibold text-ink-300">
+                    <span className="flex h-5 w-7 items-center justify-center rounded bg-[#21262d] text-[9px] font-semibold text-ink-300">
                       {item.partner_iso3}
                     </span>
                     <span className="text-ink-200">{item.partner_name}</span>
                   </div>
                   <span className="ml-2 shrink-0 tabular-nums text-ink-400">{Number(item.share_pct).toFixed(1)}%</span>
                 </div>
-                <div className="mt-1 h-1.5 rounded-full bg-white/[0.06]">
+                <div className="mt-1 h-1.5 rounded-full bg-[#21262d]">
                   <div
                     className="h-full rounded-full bg-amber-500/80"
                     style={{ width: `${Math.min(item.share_pct * 2.5, 100)}%` }}
@@ -189,12 +189,12 @@ export default function EconomicStructureTab({ data, countryName }: EconomicStru
       </div>
 
       {/* Top Trade Partners */}
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+      <div className="rounded-lg bg-[#161b22] p-6">
         <h4 className="mb-4 text-sm font-semibold text-ink-300">Top Trade Partners</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.06] text-left text-[11px] uppercase tracking-wider text-ink-500">
+              <tr className="border-b border-[#21262d] text-left text-[11px] uppercase tracking-wider text-ink-500">
                 <th className="pb-2 pr-4">Rank</th>
                 <th className="pb-2 pr-4">Partner</th>
                 <th className="pb-2 pr-4 text-right">Exports</th>
@@ -204,11 +204,11 @@ export default function EconomicStructureTab({ data, countryName }: EconomicStru
             </thead>
             <tbody>
               {data.top_trade_partners.map((p) => (
-                <tr key={p.partner_iso3} className="border-b border-white/[0.03] transition-colors hover:bg-white/[0.02]">
+                <tr key={p.partner_iso3} className="border-b border-[#21262d] transition-colors hover:bg-[#1c2129]">
                   <td className="py-2.5 pr-4 text-ink-500">{p.rank}</td>
                   <td className="py-2.5 pr-4">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-5 w-7 items-center justify-center rounded bg-ink-700 text-[9px] font-semibold text-ink-300">
+                      <span className="flex h-5 w-7 items-center justify-center rounded bg-[#21262d] text-[9px] font-semibold text-ink-300">
                         {p.partner_iso3}
                       </span>
                       <span className="text-ink-200">{p.partner_name}</span>

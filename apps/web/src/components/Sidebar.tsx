@@ -154,7 +154,7 @@ export default function Sidebar() {
   const version = (import.meta as any).env?.VITE_APP_VERSION ?? "v2.0 \u00b7 MVP";
 
   return (
-    <aside className="sticky top-0 z-40 flex h-[calc(100vh-2rem)] w-60 shrink-0 flex-col border-r border-white/[0.06] bg-ink-950">
+    <aside className="sticky top-0 z-40 flex h-[calc(100vh-2rem)] w-60 shrink-0 flex-col border-r border-[#21262d] bg-[#0d1117]">
       {/* Brand */}
       <div className="px-5 pb-4 pt-5">
         <div className="flex items-center gap-2">
@@ -206,7 +206,7 @@ export default function Sidebar() {
                           </span>
                         )}
                         {item.badge && item.badgeColor !== "red" && (
-                          <span className="ml-auto rounded bg-ink-700 px-1.5 py-0.5 text-[10px] font-medium text-ink-400">
+                          <span className="ml-auto rounded bg-[#21262d] px-1.5 py-0.5 text-[10px] font-medium text-ink-400">
                             {item.badge}
                           </span>
                         )}
@@ -224,7 +224,7 @@ export default function Sidebar() {
                         className={`flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
                           parentHighlight
                             ? "text-amber-500"
-                            : "text-ink-400 hover:bg-white/[0.04] hover:text-ink-200"
+                            : "text-ink-400 hover:bg-[#1c2129] hover:text-ink-200"
                         }`}
                       >
                         {item.icon}
@@ -243,7 +243,7 @@ export default function Sidebar() {
                         className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
                           parentHighlight
                             ? "border-l-[3px] border-amber-500 bg-amber-500/5 text-amber-500"
-                            : "text-ink-400 hover:bg-white/[0.04] hover:text-ink-200"
+                            : "text-ink-400 hover:bg-[#1c2129] hover:text-ink-200"
                         }`}
                       >
                         {item.icon}
@@ -263,7 +263,7 @@ export default function Sidebar() {
 
                     {/* Children */}
                     {hasChildren && isExpanded && (
-                      <ul className="ml-5 mt-0.5 space-y-0.5 border-l border-white/[0.06] pl-3">
+                      <ul className="ml-5 mt-0.5 space-y-0.5 border-l border-[#21262d] pl-3">
                         {item.children!.map((child) => {
                           const childActive = isExactActive(location.pathname, child.to);
                           return (
@@ -274,7 +274,7 @@ export default function Sidebar() {
                                 className={`flex items-center rounded-md px-3 py-1.5 text-sm transition-colors duration-150 ${
                                   childActive
                                     ? "border-l-[3px] border-amber-500 bg-amber-500/5 text-amber-500"
-                                    : "text-ink-400 hover:bg-white/[0.04] hover:text-ink-200"
+                                    : "text-ink-400 hover:bg-[#1c2129] hover:text-ink-200"
                                 }`}
                               >
                                 <span className="mr-2 text-[10px] text-ink-600">&bull;</span>
@@ -295,7 +295,7 @@ export default function Sidebar() {
 
       {/* User footer */}
       {user && (
-        <div className="border-t border-white/[0.06] px-4 py-3">
+        <div className="border-t border-[#21262d] px-4 py-3">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/10 text-xs font-semibold text-amber-500">
               {user.email.charAt(0).toUpperCase()}
@@ -307,7 +307,7 @@ export default function Sidebar() {
             <div className="flex gap-1">
               <button
                 type="button"
-                className="rounded p-1 text-ink-500 hover:bg-white/[0.04] hover:text-ink-300"
+                className="rounded p-1 text-ink-500 hover:bg-[#1c2129] hover:text-ink-300"
                 title="Settings"
               >
                 <Settings className="h-3.5 w-3.5" />
@@ -315,7 +315,7 @@ export default function Sidebar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="rounded p-1 text-ink-500 hover:bg-white/[0.04] hover:text-ink-300"
+                className="rounded p-1 text-ink-500 hover:bg-[#1c2129] hover:text-ink-300"
                 title="Logout"
               >
                 <LogOut className="h-3.5 w-3.5" />

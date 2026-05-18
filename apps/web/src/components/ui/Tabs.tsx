@@ -33,7 +33,7 @@ export function TabList({ tabs, activeTab, onTabChange }: TabsProps) {
   return (
     <div
       role="tablist"
-      className="flex gap-6 overflow-x-auto border-b border-white/[0.06] pb-0"
+      className="flex gap-6 overflow-x-auto border-b border-[#21262d] pb-0"
     >
       {tabs.map((tab, i) => {
         const active = tab.id === activeTab;

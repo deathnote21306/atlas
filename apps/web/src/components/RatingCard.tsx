@@ -68,7 +68,7 @@ export default function RatingCard({
   const [showHistory, setShowHistory] = useState(false);
 
   return (
-    <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-4">
+    <div className="rounded-lg border border-[#21262d] bg-[#161b22] p-4">
       <div className="flex items-center justify-between">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">
           {formatAgency(agency)}
@@ -100,7 +100,7 @@ export default function RatingCard({
       </button>
 
       {showHistory && history.length > 0 && (
-        <div className="mt-2 space-y-1 border-t border-white/[0.06] pt-2">
+        <div className="mt-2 space-y-1 border-t border-[#21262d] pt-2">
           {history.map((h, i) => (
             <div key={`${h.action_date}-${i}`} className="flex items-center justify-between text-[10px]">
               <span className="text-ink-500">{h.action_date}</span>

@@ -54,7 +54,7 @@ export default function OverviewTab({ keyRisks, keyOpportunities, riskDecomposit
       {/* Key Risks + Key Opportunities */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Key Risks */}
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+        <div className="rounded-lg bg-[#161b22] p-6">
           <div className="mb-4 flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <h3 className="text-base font-semibold text-ink-100">Key Risks</h3>
@@ -71,7 +71,7 @@ export default function OverviewTab({ keyRisks, keyOpportunities, riskDecomposit
         </div>
 
         {/* Key Opportunities */}
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+        <div className="rounded-lg bg-[#161b22] p-6">
           <div className="mb-4 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-positive" />
             <h3 className="text-base font-semibold text-ink-100">Key Opportunities</h3>
@@ -90,7 +90,7 @@ export default function OverviewTab({ keyRisks, keyOpportunities, riskDecomposit
 
       {/* Risk Decomposition Overview */}
       {riskDecomposition && riskDecomposition.dimensions.length > 0 && (
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+        <div className="rounded-lg bg-[#161b22] p-6">
           <h3 className="mb-5 text-base font-semibold text-ink-100">Risk Decomposition Overview</h3>
           <div className="grid grid-cols-3 gap-6 sm:grid-cols-6">
             {riskDecomposition.dimensions.map((d) => (
@@ -101,7 +101,7 @@ export default function OverviewTab({ keyRisks, keyOpportunities, riskDecomposit
       )}
 
       {/* Synopsis Detail */}
-      <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-6">
+      <div className="rounded-lg bg-[#161b22] p-6">
         <h3 className="mb-4 text-base font-semibold text-ink-100">Synopsis Detail</h3>
         <SynopsisCard synopsis={synopsisData} />
       </div>

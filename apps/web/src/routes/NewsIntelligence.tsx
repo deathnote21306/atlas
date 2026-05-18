@@ -2,11 +2,10 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
 import AppShell from "./AppShell";
-import { SkeletonLine } from "../components/Skeleton";
 
-/* ------------------------------------------------------------------ */
-/*  Types matching the API response from GET /api/news                */
-/* ------------------------------------------------------------------ */
+const C = "rounded-lg bg-[#161b22]";
+
+/* ── Types ── */
 
 interface NewsScore {
   fiscal_impact: string;
@@ -31,194 +30,132 @@ interface NewsArticle {
   score?: NewsScore;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Small presentational helpers                                      */
-/* ------------------------------------------------------------------ */
+/* ── Helpers ── */
 
-const IMPACT_AXES = [
-  { key: "fiscal_impact", label: "Fiscal" },
-  { key: "external_impact", label: "External" },
-  { key: "fx_impact", label: "FX" },
-  { key: "political_impact", label: "Political" },
-] as const;
+const AXES = [
+  { key: "fiscal_impact" as const, label: "Fiscal" },
+  { key: "external_impact" as const, label: "External" },
+  { key: "fx_impact" as const, label: "FX" },
+  { key: "political_impact" as const, label: "Political" },
+];
 
-function impactColor(level: string) {
-  switch (level) {
-    case "H":
-      return "bg-red-500/[0.12] text-red-400 border border-red-500/[0.15]";
-    case "M":
-      return "bg-amber-500/[0.12] text-amber-400 border border-amber-500/[0.15]";
-    default:
-      return "bg-blue-500/[0.10] text-blue-400 border border-blue-500/[0.12]";
-  }
+function impactBadge(level: string) {
+  if (level === "H") return "bg-red-500/15 text-red-400";
+  if (level === "M") return "bg-amber-500/15 text-amber-400";
+  return "bg-blue-500/10 text-blue-400";
 }
 
-function ImpactBadge({ label, level }: { label: string; level: string }) {
-  return (
-    <span
-      className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono leading-none ${impactColor(level)}`}
-    >
-      {label}: {level}
-    </span>
-  );
+function hasHighImpact(s: NewsScore) {
+  return s.fiscal_impact === "H" || s.external_impact === "H" || s.fx_impact === "H" || s.political_impact === "H";
 }
 
-function ScorerBadge({ scorer }: { scorer: string }) {
-  const isAI = scorer.startsWith("claude");
-  return (
-    <span
-      className={`rounded px-1.5 py-0.5 text-[10px] leading-none ${
-        isAI
-          ? "bg-blue-500/[0.12] text-blue-400 border border-blue-500/[0.15]"
-          : "bg-white/[0.06] text-ink-400 border border-white/[0.08]"
-      }`}
-    >
-      {isAI ? "AI" : "heuristic"}
-    </span>
-  );
+function relTime(d: string) {
+  const ms = Date.now() - new Date(d).getTime();
+  const m = Math.floor(ms / 60_000);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
 }
 
-function hasHighImpact(score: NewsScore): boolean {
-  return (
-    score.fiscal_impact === "H" ||
-    score.external_impact === "H" ||
-    score.fx_impact === "H" ||
-    score.political_impact === "H"
-  );
+function overallScore(s: NewsScore): number {
+  const map: Record<string, number> = { H: 80, M: 50, L: 20 };
+  return Math.max(map[s.fiscal_impact] ?? 20, map[s.external_impact] ?? 20, map[s.fx_impact] ?? 20, map[s.political_impact] ?? 20);
 }
 
-function relativeTime(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const mins = Math.floor(diffMs / 60_000);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+function scoreColor(v: number) {
+  if (v >= 75) return "text-red-500";
+  if (v >= 60) return "text-orange-500";
+  if (v >= 40) return "text-amber-500";
+  return "text-green-500";
 }
 
-/* ------------------------------------------------------------------ */
-/*  Glass card wrapper                                                */
-/* ------------------------------------------------------------------ */
-
-function GlassCard({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`bg-white/[0.03] backdrop-blur-xl border border-white/[0.06] rounded-[10px] shadow-[0_4px_30px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.04)] ${className}`}
-    >
-      {children}
-    </div>
-  );
+function dotColor(v: number) {
+  if (v >= 75) return "bg-red-500";
+  if (v >= 60) return "bg-orange-500";
+  if (v >= 40) return "bg-amber-500";
+  return "bg-green-500";
 }
 
-/* ------------------------------------------------------------------ */
-/*  Single article card                                               */
-/* ------------------------------------------------------------------ */
+/* ── Article Card ── */
 
 function ArticleCard({ article }: { article: NewsArticle }) {
   const [expanded, setExpanded] = useState(false);
   const [showRationale, setShowRationale] = useState(false);
   const score = article.score;
+  const overall = score ? overallScore(score) : 0;
 
   return (
-    <GlassCard className="p-4">
-      {/* Headline row */}
-      <div className="flex items-start justify-between gap-3">
-        <a
-          href={article.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm font-semibold text-ink-100 hover:text-blue-400 transition-colors duration-150 leading-snug"
-        >
-          {article.title}
-        </a>
-        {score && <ScorerBadge scorer={score.scorer} />}
-      </div>
+    <div className={`${C} p-4`}>
+      <div className="flex items-start gap-3">
+        {score && <span className={`mt-1 h-2.5 w-2.5 flex-shrink-0 rounded-full ${dotColor(overall)}`} />}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-3">
+            <a href={article.url} target="_blank" rel="noopener noreferrer" className="text-[13px] font-semibold text-ink-100 hover:text-blue-400 leading-snug">
+              {article.title}
+            </a>
+            {score && (
+              <span className={`flex-shrink-0 text-[14px] font-bold tabular-nums ${scoreColor(overall)}`}>{overall}</span>
+            )}
+          </div>
 
-      {/* Impact badges */}
-      {score && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {IMPACT_AXES.map((axis) => (
-            <ImpactBadge
-              key={axis.key}
-              label={axis.label}
-              level={score[axis.key]}
-            />
-          ))}
-        </div>
-      )}
+          {score && (
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {AXES.map((a) => (
+                <span key={a.key} className={`rounded px-1.5 py-0.5 text-[10px] font-mono ${impactBadge(score[a.key])}`}>
+                  {a.label}: {score[a.key]}
+                </span>
+              ))}
+              <span className={`rounded px-1.5 py-0.5 text-[10px] ${score.scorer.startsWith("claude") ? "bg-blue-500/10 text-blue-400" : "bg-[#21262d] text-ink-400"}`}>
+                {score.scorer.startsWith("claude") ? "AI" : "heuristic"}
+              </span>
+            </div>
+          )}
 
-      {/* Source + timestamp + event type */}
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-ink-400">
-        <span>{article.source}</span>
-        {article.published_at && (
-          <span>{relativeTime(article.published_at)}</span>
-        )}
-        {article.event_type && (
-          <span className="rounded bg-white/[0.06] border border-white/[0.08] px-1.5 py-0.5 text-[10px]">
-            {article.event_type}
-          </span>
-        )}
-        {article.primary_iso3 && (
-          <span className="rounded bg-white/[0.06] border border-white/[0.08] px-1.5 py-0.5 font-mono text-[10px]">
-            {article.primary_iso3}
-          </span>
-        )}
-      </div>
+          <div className="mt-2 flex items-center gap-2 text-[11px] text-ink-500">
+            <span>{article.source}</span>
+            {article.published_at && <span>· {relTime(article.published_at)}</span>}
+            {article.primary_iso3 && <span className="rounded bg-[#21262d] px-1.5 py-0.5 text-[10px] font-mono">{article.primary_iso3}</span>}
+            {article.event_type && <span className="rounded bg-[#21262d] px-1.5 py-0.5 text-[10px]">{article.event_type}</span>}
+          </div>
 
-      {/* Body preview */}
-      {article.body_text && (
-        <div className="mt-2">
-          <p
-            className={`text-xs text-ink-300 leading-relaxed ${
-              expanded ? "" : "line-clamp-3"
-            }`}
-          >
-            {article.body_text}
-          </p>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="mt-1 text-[11px] text-blue-400 hover:text-blue-300 transition-colors duration-150"
-          >
-            {expanded ? "Show less" : "Read more"}
-          </button>
-        </div>
-      )}
+          {article.body_text && (
+            <div className="mt-2">
+              <p className={`text-[12px] text-ink-400 leading-relaxed ${expanded ? "" : "line-clamp-3"}`}>{article.body_text}</p>
+              <button onClick={() => setExpanded(!expanded)} className="mt-1 text-[11px] text-blue-400 hover:text-blue-300">
+                {expanded ? "Show less" : "Show more"}
+              </button>
+            </div>
+          )}
 
-      {/* Scoring rationale toggle */}
-      {score?.rationale && (
-        <div className="mt-2">
-          <button
-            onClick={() => setShowRationale(!showRationale)}
-            className="text-[11px] text-ink-400 hover:text-ink-300 transition-colors duration-150"
-          >
-            {showRationale ? "Hide scoring rationale" : "Show scoring rationale"}
-          </button>
-          {showRationale && (
-            <p className="mt-1 rounded bg-white/[0.03] border border-white/[0.05] p-2 text-xs text-ink-300 leading-relaxed">
-              {typeof score.rationale === "string" ? score.rationale : Object.entries(score.rationale).map(([k, v]) => `${k}: ${v}`).join(". ")}
-            </p>
+          {score?.rationale && (
+            <div className="mt-1">
+              {showRationale ? (
+                <>
+                  <p className="rounded bg-[#0d1117] p-2 text-[11px] text-ink-400 leading-relaxed">
+                    {typeof score.rationale === "string" ? score.rationale : Object.entries(score.rationale).map(([k, v]) => `${k}: ${v}`).join(". ")}
+                  </p>
+                  <button onClick={() => setShowRationale(false)} className="mt-1 text-[11px] text-ink-500 hover:text-ink-400">
+                    Hide rationale
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => setShowRationale(true)} className="text-[11px] text-ink-500 hover:text-ink-400">
+                  Show scoring rationale
+                </button>
+              )}
+            </div>
           )}
         </div>
-      )}
-    </GlassCard>
+      </div>
+    </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Page                                                              */
-/* ------------------------------------------------------------------ */
+/* ── Page ── */
 
 export default function NewsIntelligence() {
-  const [activeTab, setActiveTab] = useState<"feed" | "calendar">("feed");
+  const [tab, setTab] = useState<"feed" | "calendar">("feed");
   const [search, setSearch] = useState("");
   const [countryFilter, setCountryFilter] = useState("");
   const [eventFilter, setEventFilter] = useState("");
@@ -226,186 +163,115 @@ export default function NewsIntelligence() {
   const { data: articles, isLoading } = useQuery<NewsArticle[]>({
     queryKey: ["news-all"],
     queryFn: () => api<NewsArticle[]>("/api/news?limit=100"),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60_000,
     retry: false,
   });
 
-  /* Derived data */
   const countries = useMemo(() => {
-    if (!articles) return [] as string[];
-    const set = new Set<string>();
-    articles.forEach((a) => {
-      if (a.primary_iso3) set.add(a.primary_iso3);
-    });
-    return Array.from(set).sort();
+    if (!articles) return [];
+    return Array.from(new Set(articles.filter((a) => a.primary_iso3).map((a) => a.primary_iso3!))).sort();
   }, [articles]);
 
   const eventTypes = useMemo(() => {
-    if (!articles) return [] as string[];
-    const set = new Set<string>();
-    articles.forEach((a) => {
-      if (a.event_type) set.add(a.event_type);
-    });
-    return Array.from(set).sort();
+    if (!articles) return [];
+    return Array.from(new Set(articles.filter((a) => a.event_type).map((a) => a.event_type!))).sort();
   }, [articles]);
 
   const filtered = useMemo(() => {
     if (!articles) return [];
     return articles.filter((a) => {
-      if (
-        search &&
-        !a.title.toLowerCase().includes(search.toLowerCase()) &&
-        !(a.body_text ?? "").toLowerCase().includes(search.toLowerCase())
-      ) {
-        return false;
-      }
+      if (search && !a.title.toLowerCase().includes(search.toLowerCase()) && !(a.body_text ?? "").toLowerCase().includes(search.toLowerCase())) return false;
       if (countryFilter && a.primary_iso3 !== countryFilter) return false;
       if (eventFilter && a.event_type !== eventFilter) return false;
       return true;
     });
   }, [articles, search, countryFilter, eventFilter]);
 
-  /* KPI values */
-  const totalArticles = filtered.length;
-  const highImpactCount = filtered.filter(
-    (a) => a.score && hasHighImpact(a.score)
-  ).length;
-  const countriesCovered = new Set(
-    filtered.filter((a) => a.primary_iso3).map((a) => a.primary_iso3)
-  ).size;
+  const total = filtered.length;
+  const highImpact = filtered.filter((a) => a.score && hasHighImpact(a.score)).length;
+  const coverageCount = new Set(filtered.filter((a) => a.primary_iso3).map((a) => a.primary_iso3)).size;
 
   return (
     <AppShell>
-      <main className="mx-auto max-w-6xl p-6">
-        {/* Header */}
-        <header className="mb-6">
-          <h1 className="text-xl font-semibold text-ink-100">
-            News &amp; Event Intelligence
-          </h1>
-        </header>
+      <div className="mx-auto max-w-[1440px] px-6 pb-10">
 
-        {/* Tabs */}
-        <div className="mb-6 flex gap-1">
-          <button
-            onClick={() => setActiveTab("feed")}
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors duration-150 ${
-              activeTab === "feed"
-                ? "bg-blue-500/[0.15] text-blue-400 border border-blue-500/[0.2]"
-                : "text-ink-400 hover:text-ink-200 hover:bg-white/[0.04]"
-            }`}
-          >
-            Intelligence Feed
-          </button>
-          <button
-            onClick={() => setActiveTab("calendar")}
-            className={`rounded-md px-4 py-2 text-sm font-medium transition-colors duration-150 ${
-              activeTab === "calendar"
-                ? "bg-blue-500/[0.15] text-blue-400 border border-blue-500/[0.2]"
-                : "text-ink-400 hover:text-ink-200 hover:bg-white/[0.04]"
-            }`}
-          >
-            Event Calendar
-          </button>
+        {/* Header */}
+        <div className="pb-5 pt-4">
+          <h1 className="text-[18px] font-semibold text-ink-100">News &amp; Event Intelligence</h1>
         </div>
 
-        {activeTab === "calendar" ? (
-          /* Calendar placeholder */
-          <GlassCard className="p-12 text-center">
+        {/* Tabs */}
+        <div className="mb-4 flex gap-1">
+          {(["feed", "calendar"] as const).map((t) => (
+            <button key={t} onClick={() => setTab(t)} className={`rounded-md px-4 py-2 text-sm font-medium ${tab === t ? "bg-blue-500/15 text-blue-400" : "text-ink-500 hover:bg-[#161b22] hover:text-ink-300"}`}>
+              {t === "feed" ? "Intelligence Feed" : "Event Calendar"}
+            </button>
+          ))}
+        </div>
+
+        {tab === "calendar" ? (
+          <div className={`${C} p-12 text-center`}>
             <p className="text-sm text-ink-400">Coming Soon</p>
-            <p className="mt-1 text-xs text-ink-500">
-              Event calendar with macro-critical dates, debt maturities, and
-              political milestones.
-            </p>
-          </GlassCard>
+            <p className="mt-1 text-[11px] text-ink-500">Event calendar with macro-critical dates, debt maturities, and political milestones.</p>
+          </div>
         ) : (
           <>
             {/* KPI strip */}
-            <div className="mb-6 grid grid-cols-3 gap-3">
+            <div className="mb-4 grid grid-cols-3 gap-3">
               {[
-                { label: "Total Articles", value: totalArticles },
-                { label: "High Impact", value: highImpactCount },
-                { label: "Countries Covered", value: countriesCovered },
+                { label: "Total Articles", value: total },
+                { label: "High Impact", value: highImpact },
+                { label: "Countries Covered", value: coverageCount },
               ].map((kpi) => (
-                <GlassCard key={kpi.label} className="p-4">
-                  <div className="text-xs text-ink-400 uppercase tracking-wide">
-                    {kpi.label}
-                  </div>
-                  <div className="mt-1 font-mono text-2xl font-semibold text-ink-100 tabular-nums">
-                    {isLoading ? (
-                      <SkeletonLine className="h-7 w-12" />
-                    ) : (
-                      kpi.value
-                    )}
-                  </div>
-                </GlassCard>
+                <div key={kpi.label} className={`${C} px-5 py-4`}>
+                  <div className="text-[11px] text-ink-500 uppercase tracking-wider">{kpi.label}</div>
+                  <div className="mt-1 text-[28px] font-bold tabular-nums text-ink-100">{isLoading ? "—" : kpi.value}</div>
+                </div>
               ))}
             </div>
 
             {/* Search + filters */}
-            <div className="mb-6 flex flex-wrap gap-3">
+            <div className="mb-4 flex gap-3">
               <input
                 type="text"
                 placeholder="Search headlines..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 min-w-[200px] rounded-md bg-white/[0.04] border border-white/[0.08] px-3 py-2 text-sm text-ink-200 placeholder:text-ink-500 focus:outline-none focus:border-blue-500/[0.4] transition-colors duration-150"
+                className="flex-1 rounded-md border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-ink-200 placeholder:text-ink-500 focus:border-blue-500/40 focus:outline-none"
               />
-              <select
-                value={countryFilter}
-                onChange={(e) => setCountryFilter(e.target.value)}
-                className="rounded-md bg-white/[0.04] border border-white/[0.08] px-3 py-2 text-sm text-ink-200 focus:outline-none focus:border-blue-500/[0.4] transition-colors duration-150"
-              >
+              <select value={countryFilter} onChange={(e) => setCountryFilter(e.target.value)} className="rounded-md border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-ink-200 focus:outline-none">
                 <option value="">All Countries</option>
-                {countries.map((iso3) => (
-                  <option key={iso3} value={iso3}>
-                    {iso3}
-                  </option>
-                ))}
+                {countries.map((iso) => <option key={iso} value={iso}>{iso}</option>)}
               </select>
-              <select
-                value={eventFilter}
-                onChange={(e) => setEventFilter(e.target.value)}
-                className="rounded-md bg-white/[0.04] border border-white/[0.08] px-3 py-2 text-sm text-ink-200 focus:outline-none focus:border-blue-500/[0.4] transition-colors duration-150"
-              >
+              <select value={eventFilter} onChange={(e) => setEventFilter(e.target.value)} className="rounded-md border border-[#30363d] bg-[#0d1117] px-3 py-2 text-sm text-ink-200 focus:outline-none">
                 <option value="">All Event Types</option>
-                {eventTypes.map((et) => (
-                  <option key={et} value={et}>
-                    {et}
-                  </option>
-                ))}
+                {eventTypes.map((et) => <option key={et} value={et}>{et}</option>)}
               </select>
             </div>
 
-            {/* Articles list */}
+            {/* Articles */}
             {isLoading ? (
               <div className="space-y-3">
                 {Array.from({ length: 5 }, (_, i) => (
-                  <GlassCard key={i} className="p-4 space-y-3">
-                    <SkeletonLine className="h-4 w-3/4" />
-                    <SkeletonLine className="h-3 w-full" />
-                    <SkeletonLine className="h-3 w-1/2" />
-                  </GlassCard>
+                  <div key={i} className={`${C} p-4`}>
+                    <div className="h-4 w-3/4 animate-pulse rounded bg-[#21262d]" />
+                    <div className="mt-2 h-3 w-full animate-pulse rounded bg-[#21262d]" />
+                    <div className="mt-2 h-3 w-1/2 animate-pulse rounded bg-[#21262d]" />
+                  </div>
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <GlassCard className="p-8 text-center">
+              <div className={`${C} p-8 text-center`}>
                 <p className="text-sm text-ink-400">No articles found</p>
-                <p className="mt-1 text-xs text-ink-500">
-                  {search || countryFilter || eventFilter
-                    ? "Try adjusting your search or filters."
-                    : "No news articles have been ingested yet."}
-                </p>
-              </GlassCard>
+              </div>
             ) : (
               <div className="space-y-3">
-                {filtered.map((article) => (
-                  <ArticleCard key={article.id} article={article} />
-                ))}
+                {filtered.map((a) => <ArticleCard key={a.id} article={a} />)}
               </div>
             )}
           </>
         )}
-      </main>
+      </div>
     </AppShell>
   );
 }

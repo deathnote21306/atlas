@@ -2,139 +2,88 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { toast } from "../components/Toast";
-import { RiskBadge } from "@atlas/design-system";
 import AppShell from "./AppShell";
 
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
+const C = "rounded-lg bg-[#161b22]";
 
-interface ScenarioDeltas {
-  debt_gdp: number;
-  fiscal_balance: number;
-  current_account: number;
-}
+/* ── Types ── */
 
-interface CountryImpact {
-  iso3: string;
-  name: string;
-  status: string;
-  baseline_risk: number;
-  new_risk: number;
-  risk_change: number;
-  deltas: ScenarioDeltas;
-  distress_probability: number | null;
-}
+interface ScenarioDeltas { debt_gdp: number; fiscal_balance: number; current_account: number; }
+interface CountryImpact { iso3: string; name: string; status: string; baseline_risk: number; new_risk: number; risk_change: number; deltas: ScenarioDeltas; distress_probability: number | null; }
+interface ShockVector { gdp_shock: number; inflation_shock: number; fx_depreciation: number; rate_shock: number; commodity_shock: number; }
+interface SavedScenario { id: string; iso3: string; title?: string; description?: string | null; shocks: ShockVector; created_at: string; saved?: boolean; }
 
-interface ShockVector {
-  gdp_shock: number;
-  inflation_shock: number;
-  fx_depreciation: number;
-  rate_shock: number;
-  commodity_shock: number;
-}
+/* ── Slider config ── */
 
-interface SavedScenario {
-  id: string;
-  iso3: string;
-  title?: string;
-  description?: string | null;
-  shocks: ShockVector;
-  created_at: string;
-  saved?: boolean;
-}
+const DEFAULT_SHOCKS: ShockVector = { gdp_shock: 0, inflation_shock: 0, fx_depreciation: 0, rate_shock: 0, commodity_shock: 0 };
 
-/* ------------------------------------------------------------------ */
-/*  Constants                                                          */
-/* ------------------------------------------------------------------ */
-
-const DEFAULT_SHOCKS: ShockVector = {
-  gdp_shock: 0,
-  inflation_shock: 0,
-  fx_depreciation: 0,
-  rate_shock: 0,
-  commodity_shock: 0,
-};
-
-const SLIDER_CONFIG: {
-  key: keyof ShockVector;
-  label: string;
-  min: number;
-  max: number;
-  step: number;
-  unit: string;
-}[] = [
-  { key: "gdp_shock", label: "Global GDP Growth (pp)", min: -5, max: 5, step: 0.1, unit: "pp" },
-  { key: "inflation_shock", label: "Inflation Shock (pp)", min: -10, max: 15, step: 0.5, unit: "pp" },
-  { key: "fx_depreciation", label: "USD Appreciation (%)", min: -10, max: 30, step: 0.5, unit: "%" },
-  { key: "rate_shock", label: "EM Spread Widening (bps / 100)", min: -5, max: 10, step: 0.25, unit: "bps/100" },
-  { key: "commodity_shock", label: "Commodity Price Shock (%)", min: -50, max: 50, step: 1, unit: "%" },
+const SLIDERS: { key: keyof ShockVector; label: string; sub: string; min: number; max: number; step: number; unit: string; valueFn?: (v: number) => string }[] = [
+  { key: "commodity_shock", label: "Brent Crude Price", sub: "USD per barrel spot price", min: -50, max: 50, step: 1, unit: "USD/bbl", valueFn: (v) => `${(70 + (v * 70) / 100).toFixed(0)}` },
+  { key: "gdp_shock", label: "Global GDP Growth", sub: "IMF global growth forecast delta", min: -3, max: 2, step: 0.1, unit: "pp" },
+  { key: "rate_shock", label: "EM Spread Widening", sub: "Average EM sovereign spread increase", min: 0, max: 3, step: 0.25, unit: "bps", valueFn: (v) => `${(v * 100).toFixed(0)}` },
+  { key: "fx_depreciation", label: "USD Appreciation", sub: "USD DXY index change", min: -10, max: 20, step: 0.5, unit: "%" },
+  { key: "inflation_shock", label: "Global Trade Volume Delta", sub: "Change in global trade volumes", min: -10, max: 5, step: 0.5, unit: "pp" },
 ];
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
-/* ------------------------------------------------------------------ */
+/* ── Helpers ── */
 
-function formatAge(iso: string): string {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const days = Math.floor(diffMs / 86_400_000);
-  if (days < 1) return "just now";
-  if (days < 7) return `${days}d ago`;
-  const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `${weeks}w ago`;
-  const months = Math.floor(days / 30);
-  return `${months}mo ago`;
+function formatAge(iso: string) {
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (d < 1) return "just now";
+  if (d < 7) return `${d}d ago`;
+  return `${Math.floor(d / 7)}w ago`;
+}
+function hasNonZero(s: ShockVector) { return Object.values(s).some((v) => v !== 0); }
+
+function severityBadge(risk: number) {
+  if (risk >= 75) return { label: "CRITICAL", cls: "bg-red-500/20 text-red-400" };
+  if (risk >= 60) return { label: "HIGH", cls: "bg-orange-500/20 text-orange-400" };
+  if (risk >= 45) return { label: "MEDIUM", cls: "bg-amber-500/20 text-amber-400" };
+  return { label: "LOW", cls: "bg-green-500/20 text-green-400" };
+}
+function changeColor(v: number) { return v > 0 ? "text-red-400" : v < 0 ? "text-green-400" : "text-ink-400"; }
+function metricColor(v: number) { return v < 0 ? "text-red-400" : v > 0 ? "text-green-400" : "text-ink-400"; }
+
+function categoryOf(title: string): { label: string; color: string } {
+  const t = (title ?? "").toLowerCase();
+  if (t.includes("oil") || t.includes("brent") || t.includes("commodity")) return { label: "COMMODITY SHOCK", color: "bg-green-500" };
+  if (t.includes("capital") || t.includes("fx") || t.includes("flow")) return { label: "FX / CAPITAL FLOW", color: "bg-blue-500" };
+  if (t.includes("tariff") || t.includes("rate") || t.includes("trade")) return { label: "RATES / TARIFF", color: "bg-purple-500" };
+  return { label: "SCENARIO", color: "bg-amber-500" };
 }
 
-function hasNonZeroShock(s: ShockVector): boolean {
-  return Object.values(s).some((v) => v !== 0);
+function impactNarrative(impact: CountryImpact, shocks: ShockVector): string {
+  const { name, risk_change, deltas } = impact;
+  const fiscal = deltas.fiscal_balance.toFixed(1);
+  const external = deltas.current_account.toFixed(1);
+  const debt = deltas.debt_gdp.toFixed(1);
+
+  if (risk_change > 10) return `${name} severely impacted. Fiscal balance shifts ${fiscal}pp, external position ${external}pp. Debt-to-GDP rises by ${debt}pp. Without compensatory policy action, debt sustainability deteriorates materially. Financing costs likely to spike.`;
+  if (risk_change > 5) return `${name} significantly impacted — fiscal balance ${fiscal}pp, external ${external}pp. Debt ratio increases by ${debt}pp. Existing buffers partially absorb the shock but fiscal discipline weakens under sustained pressure.`;
+  if (risk_change > 0) return `${name} moderately affected. Fiscal impact ${fiscal}pp, external ${external}pp. Debt-to-GDP shifts ${debt}pp. Macro fundamentals absorb some of the shock but risk profile edges higher.`;
+  if (risk_change < -5) return `${name} benefits materially — fiscal balance improves ${fiscal}pp, external ${external}pp. Debt ratio declines ${debt}pp. Reform momentum and improved terms of trade reinforce positive trajectory.`;
+  if (risk_change < 0) return `${name} sees mild improvement. Fiscal ${fiscal}pp, external ${external}pp. Net positive effect on public finances and external accounts under this scenario.`;
+  return `Limited impact on ${name}. Fiscal ${fiscal}pp, external ${external}pp. Country fundamentals remain largely unchanged.`;
 }
 
-/* ------------------------------------------------------------------ */
-/*  ImpactCard                                                         */
-/* ------------------------------------------------------------------ */
+/* ── Impact Card ── */
 
-function getRiskTint(newRisk: number): { bg: string; border: string } {
-  if (newRisk < 30) return { bg: "rgba(34,197,94,0.03)", border: "rgba(34,197,94,0.06)" };
-  if (newRisk < 45) return { bg: "rgba(132,204,22,0.03)", border: "rgba(132,204,22,0.06)" };
-  if (newRisk < 60) return { bg: "rgba(245,158,11,0.03)", border: "rgba(245,158,11,0.06)" };
-  if (newRisk < 75) return { bg: "rgba(249,115,22,0.03)", border: "rgba(249,115,22,0.06)" };
-  return { bg: "rgba(239,68,68,0.03)", border: "rgba(239,68,68,0.06)" };
-}
-
-function getImpactText(impact: CountryImpact): string {
-  if (impact.risk_change > 5)
-    return `Significant deterioration expected. Risk score increases by ${impact.risk_change.toFixed(1)} points under this scenario.`;
-  if (impact.risk_change > 0)
-    return "Moderate negative impact. Debt sustainability metrics weaken slightly.";
-  if (impact.risk_change < -5)
-    return "Notable improvement projected. Fiscal position strengthens under favorable conditions.";
-  if (impact.risk_change < 0)
-    return "Mild positive effect. Risk metrics improve marginally under this scenario.";
-  return "Limited impact. Country fundamentals remain largely unchanged.";
-}
-
-function ImpactCard({ impact, fxValue }: { impact: CountryImpact; fxValue: number }) {
-  const changeColor =
-    impact.risk_change > 0 ? "text-danger" : impact.risk_change < 0 ? "text-positive" : "text-ink-400";
+function ImpactCard({ impact, fxValue, shocks }: { impact: CountryImpact; fxValue: number; shocks: ShockVector }) {
+  const badge = severityBadge(impact.new_risk);
   const sign = impact.risk_change > 0 ? "+" : "";
-  const tint = getRiskTint(impact.new_risk);
 
   return (
-    <div
-      className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4"
-      style={{ backgroundColor: tint.bg, borderLeftWidth: 3, borderLeftColor: tint.border }}
-    >
+    <div className={`${C} p-4`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-ink-100">{impact.name}</span>
-          <RiskBadge score={impact.new_risk} />
+          <span className="text-[14px] font-semibold text-ink-100">{impact.name}</span>
+          <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${badge.cls}`}>{badge.label}</span>
         </div>
-        <span className={`font-mono font-semibold ${changeColor}`}>
+        <span className={`text-[14px] font-bold tabular-nums ${changeColor(impact.risk_change)}`}>
           {sign}{impact.risk_change.toFixed(1)} risk pts
         </span>
       </div>
-      <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs">
+      <div className="mt-3 grid grid-cols-4 gap-3 text-center">
         {[
           { label: "GDP (pp)", v: impact.deltas.debt_gdp },
           { label: "Fiscal (pp)", v: impact.deltas.fiscal_balance },
@@ -142,280 +91,252 @@ function ImpactCard({ impact, fxValue }: { impact: CountryImpact; fxValue: numbe
           { label: "FX (%)", v: fxValue },
         ].map((cell) => (
           <div key={cell.label}>
-            <div className="text-ink-400">{cell.label}</div>
-            <div className={`font-mono ${cell.v < 0 ? "text-danger" : "text-positive"}`}>
+            <div className="text-[10px] text-ink-500">{cell.label}</div>
+            <div className={`text-[14px] font-bold tabular-nums ${metricColor(cell.v)}`}>
               {cell.v >= 0 ? "+" : ""}{cell.v.toFixed(1)}
             </div>
           </div>
         ))}
       </div>
-      <p className="mt-3 text-xs text-ink-400 italic">{getImpactText(impact)}</p>
+      <p className="mt-3 text-[11px] leading-relaxed text-ink-500">{impactNarrative(impact, shocks)}</p>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  ScenarioLibrary                                                    */
-/* ------------------------------------------------------------------ */
+/* ── Scenario Library Sidebar ── */
 
-function ScenarioLibrary({
-  scenarios,
-  onSelect,
-  onNew,
-}: {
-  scenarios: SavedScenario[];
-  onSelect: (id: string) => void;
-  onNew: () => void;
-}) {
+function Library({ scenarios, activeId, onSelect, onNew }: { scenarios: SavedScenario[]; activeId: string | null; onSelect: (id: string) => void; onNew: () => void }) {
+  const groups = new Map<string, SavedScenario[]>();
+  for (const s of scenarios) {
+    const cat = categoryOf(s.title ?? "").label;
+    if (!groups.has(cat)) groups.set(cat, []);
+    groups.get(cat)!.push(s);
+  }
+
   return (
-    <aside className="w-72 shrink-0 border-r border-white/[0.06] bg-ink-900/50 p-4">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-400">Scenario Library</h2>
-      <button
-        onClick={onNew}
-        className="mt-3 w-full rounded border border-white/[0.06] py-2 text-sm text-ink-300 hover:border-white/[0.12]"
-      >
+    <aside className="w-64 shrink-0 border-r border-[#21262d] bg-[#0d1117] p-4 overflow-y-auto">
+      <h2 className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">Scenario Library</h2>
+      <button onClick={onNew} className="mt-3 w-full rounded-md border border-[#30363d] py-2.5 text-sm text-ink-300 hover:bg-[#161b22]">
         + New Scenario
       </button>
-      <ul className="mt-4 space-y-2">
-        {scenarios.map((s) => (
-          <li key={s.id}>
-            <button
-              onClick={() => onSelect(s.id)}
-              className="w-full rounded-[10px] border border-white/[0.06] bg-white/[0.03] p-3 text-left hover:border-white/[0.12]"
-            >
-              <div className="text-sm font-medium text-ink-100">{s.title || "Untitled"}</div>
-              <div className="mt-1 flex items-center gap-2 text-[10px] text-ink-400">
-                <span className="rounded bg-positive/10 px-1.5 py-0.5 text-positive">saved</span>
-                <span>{formatAge(s.created_at)}</span>
+      <div className="mt-4 space-y-4">
+        {Array.from(groups.entries()).map(([cat, items]) => {
+          const catInfo = categoryOf(items[0].title ?? "");
+          return (
+            <div key={cat}>
+              <div className="mb-2 flex items-center gap-2">
+                <span className={`h-2 w-2 rounded-full ${catInfo.color}`} />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">{cat}</span>
               </div>
-            </button>
-          </li>
-        ))}
-      </ul>
+              {items.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => onSelect(s.id)}
+                  className={`mb-1 w-full rounded-lg p-3 text-left transition ${activeId === s.id ? "bg-[#1c2535] border border-blue-500/30" : "hover:bg-[#161b22]"}`}
+                >
+                  <div className="text-[12px] font-medium text-ink-200 truncate">{s.title || "Untitled"}</div>
+                  <div className="mt-1 flex items-center gap-2 text-[10px]">
+                    <span className="rounded bg-green-500/10 px-1.5 py-0.5 text-green-400">saved</span>
+                    <span className="text-ink-500">{formatAge(s.created_at)}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          );
+        })}
+      </div>
     </aside>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Main Component                                                     */
-/* ------------------------------------------------------------------ */
+/* ── Main ── */
 
 export default function ScenarioEngine() {
   const navigate = useNavigate();
-
   const [shocks, setShocks] = useState<ShockVector>({ ...DEFAULT_SHOCKS });
   const [debouncedShocks, setDebouncedShocks] = useState<ShockVector>({ ...DEFAULT_SHOCKS });
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-
   const [impacts, setImpacts] = useState<CountryImpact[] | null>(null);
   const [impactsLoading, setImpactsLoading] = useState(false);
-
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
-
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
+  const [activeScenarioId, setActiveScenarioId] = useState<string | null>(null);
+  const [mode, setMode] = useState<"manual" | "ai">("manual");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounce shocks by 300ms
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => setDebouncedShocks({ ...shocks }), 300);
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [shocks]);
 
-  // Fetch all saved scenarios on mount
   useEffect(() => {
-    api<SavedScenario[]>("/api/scenarios")
-      .then(setSavedScenarios)
-      .catch((err) => toast.error(err instanceof Error ? err.message : "Failed to load scenarios"));
+    api<SavedScenario[]>("/api/scenarios").then(setSavedScenarios).catch(() => {});
   }, []);
 
-  // Preview-all when debounced shocks change (only if non-zero)
-  const fetchPreviewAll = useCallback(async (s: ShockVector) => {
-    if (!hasNonZeroShock(s)) {
-      setImpacts(null);
-      return;
-    }
+  const fetchPreview = useCallback(async (s: ShockVector) => {
+    if (!hasNonZero(s)) { setImpacts(null); return; }
     setImpactsLoading(true);
-    setError(null);
     try {
-      const result = await api<CountryImpact[]>("/api/scenarios/preview-all", {
-        method: "POST",
-        body: JSON.stringify({ shocks: s }),
-      });
+      const result = await api<CountryImpact[]>("/api/scenarios/preview-all", { method: "POST", body: JSON.stringify({ shocks: s }) });
       setImpacts(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Preview failed");
-    } finally {
-      setImpactsLoading(false);
-    }
+    } catch { /* ignore */ } finally { setImpactsLoading(false); }
   }, []);
 
-  useEffect(() => {
-    fetchPreviewAll(debouncedShocks);
-  }, [debouncedShocks, fetchPreviewAll]);
+  useEffect(() => { fetchPreview(debouncedShocks); }, [debouncedShocks, fetchPreview]);
 
-  const handleSlider = (key: keyof ShockVector, value: number) => {
-    setShocks((prev) => ({ ...prev, [key]: value }));
-    setSavedId(null);
-  };
+  const handleSlider = (key: keyof ShockVector, value: number) => { setShocks((p) => ({ ...p, [key]: value })); setSavedId(null); };
 
   const handleSave = async () => {
     if (!title.trim()) return;
     setSaving(true);
     try {
-      const result = await api<{ id: string }>("/api/scenarios", {
-        method: "POST",
-        body: JSON.stringify({ iso3: "ALL", shocks, title: title.trim(), description: description.trim() || null }),
-      });
+      const result = await api<{ id: string }>("/api/scenarios", { method: "POST", body: JSON.stringify({ iso3: "ALL", shocks, title: title.trim(), description: description.trim() || null }) });
       setSavedId(result.id);
       toast.success("Scenario saved");
-      // Refresh sidebar
       const updated = await api<SavedScenario[]>("/api/scenarios");
       setSavedScenarios(updated);
-    } catch {
-      setError("Failed to save scenario");
-      toast.error("Failed to save scenario");
-    } finally {
-      setSaving(false);
+    } catch { toast.error("Failed to save"); } finally { setSaving(false); }
+  };
+
+  const handleReset = () => { setShocks({ ...DEFAULT_SHOCKS }); setTitle(""); setDescription(""); setSavedId(null); setActiveScenarioId(null); };
+
+  const handleSelect = (id: string) => {
+    const s = savedScenarios.find((x) => x.id === id);
+    if (s) {
+      setShocks(s.shocks);
+      setTitle(s.title ?? "");
+      setDescription(s.description ?? "");
+      setActiveScenarioId(id);
+      setSavedId(id);
+    } else {
+      navigate(`/scenarios/${id}`);
     }
   };
 
-  const handleReset = () => {
-    setShocks({ ...DEFAULT_SHOCKS });
-    setTitle("");
-    setDescription("");
-    setSavedId(null);
-  };
-
-  const handleSelect = (id: string) => {
-    navigate(`/scenarios/${id}`);
-  };
+  const cat = categoryOf(title);
 
   return (
     <AppShell>
       <div className="flex min-h-[calc(100vh-3rem)]">
-        {/* Left: Scenario Library */}
-        <ScenarioLibrary scenarios={savedScenarios} onSelect={handleSelect} onNew={handleReset} />
 
-        {/* Center: Sliders + save form */}
-        <div className="w-96 shrink-0 border-r border-white/[0.06] p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-ink-400">
-            Scenario Variables
-          </h2>
+        {/* ── Left: Scenario Library ── */}
+        <Library scenarios={savedScenarios} activeId={activeScenarioId} onSelect={handleSelect} onNew={handleReset} />
 
-          {/* Title input */}
-          <div className="mb-4">
-            <label htmlFor="scenario-title" className="mb-1 block text-xs font-medium text-ink-400">
-              Title <span className="text-danger">*</span>
-            </label>
+        {/* ── Center: Scenario Detail + Variables ── */}
+        <div className="w-[420px] shrink-0 overflow-y-auto border-r border-[#21262d] p-6">
+
+          {/* Scenario header */}
+          <div className="mb-5">
+            <div className="flex items-center gap-2 mb-2">
+              {title && <span className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase ${cat.label.includes("COMMODITY") ? "bg-amber-500/15 text-amber-400" : cat.label.includes("FX") ? "bg-blue-500/15 text-blue-400" : "bg-purple-500/15 text-purple-400"}`}>{cat.label}</span>}
+              {savedId && <span className="rounded bg-green-500/10 px-2 py-0.5 text-[9px] font-bold text-green-400">saved</span>}
+            </div>
             <input
-              id="scenario-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Trade War Escalation"
-              className="w-full rounded-md border border-white/[0.06] bg-white/[0.04] px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 focus:border-atlas-600 focus:outline-none"
+              placeholder="Scenario title..."
+              className="w-full text-[18px] font-semibold text-ink-100 bg-transparent border-none outline-none placeholder:text-ink-600"
             />
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the scenario thesis..."
+              rows={2}
+              className="mt-1 w-full text-[12px] text-ink-400 bg-transparent border-none outline-none resize-none placeholder:text-ink-600"
+            />
+          </div>
+
+          {/* Variables header */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-ink-500">⚙</span>
+              <span className="text-[13px] font-semibold text-ink-200">Scenario Variables</span>
+            </div>
+            <span className="text-[10px] text-ink-500">Manual Control</span>
           </div>
 
           {/* Sliders */}
-          <div className="space-y-4">
-            {SLIDER_CONFIG.map((cfg) => (
-              <div key={cfg.key} className="rounded-[10px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-xl p-4">
-                <div className="flex items-center justify-between">
-                  <label htmlFor={cfg.key} className="text-sm font-medium text-ink-300">
-                    {cfg.label}
-                  </label>
-                  <span className="font-mono font-semibold text-ink-100">
-                    {shocks[cfg.key] >= 0 ? "+" : ""}
-                    {shocks[cfg.key].toFixed(1)} {cfg.unit}
-                  </span>
+          <div className="space-y-5">
+            {SLIDERS.map((cfg) => {
+              const val = shocks[cfg.key];
+              const display = cfg.valueFn ? cfg.valueFn(val) : (val >= 0 ? `${val.toFixed(1)}` : val.toFixed(1));
+              return (
+                <div key={cfg.key}>
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <div className="text-[13px] font-medium text-ink-200">{cfg.label}</div>
+                      <div className="text-[10px] text-ink-500">{cfg.sub}</div>
+                    </div>
+                    <span className="text-[16px] font-bold tabular-nums text-amber-400">
+                      {display} <span className="text-[12px] font-normal text-ink-500">{cfg.unit}</span>
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={cfg.min}
+                    max={cfg.max}
+                    step={cfg.step}
+                    value={val}
+                    onChange={(e) => handleSlider(cfg.key, parseFloat(e.target.value))}
+                    className="mt-2 w-full accent-amber-500"
+                    style={{ height: 6 }}
+                  />
+                  <div className="mt-1 flex justify-between text-[10px] text-ink-600">
+                    <span>{cfg.min} {cfg.unit}</span>
+                    <span>{cfg.max} {cfg.unit}</span>
+                  </div>
                 </div>
-                <input
-                  id={cfg.key}
-                  type="range"
-                  min={cfg.min}
-                  max={cfg.max}
-                  step={cfg.step}
-                  value={shocks[cfg.key]}
-                  onChange={(e) => handleSlider(cfg.key, parseFloat(e.target.value))}
-                  className="mt-2 w-full accent-atlas-600"
-                />
-                <div className="mt-1 flex justify-between text-[10px] text-ink-400">
-                  <span>{cfg.min} {cfg.unit}</span>
-                  <span>0</span>
-                  <span>{cfg.max} {cfg.unit}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* Description textarea */}
-          <div className="mt-4">
-            <label htmlFor="scenario-desc" className="mb-1 block text-xs font-medium text-ink-400">
-              Description
-            </label>
-            <textarea
-              id="scenario-desc"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Optional notes about this scenario..."
-              rows={3}
-              className="w-full rounded-md border border-white/[0.06] bg-white/[0.04] px-3 py-2 text-sm text-ink-100 placeholder:text-ink-500 focus:border-atlas-600 focus:outline-none"
-            />
-          </div>
+          {/* Footer note */}
+          <p className="mt-6 text-[10px] text-ink-600">
+            <strong className="text-ink-500">Deterministic engine:</strong> Impact calculations are rule-based. AI proposes only — deterministic model calculates.
+          </p>
 
-          {/* Actions */}
-          <div className="mt-4 flex gap-3">
-            <button
-              onClick={handleSave}
-              disabled={saving || !title.trim()}
-              className="rounded-md bg-atlas-600 px-4 py-2 text-sm font-medium text-white hover:bg-atlas-700 disabled:opacity-50"
-            >
-              {saving ? "Saving..." : "Save Scenario"}
+          {/* Save button */}
+          <div className="mt-4 flex gap-2">
+            <button onClick={handleSave} disabled={saving || !title.trim()} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-40">
+              {saving ? "Saving..." : "Save"}
             </button>
-            <button
-              onClick={handleReset}
-              className="rounded-md border border-white/[0.06] px-4 py-2 text-sm font-medium text-ink-300 hover:border-white/[0.12]"
-            >
+            <button onClick={handleReset} className="rounded-md border border-[#30363d] px-4 py-2 text-sm text-ink-400 hover:bg-[#161b22]">
               Reset
             </button>
           </div>
-          {savedId && (
-            <p className="mt-2 text-sm text-positive">
-              Saved! <a href={`/scenarios/${savedId}`} className="underline">View saved scenario</a>
-            </p>
-          )}
-          {error && <p className="mt-2 text-sm text-danger">{error}</p>}
         </div>
 
-        {/* Right: Impact Analysis */}
-        <div className="flex-1 p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-400">
-            Scenario Impact Analysis
-          </h2>
-          <p className="mt-1 text-xs text-ink-400">
-            Deterministic calculation &middot; Live update on slider change
-          </p>
+        {/* ── Right: Impact Analysis ── */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-ink-500">📊</span>
+              <span className="text-[13px] font-semibold text-ink-200">Scenario Impact Analysis</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <button onClick={() => setMode("manual")} className={`text-[11px] font-medium ${mode === "manual" ? "text-ink-200" : "text-ink-500"}`}>⚙ Manual</button>
+              <button onClick={() => setMode("ai")} className={`text-[11px] font-medium ${mode === "ai" ? "text-ink-200" : "text-ink-500"}`}>✦ AI-Assisted</button>
+              <button onClick={handleSave} disabled={!title.trim()} className="text-[11px] font-medium text-ink-500 hover:text-ink-300 disabled:opacity-40">💾 Save</button>
+            </div>
+          </div>
+          <p className="text-[10px] text-ink-500 mb-4">Deterministic calculation · Live update on slider change</p>
 
-          {impactsLoading && <p className="mt-4 text-sm text-ink-400">Computing...</p>}
+          {impactsLoading && <p className="text-sm text-ink-400">Computing impact...</p>}
 
-          {!hasNonZeroShock(shocks) && !impactsLoading && (
-            <p className="mt-4 text-sm text-ink-400">
-              Move a slider to see impact across all countries.
-            </p>
+          {!hasNonZero(shocks) && !impactsLoading && (
+            <div className={`${C} p-8 text-center`}>
+              <p className="text-sm text-ink-400">Move a slider to see impact across all countries.</p>
+            </div>
           )}
 
           {impacts && !impactsLoading && (
-            <div className="mt-4 space-y-3">
+            <div className="space-y-3">
               {impacts.map((impact) => (
-                <ImpactCard key={impact.iso3} impact={impact} fxValue={debouncedShocks.fx_depreciation} />
+                <ImpactCard key={impact.iso3} impact={impact} fxValue={debouncedShocks.fx_depreciation} shocks={debouncedShocks} />
               ))}
             </div>
           )}

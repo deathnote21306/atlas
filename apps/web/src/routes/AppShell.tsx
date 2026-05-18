@@ -11,10 +11,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <div className="flex flex-1 pt-8">
         <Sidebar />
         <main
-          className="flex-1 overflow-auto bg-ink-800 pl-4"
+          className="flex-1 overflow-auto pl-4"
           style={{
+            backgroundColor: "#0d1117",
             backgroundImage:
-              "radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(99,102,241,0.05) 0%, transparent 50%)",
+              "radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.05) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(99,102,241,0.04) 0%, transparent 50%)",
           }}
         >
           {children}
