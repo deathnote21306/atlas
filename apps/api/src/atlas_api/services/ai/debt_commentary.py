@@ -100,5 +100,10 @@ def run_debt_commentary_for_all(session: Session) -> dict[str, bool]:
     countries = session.query(Country).filter(Country.debt_profile.isnot(None)).all()
     results = {}
     for country in countries:
-        results[country.iso3] = generate_debt_commentary(session, country.iso3)
+        try:
+            results[country.iso3] = generate_debt_commentary(session, country.iso3)
+        except Exception:
+            log.exception("debt_commentary_failed", iso3=country.iso3)
+            session.rollback()
+            results[country.iso3] = False
     return results

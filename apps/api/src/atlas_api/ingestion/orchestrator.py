@@ -67,9 +67,13 @@ async def run_nightly(factories: Sequence[type[Ingester]] | None = None) -> Inge
                 else:
                     record_success(session, ingester.source_name)
 
-        # Generate debt commentary for all seeded countries
-        with SessionLocal() as commentary_session:
-            run_debt_commentary_for_all(commentary_session)
+        # Generate debt commentary for all seeded countries. A failure here must
+        # never prevent the rest of the nightly report from being built/returned.
+        try:
+            with SessionLocal() as commentary_session:
+                run_debt_commentary_for_all(commentary_session)
+        except Exception:
+            log.exception("debt_commentary_batch_failed")
 
         finished_at = datetime.now(UTC)
         ok = all(s.rows_written > 0 or s.source == "ratings_json" for s in sources)
