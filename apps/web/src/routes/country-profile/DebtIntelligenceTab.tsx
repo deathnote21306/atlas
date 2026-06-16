@@ -11,6 +11,7 @@ import {
   Pie,
   ResponsiveContainer,
 } from "recharts";
+import type { ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface DebtHeadline {
   debt_gdp_pct: number | null;
@@ -222,7 +223,7 @@ export default function DebtIntelligenceTab({ iso3, data }: DebtIntelligenceTabP
               <Tooltip
                 contentStyle={{ background: "#0d1117", border: "1px solid #21262d", borderRadius: 6 }}
                 labelStyle={{ color: "#e6edf3" }}
-                formatter={(v: number) => [`${v}%`, "Share"]}
+                formatter={(v: ValueType | undefined) => [`${v}%`, "Share"]}
               />
               <Bar dataKey="pct" radius={[3, 3, 0, 0]}>
                 {maturityData.map((entry, i) => (
