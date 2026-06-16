@@ -17,6 +17,7 @@ from atlas_api.ingestion.imf import ImfWeoIngester
 from atlas_api.ingestion.ratings import RatingsJsonLoader
 from atlas_api.ingestion.worldbank import WorldBankIngester
 from atlas_api.models import DataVintage
+from atlas_api.services.ai.debt_commentary import run_debt_commentary_for_all
 
 log = structlog.get_logger()
 
@@ -65,6 +66,10 @@ async def run_nightly(factories: Sequence[type[Ingester]] | None = None) -> Inge
                     record_failure(session, ingester.source_name)
                 else:
                     record_success(session, ingester.source_name)
+
+        # Generate debt commentary for all seeded countries
+        with SessionLocal() as commentary_session:
+            run_debt_commentary_for_all(commentary_session)
 
         finished_at = datetime.now(UTC)
         ok = all(s.rows_written > 0 or s.source == "ratings_json" for s in sources)
