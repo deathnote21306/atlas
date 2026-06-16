@@ -21,6 +21,7 @@ const SAMPLE = [
   { iso3: "GHA", name: "Ghana", capital: "Accra", region: "West Africa", tags: ["SSA"], tier: "C", status: "restructured", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
   { iso3: "KEN", name: "Kenya", capital: "Nairobi", region: "East Africa", tags: ["SSA"], tier: "B", status: "performing", fx_regime: "managed_float", fx_regime_notes: null, fx_parallel_premium: null },
   { iso3: "ZAF", name: "South Africa", capital: "Pretoria", region: "Southern Africa", tags: ["SSA"], tier: "A", status: "performing", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
+  { iso3: "EGY", name: "Egypt", capital: "Cairo", region: "North Africa", tags: ["MENA"], tier: "B", status: "performing", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
 ];
 
 function makeBundle(country: typeof SAMPLE[number]) {
@@ -82,8 +83,9 @@ describe("CountriesList", () => {
     stubFetch(SAMPLE);
     render(wrap(<CountriesList />));
     await screen.findByText("Ghana");
-    await userEvent.click(screen.getByRole("button", { name: /east africa/i }));
-    expect(screen.getByText("Kenya")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /^MENA$/i }));
+    expect(screen.getByText("Egypt")).toBeInTheDocument();
     expect(screen.queryByText("Ghana")).not.toBeInTheDocument();
+    expect(screen.queryByText("Kenya")).not.toBeInTheDocument();
   });
 });
