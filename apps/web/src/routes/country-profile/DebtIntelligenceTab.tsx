@@ -122,6 +122,8 @@ export default function DebtIntelligenceTab({ iso3, data }: DebtIntelligenceTabP
       <div className="rounded-lg bg-[#161b22] p-5">
         <button
           onClick={() => setCommentaryOpen((o) => !o)}
+          aria-expanded={commentaryOpen}
+          aria-label="Toggle AI Commentary"
           className="flex w-full items-center justify-between text-left"
         >
           <p className="text-[10px] uppercase tracking-[0.14em] text-ink-500">AI Commentary</p>
@@ -223,7 +225,7 @@ export default function DebtIntelligenceTab({ iso3, data }: DebtIntelligenceTabP
               <Tooltip
                 contentStyle={{ background: "#0d1117", border: "1px solid #21262d", borderRadius: 6 }}
                 labelStyle={{ color: "#e6edf3" }}
-                formatter={(v: ValueType | undefined) => [`${v}%`, "Share"]}
+                formatter={(v: ValueType | undefined) => [`${v ?? "—"}%`, "Share"]}
               />
               <Bar dataKey="pct" radius={[3, 3, 0, 0]}>
                 {maturityData.map((entry, i) => (
