@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel
 
 from atlas_schemas.country import Country
@@ -31,3 +33,4 @@ class CountryBundle(BaseModel):
     risk: RiskScore
     synopsis: str | None = None
     news_placeholder: bool = True
+    debt_profile: dict[str, Any] | None = None
