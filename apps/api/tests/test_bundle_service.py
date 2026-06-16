@@ -94,3 +94,53 @@ def test_bundle_populates_ratings(session):
     assert b.ratings.latest_per_agency["S&P"].rating == "CCC+"
     assert b.ratings.composite_score is not None
     assert len(b.ratings.history) == 2
+
+
+def test_bundle_includes_debt_profile_when_seeded(session):
+    _seed_gha(session)
+    country = session.get(Country, "GHA")
+    country.debt_profile = {
+        "vintage": "2024-Q3",
+        "source": "IMF DSA",
+        "headline": {
+            "debt_gdp_pct": 76.4,
+            "external_debt_gni_pct": 52.1,
+            "debt_service_exports_pct": 23.7,
+        },
+        "composition": {
+            "domestic_pct": 42,
+            "external_pct": 58,
+            "currency": {"usd": 38, "eur": 12, "local": 42, "other": 8},
+            "fixed_pct": 65,
+            "variable_pct": 35,
+        },
+        "maturity": {
+            "lt1yr_pct": 18,
+            "yr1_3_pct": 27,
+            "yr3_5_pct": 21,
+            "gt5yr_pct": 34,
+            "wall_year": 2026,
+        },
+        "flags": {
+            "high_fx_exposure": True,
+            "near_term_maturity_wall": True,
+            "market_access_restricted": True,
+            "restructuring_overhang": True,
+        },
+        "ai_commentary": None,
+    }
+    session.commit()
+
+    b = get_country_bundle(session, "GHA")
+    assert b is not None
+    assert b.debt_profile is not None
+    assert b.debt_profile["headline"]["debt_gdp_pct"] == 76.4
+    assert b.debt_profile["flags"]["high_fx_exposure"] is True
+    assert b.debt_profile["ai_commentary"] is None
+
+
+def test_bundle_debt_profile_null_when_not_seeded(session):
+    _seed_gha(session)
+    b = get_country_bundle(session, "GHA")
+    assert b is not None
+    assert b.debt_profile is None
