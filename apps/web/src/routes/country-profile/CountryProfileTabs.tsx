@@ -13,6 +13,7 @@ import EconomicStructureTab from "./EconomicStructureTab";
 import ForecastsTab from "./ForecastsTab";
 import NewsTab from "./NewsTab";
 import EventsTab from "./EventsTab";
+import DebtIntelligenceTab from "./DebtIntelligenceTab";
 
 interface MacroTile {
   indicator: string;
@@ -45,6 +46,7 @@ interface CountryProfileTabsProps {
   macro: MacroTile[];
   synopsisData: SynopsisData | null;
   fx: FxDeltas | null;
+  debtProfile: any | null;
 }
 
 interface NewsArticle {
@@ -55,7 +57,7 @@ interface NewsArticle {
 
 const VALID_TABS = [
   "overview", "macro", "fx-intelligence", "risk-decomposition",
-  "economic-structure", "forecasts", "news", "events",
+  "economic-structure", "forecasts", "news", "events", "debt",
 ];
 
 function Placeholder({ message }: { message: string }) {
@@ -66,7 +68,7 @@ function Placeholder({ message }: { message: string }) {
   );
 }
 
-export default function CountryProfileTabs({ country, macro, synopsisData, fx }: CountryProfileTabsProps) {
+export default function CountryProfileTabs({ country, macro, synopsisData, fx, debtProfile }: CountryProfileTabsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const { data: allNews } = useQuery<NewsArticle[]>({
@@ -106,6 +108,7 @@ export default function CountryProfileTabs({ country, macro, synopsisData, fx }:
     { id: "forecasts", label: "Forecasts" },
     { id: "news", label: "News", badge: String(newsCount) },
     { id: "events", label: "Events", badge: String(eventsCount) },
+    { id: "debt", label: "Debt Intelligence" },
   ];
 
   const sparklines: Record<string, number[]> = {};
@@ -166,6 +169,10 @@ export default function CountryProfileTabs({ country, macro, synopsisData, fx }:
 
       <TabPanel id="events" activeTab={activeTab}>
         <EventsTab iso3={country.iso3} />
+      </TabPanel>
+
+      <TabPanel id="debt" activeTab={activeTab}>
+        <DebtIntelligenceTab iso3={country.iso3} data={debtProfile} />
       </TabPanel>
     </div>
   );

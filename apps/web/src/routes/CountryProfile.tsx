@@ -113,6 +113,7 @@ interface CountryBundle {
   risk: { composite: number; dimensions: DimensionScore[] };
   synopsis: string | null;
   news_placeholder: boolean;
+  debt_profile: any | null;
 }
 
 function statusPillColor(tag: string): string {
@@ -209,7 +210,7 @@ export default function CountryProfile() {
   }
   if (!data) return null;
 
-  const { country, macro, ratings, fx } = data;
+  const { country, macro, ratings, fx, debt_profile } = data;
 
   const synopsisText = synopsisData?.text ?? data.synopsis ?? "";
 
@@ -412,6 +413,7 @@ export default function CountryProfile() {
           macro={macro}
           synopsisData={synopsisData ?? null}
           fx={fx}
+          debtProfile={debt_profile ?? null}
         />
       </div>
     </AppShell>
