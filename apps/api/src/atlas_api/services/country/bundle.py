@@ -182,4 +182,5 @@ def get_country_bundle(session: Session, iso3: str) -> CountryBundle | None:
         risk=risk,
         synopsis=synopsis_text,
         news_placeholder=synopsis_text is None,
+        debt_profile=country.debt_profile,
     )
