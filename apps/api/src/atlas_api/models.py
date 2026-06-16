@@ -116,6 +116,9 @@ class Country(Base):
     economic_diversification_as_of: Mapped[int | None] = mapped_column(Integer, nullable=True)
     commodity_dependency_pct: Mapped[float | None] = mapped_column(Numeric, nullable=True)
 
+    # Debt Intelligence
+    debt_profile: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+
 
 class TradeAnnual(Base):
     __tablename__ = "trade_annual"
