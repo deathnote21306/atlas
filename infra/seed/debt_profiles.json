@@ -1,0 +1,152 @@
+{
+  "GHA": {
+    "vintage": "2024-Q3",
+    "source": "IMF DSA October 2024 / World Bank IDS",
+    "headline": {
+      "debt_gdp_pct": 76.4,
+      "external_debt_gni_pct": 52.1,
+      "debt_service_exports_pct": 23.7
+    },
+    "composition": {
+      "domestic_pct": 42,
+      "external_pct": 58,
+      "currency": { "usd": 38, "eur": 12, "local": 42, "other": 8 },
+      "fixed_pct": 65,
+      "variable_pct": 35
+    },
+    "maturity": {
+      "lt1yr_pct": 18,
+      "yr1_3_pct": 27,
+      "yr3_5_pct": 21,
+      "gt5yr_pct": 34,
+      "wall_year": 2026
+    },
+    "flags": {
+      "high_fx_exposure": true,
+      "near_term_maturity_wall": true,
+      "market_access_restricted": true,
+      "restructuring_overhang": true
+    },
+    "ai_commentary": null
+  },
+  "ZMB": {
+    "vintage": "2024-Q2",
+    "source": "IMF DSA June 2024 / World Bank IDS",
+    "headline": {
+      "debt_gdp_pct": 123.4,
+      "external_debt_gni_pct": 98.7,
+      "debt_service_exports_pct": 31.2
+    },
+    "composition": {
+      "domestic_pct": 22,
+      "external_pct": 78,
+      "currency": { "usd": 61, "eur": 9, "local": 22, "other": 8 },
+      "fixed_pct": 52,
+      "variable_pct": 48
+    },
+    "maturity": {
+      "lt1yr_pct": 8,
+      "yr1_3_pct": 19,
+      "yr3_5_pct": 28,
+      "gt5yr_pct": 45,
+      "wall_year": 2027
+    },
+    "flags": {
+      "high_fx_exposure": true,
+      "near_term_maturity_wall": false,
+      "market_access_restricted": true,
+      "restructuring_overhang": true
+    },
+    "ai_commentary": null
+  },
+  "KEN": {
+    "vintage": "2024-Q3",
+    "source": "IMF DSA September 2024 / World Bank IDS",
+    "headline": {
+      "debt_gdp_pct": 67.8,
+      "external_debt_gni_pct": 38.4,
+      "debt_service_exports_pct": 18.9
+    },
+    "composition": {
+      "domestic_pct": 48,
+      "external_pct": 52,
+      "currency": { "usd": 32, "eur": 8, "local": 48, "other": 12 },
+      "fixed_pct": 71,
+      "variable_pct": 29
+    },
+    "maturity": {
+      "lt1yr_pct": 14,
+      "yr1_3_pct": 23,
+      "yr3_5_pct": 26,
+      "gt5yr_pct": 37,
+      "wall_year": 2027
+    },
+    "flags": {
+      "high_fx_exposure": false,
+      "near_term_maturity_wall": false,
+      "market_access_restricted": false,
+      "restructuring_overhang": false
+    },
+    "ai_commentary": null
+  },
+  "ETH": {
+    "vintage": "2024-Q2",
+    "source": "IMF DSA June 2024 / World Bank IDS",
+    "headline": {
+      "debt_gdp_pct": 28.3,
+      "external_debt_gni_pct": 21.6,
+      "debt_service_exports_pct": 9.4
+    },
+    "composition": {
+      "domestic_pct": 31,
+      "external_pct": 69,
+      "currency": { "usd": 44, "eur": 18, "local": 31, "other": 7 },
+      "fixed_pct": 88,
+      "variable_pct": 12
+    },
+    "maturity": {
+      "lt1yr_pct": 6,
+      "yr1_3_pct": 14,
+      "yr3_5_pct": 22,
+      "gt5yr_pct": 58,
+      "wall_year": 2029
+    },
+    "flags": {
+      "high_fx_exposure": true,
+      "near_term_maturity_wall": false,
+      "market_access_restricted": true,
+      "restructuring_overhang": true
+    },
+    "ai_commentary": null
+  },
+  "EGY": {
+    "vintage": "2024-Q3",
+    "source": "IMF DSA October 2024 / World Bank IDS",
+    "headline": {
+      "debt_gdp_pct": 95.1,
+      "external_debt_gni_pct": 41.3,
+      "debt_service_exports_pct": 27.8
+    },
+    "composition": {
+      "domestic_pct": 71,
+      "external_pct": 29,
+      "currency": { "usd": 18, "eur": 6, "local": 71, "other": 5 },
+      "fixed_pct": 58,
+      "variable_pct": 42
+    },
+    "maturity": {
+      "lt1yr_pct": 22,
+      "yr1_3_pct": 31,
+      "yr3_5_pct": 19,
+      "gt5yr_pct": 28,
+      "wall_year": 2025
+    },
+    "flags": {
+      "high_fx_exposure": false,
+      "near_term_maturity_wall": true,
+      "market_access_restricted": false,
+      "restructuring_overhang": false
+    },
+    "ai_commentary": null
+  }
+}
