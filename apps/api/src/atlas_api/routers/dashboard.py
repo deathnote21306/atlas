@@ -40,20 +40,33 @@ THEMATIC_GROUPS: list[dict[str, Any]] = [
     {
         "title": "Fiscal Consolidation Watch",
         "color": "amber",
-        "filter": lambda c: (c.composite_risk_score or 0) >= 50 and c.imf_program_code is not None,
-        "template": "IMF program compliance under pressure in {names}. ATLAS tracking {count} countries with fiscal risk score > 65.",
+        "filter": lambda c: (
+            (c.composite_risk_score or 0) >= 50 and c.imf_program_code is not None
+        ),
+        "template": (
+            "IMF program compliance under pressure in {names}. "
+            "ATLAS tracking {count} countries with fiscal risk score > 65."
+        ),
     },
     {
         "title": "FX & External Positioning",
         "color": "amber",
         "filter": lambda c: c.fx_parallel_premium is not None and c.fx_parallel_premium > 5,
-        "template": "External position under structural pressure. {names}. ATLAS monitoring FX reserves and parallel premium divergence.",
+        "template": (
+            "External position under structural pressure. {names}. "
+            "ATLAS monitoring FX reserves and parallel premium divergence."
+        ),
     },
     {
         "title": "Restructuring & Recovery",
         "color": "green",
-        "filter": lambda c: c.status_tags and any(t in {"RESTRUCTURING", "DISTRESSED"} for t in c.status_tags),
-        "template": "Active restructuring or post-distress recovery. {names}. ATLAS applies no PoD override for restructuring countries.",
+        "filter": lambda c: (
+            c.status_tags and any(t in {"RESTRUCTURING", "DISTRESSED"} for t in c.status_tags)
+        ),
+        "template": (
+            "Active restructuring or post-distress recovery. {names}. "
+            "ATLAS applies no PoD override for restructuring countries."
+        ),
     },
     {
         "title": "Catalyst Watch",
@@ -61,7 +74,10 @@ THEMATIC_GROUPS: list[dict[str, Any]] = [
         "filter": lambda c: (c.composite_risk_score or 100) < 55 or (
             c.status_tags and "CATALYST" in c.status_tags
         ),
-        "template": "Positive catalysts emerging. {names}. Key drivers: diversification programs, infrastructure mandates, reform momentum.",
+        "template": (
+            "Positive catalysts emerging. {names}. "
+            "Key drivers: diversification programs, infrastructure mandates, reform momentum."
+        ),
     },
 ]
 
@@ -208,7 +224,7 @@ def dashboard_summary(session: DbSession, _: CurrentUser) -> dict[str, Any]:
             deteriorating.append(entry)
         else:
             improving.append(entry)
-    improving.sort(key=lambda x: x["score"])
+    improving.sort(key=lambda x: int(x["score"]))  # type: ignore[call-overload]
 
     ranking = []
     for i, c in enumerate(ranked[:10]):
