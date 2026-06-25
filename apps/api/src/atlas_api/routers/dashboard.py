@@ -50,7 +50,7 @@ THEMATIC_GROUPS: list[dict[str, Any]] = [
     },
     {
         "title": "FX & External Positioning",
-        "color": "amber",
+        "color": "purple",
         "filter": lambda c: c.fx_parallel_premium is not None and c.fx_parallel_premium > 5,
         "template": (
             "External position under structural pressure. {names}. "
@@ -59,7 +59,7 @@ THEMATIC_GROUPS: list[dict[str, Any]] = [
     },
     {
         "title": "Restructuring & Recovery",
-        "color": "green",
+        "color": "cyan",
         "filter": lambda c: (
             c.status_tags and any(t in {"RESTRUCTURING", "DISTRESSED"} for t in c.status_tags)
         ),

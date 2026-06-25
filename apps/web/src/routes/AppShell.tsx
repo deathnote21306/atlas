@@ -13,9 +13,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <main
           className="flex-1 overflow-auto pl-4"
           style={{
-            backgroundColor: "#0d1117",
+            backgroundColor: "#111929",
             backgroundImage:
-              "radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.05) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(99,102,241,0.04) 0%, transparent 50%)",
+              "radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.07) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(99,102,241,0.05) 0%, transparent 50%)",
           }}
         >
           {children}

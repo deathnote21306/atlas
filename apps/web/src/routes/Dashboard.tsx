@@ -6,7 +6,14 @@ import AppShell from "./AppShell";
 
 /* ── Card style — flat, no border, no glass ── */
 
-const C = "rounded-lg bg-[#161b22]";
+const C = "rounded-lg bg-[#1b2235]";
+
+const THEMATIC_BORDER: Record<string, string> = {
+  amber:  "border-l-amber-500/70",
+  purple: "border-l-purple-500/70",
+  cyan:   "border-l-cyan-500/70",
+  green:  "border-l-green-500/70",
+};
 
 /* ── Types ── */
 
@@ -98,7 +105,7 @@ function fmtShort(iso: string | null) {
 function actionBadge(t: string) {
   if (t === "downgrade") return "bg-red-500/20 text-red-400";
   if (t === "upgrade") return "bg-green-500/20 text-green-400";
-  if (t === "affirm") return "bg-[#21262d] text-ink-400";
+  if (t === "affirm") return "bg-[#1e2b42] text-ink-400";
   return "bg-amber-500/20 text-amber-400";
 }
 function outlookClr(o: string | null) {
@@ -175,14 +182,14 @@ export default function Dashboard() {
         <div className="flex items-center justify-between pb-5 pt-4">
           <div>
             <div className="text-[11px] text-ink-500">ATLAS <span className="mx-1 text-ink-600">&rsaquo;</span> Dashboard</div>
-            <h1 className="mt-0.5 text-[18px] font-semibold text-ink-100">Strategic Command Center</h1>
+            <h1 className="mt-0.5 text-[16px] font-normal text-ink-100">Strategic Command Center</h1>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative">
               <svg className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
               </svg>
-              <input type="text" placeholder="Search countries..." className="w-56 rounded-md border border-[#30363d] bg-[#0d1117] py-2 pl-9 pr-3 text-sm text-ink-200 placeholder:text-ink-500 focus:border-blue-500/40 focus:outline-none" />
+              <input type="text" placeholder="Search countries..." className="w-56 rounded-md border border-[#2a3a52] bg-[#131929] py-2 pl-9 pr-3 text-sm text-ink-200 placeholder:text-ink-500 focus:border-blue-500/40 focus:outline-none" />
             </div>
             <button className="flex items-center gap-2 rounded-md border border-red-500/40 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
@@ -196,13 +203,13 @@ export default function Dashboard() {
         <div className={`${C} mb-3 px-5 py-3`}>
           <div className="mb-2 flex items-center gap-2">
             <span className="text-sm text-amber-500">⚡</span>
-            <span className="text-[10px] font-medium uppercase tracking-wider text-ink-500">Global Market Indicators · Static Reference Data</span>
+            <span className="text-[10px] font-normal uppercase tracking-wider text-ink-500">Global Market Indicators · Static Reference Data</span>
           </div>
           <div className="flex items-baseline gap-8">
             {MARKET_DATA.map((m) => (
               <div key={m.label} className="flex flex-col">
                 <span className="text-[10px] text-ink-500">{m.label}</span>
-                <span className="text-[16px] font-bold tabular-nums text-ink-100">{m.value}</span>
+                <span className="text-[14px] font-medium tabular-nums text-ink-100">{m.value}</span>
                 <span className={`text-[11px] font-medium tabular-nums ${m.negative ? "text-red-400" : "text-green-400"}`}>{m.delta}</span>
               </div>
             ))}
@@ -214,28 +221,28 @@ export default function Dashboard() {
           <div className={`${C} flex items-start justify-between px-5 py-4`}>
             <div>
               <div className="text-[12px] text-ink-400">Countries Under Watch</div>
-              <div className="mt-2 text-[36px] font-bold leading-none tabular-nums text-ink-100">{summary?.countries_under_watch.elevated_count ?? "—"}</div>
+              <div className="mt-2 text-[30px] font-semibold leading-none tabular-nums text-ink-100">{summary?.countries_under_watch.elevated_count ?? "—"}</div>
             </div>
             <Globe />
           </div>
           <div className={`${C} flex items-start justify-between px-5 py-4`}>
             <div>
               <div className="text-[12px] text-ink-400">Active Alerts</div>
-              <div className="mt-2 text-[36px] font-bold leading-none tabular-nums text-ink-100">{alerts.length || "—"}</div>
+              <div className="mt-2 text-[30px] font-semibold leading-none tabular-nums text-ink-100">{alerts.length || "—"}</div>
             </div>
             <AlertTri />
           </div>
           <div className={`${C} flex items-start justify-between px-5 py-4`}>
             <div>
               <div className="text-[12px] text-ink-400">Avg Coverage Risk</div>
-              <div className="mt-2 text-[36px] font-bold leading-none tabular-nums text-ink-100">{summary?.portfolio_risk.average_score ?? "—"}</div>
+              <div className="mt-2 text-[30px] font-semibold leading-none tabular-nums text-ink-100">{summary?.portfolio_risk.average_score ?? "—"}</div>
             </div>
             <Chart />
           </div>
           <div className={`${C} flex items-start justify-between px-5 py-4`}>
             <div>
               <div className="text-[12px] text-ink-400">In IMF Programs</div>
-              <div className="mt-2 text-[36px] font-bold leading-none tabular-nums text-ink-100">{summary?.imf_program_count ?? "—"}</div>
+              <div className="mt-2 text-[30px] font-semibold leading-none tabular-nums text-ink-100">{summary?.imf_program_count ?? "—"}</div>
             </div>
             <TrendUp />
           </div>
@@ -253,20 +260,20 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 gap-3">
               <div className={`${C} px-5 py-4`}>
                 <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2"><TrendDown /><span className="text-[13px] font-semibold text-ink-200">Top Deteriorating</span></div>
+                  <div className="flex items-center gap-2"><TrendDown /><span className="text-[13px] font-medium text-ink-200">Top Deteriorating</span></div>
                   <Link to="/countries" className="text-[11px] font-medium text-blue-400">View all</Link>
                 </div>
                 {det.length === 0 ? (
                   <div className="py-4 text-center text-[12px] text-ink-500">No high-risk countries</div>
                 ) : det.map((c) => (
                   <Link key={c.iso} to={`/countries/${c.iso}`} className="flex items-center gap-3 py-2.5 hover:opacity-80">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#30363d] text-[9px] font-bold text-ink-400">{c.iso}</span>
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#2a3a52] text-[9px] font-bold text-ink-400">{c.iso}</span>
                     <div className="flex-1">
                       <div className="text-[13px] font-medium text-ink-200">{c.name}</div>
                       <div className="text-[10px] text-ink-500">{c.region}</div>
                     </div>
                     <div className="text-right">
-                      <span className={`text-[15px] font-bold tabular-nums ${scoreColor(c.score)}`}>{c.score}</span>
+                      <span className={`text-[15px] font-semibold tabular-nums ${scoreColor(c.score)}`}>{c.score}</span>
                       {c.spread_bps != null && <div className="text-[10px] text-ink-500">{c.spread_bps}bps</div>}
                     </div>
                   </Link>
@@ -274,20 +281,20 @@ export default function Dashboard() {
               </div>
               <div className={`${C} px-5 py-4`}>
                 <div className="mb-3 flex items-center justify-between">
-                  <div className="flex items-center gap-2"><TrendUpSm /><span className="text-[13px] font-semibold text-ink-200">Top Improving</span></div>
+                  <div className="flex items-center gap-2"><TrendUpSm /><span className="text-[13px] font-medium text-ink-200">Top Improving</span></div>
                   <Link to="/countries" className="text-[11px] font-medium text-blue-400">View all</Link>
                 </div>
                 {imp.length === 0 ? (
                   <div className="py-4 text-center text-[12px] text-ink-500">No low-risk countries</div>
                 ) : imp.map((c) => (
                   <Link key={c.iso} to={`/countries/${c.iso}`} className="flex items-center gap-3 py-2.5 hover:opacity-80">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#30363d] text-[9px] font-bold text-ink-400">{c.iso}</span>
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full border border-[#2a3a52] text-[9px] font-bold text-ink-400">{c.iso}</span>
                     <div className="flex-1">
                       <div className="text-[13px] font-medium text-ink-200">{c.name}</div>
                       <div className="text-[10px] text-ink-500">{c.region}</div>
                     </div>
                     <div className="text-right">
-                      <span className={`text-[15px] font-bold tabular-nums ${scoreColor(c.score)}`}>{c.score}</span>
+                      <span className={`text-[15px] font-semibold tabular-nums ${scoreColor(c.score)}`}>{c.score}</span>
                       <div className="flex items-center gap-0.5 text-[10px] text-green-400">↗ improving</div>
                     </div>
                   </Link>
@@ -297,15 +304,15 @@ export default function Dashboard() {
 
             {/* Recent Rating Actions */}
             <div className="flex items-center justify-between">
-              <span className="text-[14px] font-semibold text-ink-200">Recent Rating Actions</span>
+              <span className="text-[14px] font-medium text-ink-200">Recent Rating Actions</span>
               <span className="text-[11px] uppercase tracking-wider text-ink-500">Last 6 Months</span>
             </div>
             <div className={C}>
               <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b border-[#21262d]">
+                  <tr className="border-b border-[#1e2b42]">
                     {["Date", "Country", "Agency", "Action", "From", "To", "Outlook"].map((h) => (
-                      <th key={h} className="px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-ink-500">{h}</th>
+                      <th key={h} className="px-4 py-2.5 text-left text-[10px] font-medium uppercase tracking-wider text-ink-500">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -316,7 +323,7 @@ export default function Dashboard() {
                     const prev = i < ratings.length - 1 ? ratings[i + 1] : null;
                     const from = prev?.iso === r.iso && prev?.agency === r.agency ? prev.rating : "—";
                     return (
-                      <tr key={`${r.date}-${r.iso}-${r.agency}-${i}`} className="border-b border-[#21262d] last:border-b-0">
+                      <tr key={`${r.date}-${r.iso}-${r.agency}-${i}`} className="border-b border-[#1e2b42] last:border-b-0">
                         <td className="px-4 py-3 font-mono text-[12px] text-ink-500">{fmtDate(r.date)}</td>
                         <td className="px-4 py-3 text-[13px] font-medium text-ink-200">{r.country_name}</td>
                         <td className="px-4 py-3 text-[13px] text-ink-400">{r.agency}</td>
@@ -335,12 +342,12 @@ export default function Dashboard() {
             {thematic.length > 0 && (
               <div className="grid grid-cols-2 gap-3">
                 {thematic.map((card) => (
-                  <div key={card.title} className={`${C} border-l-2 ${card.color === "amber" ? "border-l-amber-500/60" : "border-l-green-500/60"} p-4`}>
+                  <div key={card.title} className={`${C} border-l-2 ${THEMATIC_BORDER[card.color] ?? "border-l-slate-500/70"} p-4`}>
                     <div className="mb-2 flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-semibold text-ink-200">{card.title}</span>
+                      <span className="text-[13px] font-medium text-ink-200">{card.title}</span>
                       <div className="flex flex-shrink-0 gap-1">
                         {card.countries.map((iso) => (
-                          <span key={iso} className="rounded bg-[#21262d] px-1.5 py-0.5 text-[9px] font-semibold text-ink-400">{iso}</span>
+                          <span key={iso} className="rounded bg-[#1e2b42] px-1.5 py-0.5 text-[9px] font-semibold text-ink-400">{iso}</span>
                         ))}
                       </div>
                     </div>
@@ -359,7 +366,7 @@ export default function Dashboard() {
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-red-500" />
-                  <span className="text-[13px] font-semibold text-ink-200">Live Alerts</span>
+                  <span className="text-[13px] font-medium text-ink-200">Live Alerts</span>
                 </div>
                 <span className="cursor-pointer text-[11px] font-medium text-blue-400">Manage</span>
               </div>
@@ -397,18 +404,18 @@ export default function Dashboard() {
 
             {/* Intelligence Feed */}
             <div className={C}>
-              <div className="flex items-center justify-between border-b border-[#21262d] px-4 py-3">
-                <span className="text-[13px] font-semibold text-ink-200">Intelligence Feed</span>
+              <div className="flex items-center justify-between border-b border-[#1e2b42] px-4 py-3">
+                <span className="text-[13px] font-medium text-ink-200">Intelligence Feed</span>
                 <Link to="/news" className="text-[11px] font-medium text-blue-400">Full feed</Link>
               </div>
               {articles.map((item) => (
-                <Link key={item.id} to={`/countries/${item.country_iso}?tab=news&article=${item.id}`} className="flex items-start gap-3 border-b border-[#21262d] px-4 py-2.5 last:border-b-0 hover:bg-[#1c2129]">
+                <Link key={item.id} to={`/countries/${item.country_iso}?tab=news&article=${item.id}`} className="flex items-start gap-3 border-b border-[#1e2b42] px-4 py-2.5 last:border-b-0 hover:bg-[#1e2840]">
                   <span className={`mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full ${dotColor(item.overall_impact)}`} />
                   <div className="min-w-0 flex-1">
                     <div className="text-[12px] font-medium leading-snug text-ink-200">{item.headline}</div>
                     <div className="mt-0.5 text-[10px] text-ink-500">{item.source} · {fmtShort(item.published_at)}</div>
                   </div>
-                  <span className={`flex-shrink-0 text-[13px] font-bold tabular-nums ${scoreColor(item.overall_impact)}`}>{item.overall_impact}</span>
+                  <span className={`flex-shrink-0 text-[13px] font-semibold tabular-nums ${scoreColor(item.overall_impact)}`}>{item.overall_impact}</span>
                 </Link>
               ))}
               {articles.length === 0 && <div className="px-4 py-6 text-center text-[11px] text-ink-500">No high-impact articles in the last 90 days</div>}
@@ -416,17 +423,17 @@ export default function Dashboard() {
 
             {/* Coverage Risk Map */}
             <div className={C}>
-              <div className="border-b border-[#21262d] px-4 py-3">
-                <span className="text-[13px] font-semibold text-ink-200">Coverage Risk Map</span>
+              <div className="border-b border-[#1e2b42] px-4 py-3">
+                <span className="text-[13px] font-medium text-ink-200">Coverage Risk Map</span>
               </div>
               <div className="px-4 py-3">
                 {riskMap.map((c) => (
                   <div key={c.iso} className="mb-2 flex items-center gap-3 last:mb-0">
-                    <span className="w-6 text-[11px] font-semibold text-ink-400">{c.iso}</span>
-                    <div className="h-[14px] flex-1 overflow-hidden rounded-sm bg-[#21262d]">
+                    <span className="w-6 text-[11px] font-medium text-ink-400">{c.iso}</span>
+                    <div className="h-[14px] flex-1 overflow-hidden rounded-sm bg-[#1e2b42]">
                       <div className="h-full rounded-sm" style={{ width: `${c.score}%`, background: barColor(c.score) }} />
                     </div>
-                    <span className={`w-8 text-right text-[12px] font-bold tabular-nums ${scoreColor(c.score)}`}>{c.score}</span>
+                    <span className={`w-8 text-right text-[12px] font-semibold tabular-nums ${scoreColor(c.score)}`}>{c.score}</span>
                   </div>
                 ))}
               </div>

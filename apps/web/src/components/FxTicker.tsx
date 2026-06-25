@@ -37,7 +37,7 @@ export default function FxTicker() {
   if (!data || !data.quotes) return null;
 
   return (
-    <div className="flex h-8 items-center border-b border-[#21262d] bg-[#0d1117] px-4 text-xs">
+    <div className="flex h-8 items-center border-b border-[#1e2b42] bg-[#0e1523] px-4 text-xs">
       <span className="mr-3 flex items-center gap-1 text-[10px] uppercase tracking-wider text-ink-500">
         FX Quotes
         <svg className="h-3 w-3" viewBox="0 0 12 12" fill="currentColor">
@@ -48,9 +48,9 @@ export default function FxTicker() {
       <div className="flex items-center gap-0 overflow-x-auto">
         {data.quotes.map((q, i) => (
           <div key={q.pair} className="flex items-center">
-            {i > 0 && <div className="mx-3 h-3 w-px bg-[#30363d]" />}
+            {i > 0 && <div className="mx-3 h-3 w-px bg-[#2a3a52]" />}
             <span className="text-ink-500">{q.pair}</span>
-            <span className="ml-1.5 font-semibold tabular-nums text-ink-100">
+            <span className="ml-1.5 font-medium tabular-nums text-ink-100">
               {q.value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             <span
@@ -72,7 +72,7 @@ export default function FxTicker() {
       <div className="ml-auto flex shrink-0 items-center gap-2 pl-4 text-[10px] text-ink-500">
         <span>{formatTimestamp(data.as_of)}</span>
         {data.indicative && (
-          <span className="rounded bg-[#21262d] px-1.5 py-0.5">Indicative</span>
+          <span className="rounded bg-[#1e2b42] px-1.5 py-0.5">Indicative</span>
         )}
       </div>
     </div>
