@@ -13,6 +13,8 @@ import RiskGaugeCircle from "../components/RiskGaugeCircle";
 import RatingCard from "../components/RatingCard";
 import CountryProfileTabs from "./country-profile/CountryProfileTabs";
 
+const forPdf = new URLSearchParams(window.location.search).get("for-pdf") === "1";
+
 interface MacroTile {
   indicator: string;
   label: string;

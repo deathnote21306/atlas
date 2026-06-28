@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel
 
 from atlas_api.deps import CurrentUser, DbSession, _check_iso3
+from atlas_api.services.ai.scenario_narratives import generate_scenario_narratives
 from atlas_api.services.scenario.service import (
     get_scenario,
     list_scenarios,
@@ -34,6 +35,26 @@ class SaveRequest(BaseModel):
 
 class PreviewAllRequest(BaseModel):
     shocks: ShockVector
+
+
+class NarrativesRequest(BaseModel):
+    shocks: ShockVector
+    impacts: list[CountryImpact]
+
+
+@router.post("/narratives", response_model=dict[str, str])
+def post_narratives(
+    body: NarrativesRequest,
+    _: CurrentUser,
+) -> dict[str, str]:
+    """Generate AI analyst narratives for a list of country impacts."""
+    result = generate_scenario_narratives(body.shocks, body.impacts)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI narrative generation unavailable",
+        )
+    return result
 
 
 @router.post("/preview-all", response_model=list[CountryImpact])

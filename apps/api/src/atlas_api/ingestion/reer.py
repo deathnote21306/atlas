@@ -1,4 +1,4 @@
-"""REER ingester — IMF IFS primary, BIS fallback.
+"""REER ingester — IMF EER (api.imf.org SDMX 2.1) primary, BIS fallback.
 
 Fetches Real Effective Exchange Rate data and stores in reer_history.
 Updates Country.fx_reer_deviation_pct with the latest observation.
@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import csv
 import io
+import xml.etree.ElementTree as ET
 import zipfile
 from datetime import UTC, date, datetime
 from typing import Any
@@ -35,71 +36,102 @@ ISO3_TO_ISO2 = {
     "CIV": "CI",
 }
 
-IMF_IFS_URL = "https://dataservices.imf.org/REST/SDMX_JSON.svc/CompactData/IFS/M.{iso2}.EREER_IX"
-IMF_SERIES_CODES = ["EREER_IX", "EREER_IX_CPI"]
+# IMF dissemination SDMX 2.1 REST API (the legacy dataservices.imf.org
+# SDMX-JSON service was decommissioned in 2025). The EER dataflow returns
+# SDMX-ML StructureSpecificData keyed COUNTRY.INDICATOR.FREQUENCY with ISO3
+# country codes; the CPI-based real effective exchange rate index (ref year
+# 2010, all-country-weights basket) is REER_IX_RY2010_ACW_RCPI.
+IMF_EER_BASE = "https://api.imf.org/external/sdmx/2.1"
+IMF_EER_FLOW = "IMF.STA,EER,6.0.0"
+IMF_REER_INDICATOR = "REER_IX_RY2010_ACW_RCPI"
+IMF_EER_BASE_YEAR = "2010"
 
 BIS_BULK_URL = "https://data.bis.org/static/bulk/WS_EER_D_csv_col.zip"
 
 
-def _parse_imf_response(data: dict[str, Any]) -> list[dict[str, Any]]:
-    """Extract observations from IMF SDMX-JSON response."""
-    observations = []
+def _eer_data_url(iso3: str, start_period: str) -> str:
+    """Build the SDMX 2.1 data query URL for a country's monthly REER series."""
+    key = f"{iso3}.{IMF_REER_INDICATOR}.M"
+    return f"{IMF_EER_BASE}/data/{IMF_EER_FLOW}/{key}?startPeriod={start_period}"
+
+
+def _parse_eer_period(time_period: str) -> date | None:
+    """Parse an SDMX monthly period like '2024-M04' into a date (first of month)."""
     try:
-        dataset = data.get("CompactData", {}).get("DataSet", {})
-        series = dataset.get("Series", {})
-        if not series:
-            return []
+        year, month = time_period.split("-M")
+        return date(int(year), int(month), 1)
+    except (ValueError, IndexError):
+        return None
 
-        obs_list = series.get("Obs", [])
-        if isinstance(obs_list, dict):
-            obs_list = [obs_list]
 
-        base = series.get("@BASE_YEAR", "2010")
+def _local_name(tag: str) -> str:
+    """Strip the XML namespace from an ElementTree tag."""
+    return tag.rsplit("}", 1)[-1]
 
-        for obs in obs_list:
-            period_str = obs.get("@TIME_PERIOD", "")
-            value_str = obs.get("@OBS_VALUE", "")
-            if not period_str or not value_str:
+
+def _parse_eer_xml(text: str) -> list[dict[str, Any]]:
+    """Extract observations from an IMF EER SDMX-ML StructureSpecificData response."""
+    observations: list[dict[str, Any]] = []
+    try:
+        root = ET.fromstring(text)
+    except ET.ParseError:
+        log.warning("eer_xml_parse_error")
+        return []
+
+    for series in root.iter():
+        if _local_name(series.tag) != "Series":
+            continue
+        indicator = series.attrib.get("INDICATOR", IMF_REER_INDICATOR)
+        for obs in series:
+            if _local_name(obs.tag) != "Obs":
+                continue
+            period = _parse_eer_period(obs.attrib.get("TIME_PERIOD", ""))
+            value_str = obs.attrib.get("OBS_VALUE", "")
+            if period is None or not value_str:
                 continue
             try:
-                year, month = period_str.split("-")
-                period = date(int(year), int(month), 1)
                 value = float(value_str)
-                observations.append({"period": period, "value": value, "base_period": str(base)})
-            except (ValueError, IndexError):
+            except ValueError:
                 continue
-    except Exception:
-        log.exception("imf_parse_error")
+            observations.append(
+                {
+                    "period": period,
+                    "value": value,
+                    "base_period": IMF_EER_BASE_YEAR,
+                    "indicator": indicator,
+                }
+            )
     return observations
 
 
-def fetch_imf_ifs(iso3: str, months_back: int = 24) -> list[dict[str, Any]]:
-    """Fetch REER from IMF IFS for a single country."""
-    iso2 = ISO3_TO_ISO2.get(iso3)
-    if not iso2:
-        return []
+def fetch_imf_eer(iso3: str, months_back: int = 24) -> list[dict[str, Any]]:
+    """Fetch monthly REER from the IMF EER dataflow for a single country (ISO3)."""
+    today = date.today()
+    start_month = today.month - (months_back % 12)
+    start_year = today.year - (months_back // 12)
+    if start_month <= 0:
+        start_month += 12
+        start_year -= 1
+    start_period = f"{start_year:04d}-{start_month:02d}"
 
-    for series_code in IMF_SERIES_CODES:
-        url = IMF_IFS_URL.format(iso2=iso2).replace("EREER_IX", series_code)
-        try:
-            resp = httpx.get(url, timeout=60, follow_redirects=True)
-            if resp.status_code != 200:
-                log.warning(
-                    "imf_ifs_http_error", iso3=iso3, status=resp.status_code, series=series_code
-                )
-                continue
+    url = _eer_data_url(iso3, start_period)
+    try:
+        resp = httpx.get(url, timeout=60, follow_redirects=True)
+        if resp.status_code != 200:
+            log.warning("imf_eer_http_error", iso3=iso3, status=resp.status_code)
+            return []
 
-            data = resp.json()
-            obs = _parse_imf_response(data)
-            if obs:
-                log.info("imf_ifs_fetched", iso3=iso3, series=series_code, count=len(obs))
-                for o in obs:
-                    o["source_series_id"] = f"IFS.M.{iso2}.{series_code}"
-                return obs
-        except httpx.TimeoutException:
-            log.warning("imf_ifs_timeout", iso3=iso3, series=series_code)
-        except Exception:
-            log.exception("imf_ifs_error", iso3=iso3, series=series_code)
+        obs = _parse_eer_xml(resp.text)
+        for o in obs:
+            indicator = o.pop("indicator", IMF_REER_INDICATOR)
+            o["source_series_id"] = f"IMF.STA.EER.{iso3}.{indicator}.M"
+        if obs:
+            log.info("imf_eer_fetched", iso3=iso3, count=len(obs))
+        return obs
+    except httpx.TimeoutException:
+        log.warning("imf_eer_timeout", iso3=iso3)
+    except Exception:
+        log.exception("imf_eer_error", iso3=iso3)
 
     return []
 
@@ -188,7 +220,7 @@ def run_reer_ingest(
     stats: dict[str, Any] = {
         "ran_at": datetime.now(UTC).isoformat(),
         "countries_attempted": len(countries),
-        "countries_imf_ifs": 0,
+        "countries_imf_eer": 0,
         "countries_bis_fallback": 0,
         "countries_seed_only": 0,
         "countries_error": 0,
@@ -198,10 +230,10 @@ def run_reer_ingest(
     now = datetime.now(UTC)
     imf_missed: list[str] = []
 
-    # Step 1: Try IMF IFS for each country
+    # Step 1: Try IMF EER (api.imf.org SDMX 2.1) for each country
     for iso3 in countries:
         try:
-            obs = fetch_imf_ifs(iso3, months_back=24 if not force else 240)
+            obs = fetch_imf_eer(iso3, months_back=24 if not force else 240)
             if obs:
                 for o in obs:
                     stmt = (
@@ -211,7 +243,7 @@ def run_reer_ingest(
                             period=o["period"],
                             reer_index=o["value"],
                             base_period=o["base_period"],
-                            source="imf_ifs",
+                            source="imf_eer",
                             source_series_id=o.get("source_series_id"),
                             fetched_at=now,
                         )
@@ -231,7 +263,7 @@ def run_reer_ingest(
                             reer_index=latest["value"],
                             reer_deviation_pct=dev,
                             base_period=latest["base_period"],
-                            source="imf_ifs",
+                            source="imf_eer",
                             source_series_id=latest.get("source_series_id"),
                             fetched_at=now,
                         )
@@ -250,11 +282,11 @@ def run_reer_ingest(
                         latest["period"], datetime.min.time(), tzinfo=UTC
                     )
 
-                stats["countries_imf_ifs"] += 1
+                stats["countries_imf_eer"] += 1
                 stats["details"].append(
                     {
                         "iso3": iso3,
-                        "source": "imf_ifs",
+                        "source": "imf_eer",
                         "latest_period": str(latest["period"]),
                         "deviation_pct": dev,
                     }
@@ -262,7 +294,7 @@ def run_reer_ingest(
                 log.info(
                     "reer_ingested",
                     iso3=iso3,
-                    source="imf_ifs",
+                    source="imf_eer",
                     period=str(latest["period"]),
                     deviation=dev,
                 )

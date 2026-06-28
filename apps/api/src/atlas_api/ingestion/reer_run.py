@@ -24,11 +24,11 @@ def main() -> None:
 
     print(json.dumps(stats, indent=2, default=str))
 
-    imf = stats["countries_imf_ifs"]
+    imf = stats["countries_imf_eer"]
     bis = stats["countries_bis_fallback"]
     seed = stats["countries_seed_only"]
     err = stats["countries_error"]
-    print(f"\nSummary: {imf} IFS, {bis} BIS, {seed} seed-only, {err} errors")
+    print(f"\nSummary: {imf} IMF EER, {bis} BIS, {seed} seed-only, {err} errors")
 
 
 if __name__ == "__main__":

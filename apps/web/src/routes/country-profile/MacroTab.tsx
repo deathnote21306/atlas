@@ -22,9 +22,9 @@ const DISPLAY_ORDER: { key: string; label: string; unit: string; deltaUnit: stri
   { key: "GDP_GROWTH_PCT", label: "Real GDP Growth", unit: "%", deltaUnit: "pp", biggerBetter: true },
   { key: "INFLATION_PCT", label: "CPI Inflation", unit: "%", deltaUnit: "pp", biggerBetter: false },
   { key: "FISCAL_BALANCE_PCT_GDP", label: "Fiscal Balance", unit: "% GDP", deltaUnit: "pp", biggerBetter: true },
-  { key: "FX_RESERVES_MO_IMPORTS", label: "FX Reserves", unit: "months", deltaUnit: "", biggerBetter: true },
-  { key: "DEBT_SERVICE_PCT_EXPORTS", label: "Import Cover", unit: "months", deltaUnit: "", biggerBetter: true },
-  { key: "EXTERNAL_DEBT_PCT_GNI", label: "External Debt/GDP", unit: "%", deltaUnit: "pp", biggerBetter: false },
+  { key: "CURRENT_ACCOUNT_PCT_GDP", label: "Current Account", unit: "% GDP", deltaUnit: "pp", biggerBetter: true },
+  { key: "PUBLIC_DEBT_PCT_GDP", label: "Public Debt", unit: "% GDP", deltaUnit: "pp", biggerBetter: false },
+  { key: "UNEMPLOYMENT_PCT", label: "Unemployment", unit: "%", deltaUnit: "pp", biggerBetter: false },
 ];
 
 function stalenessLabel(state: StalenessState): string {

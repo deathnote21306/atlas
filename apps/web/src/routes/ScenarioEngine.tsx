@@ -52,23 +52,35 @@ function categoryOf(title: string): { label: string; color: string } {
   return { label: "SCENARIO", color: "bg-amber-500" };
 }
 
-function impactNarrative(impact: CountryImpact, shocks: ShockVector): string {
+function impactNarrative(impact: CountryImpact): string {
   const { name, risk_change, deltas } = impact;
-  const fiscal = deltas.fiscal_balance.toFixed(1);
-  const external = deltas.current_account.toFixed(1);
-  const debt = deltas.debt_gdp.toFixed(1);
+  const s = (v: number) => v >= 0 ? "+" : "";
+  const f = `${s(deltas.fiscal_balance)}${deltas.fiscal_balance.toFixed(1)}pp`;
+  const e = `${s(deltas.current_account)}${deltas.current_account.toFixed(1)}pp`;
+  const d = `${s(deltas.debt_gdp)}${deltas.debt_gdp.toFixed(1)}pp`;
+  const fiscalVerb = deltas.fiscal_balance >= 0 ? "improves" : "deteriorates";
+  const debtVerb = deltas.debt_gdp <= 0 ? "declines" : "rises";
 
-  if (risk_change > 10) return `${name} severely impacted. Fiscal balance shifts ${fiscal}pp, external position ${external}pp. Debt-to-GDP rises by ${debt}pp. Without compensatory policy action, debt sustainability deteriorates materially. Financing costs likely to spike.`;
-  if (risk_change > 5) return `${name} significantly impacted — fiscal balance ${fiscal}pp, external ${external}pp. Debt ratio increases by ${debt}pp. Existing buffers partially absorb the shock but fiscal discipline weakens under sustained pressure.`;
-  if (risk_change > 0) return `${name} moderately affected. Fiscal impact ${fiscal}pp, external ${external}pp. Debt-to-GDP shifts ${debt}pp. Macro fundamentals absorb some of the shock but risk profile edges higher.`;
-  if (risk_change < -5) return `${name} benefits materially — fiscal balance improves ${fiscal}pp, external ${external}pp. Debt ratio declines ${debt}pp. Reform momentum and improved terms of trade reinforce positive trajectory.`;
-  if (risk_change < 0) return `${name} sees mild improvement. Fiscal ${fiscal}pp, external ${external}pp. Net positive effect on public finances and external accounts under this scenario.`;
-  return `Limited impact on ${name}. Fiscal ${fiscal}pp, external ${external}pp. Country fundamentals remain largely unchanged.`;
+  if (risk_change > 10) return `${name} severely impacted. Fiscal balance ${fiscalVerb} ${f}, external position ${e}. Debt-to-GDP ${debtVerb} ${d}. Without compensatory policy action, debt sustainability deteriorates materially and financing costs are likely to spike.`;
+  if (risk_change > 5) return `${name} significantly impacted — fiscal balance ${fiscalVerb} ${f}, external ${e}. Debt ratio ${debtVerb} ${d}. Existing buffers partially absorb the shock but fiscal discipline weakens under sustained pressure.`;
+  if (risk_change > 0) return `${name} moderately affected. Fiscal balance ${fiscalVerb} ${f}, external ${e}. Debt-to-GDP ${debtVerb} ${d}. Macro fundamentals absorb some of the shock but risk profile edges higher.`;
+  if (risk_change < -5) {
+    if (deltas.fiscal_balance >= 0) return `${name} benefits materially — fiscal balance ${fiscalVerb} ${f}, external ${e}. Debt ratio ${debtVerb} ${d}. Improved terms of trade reinforce a positive fiscal trajectory.`;
+    return `${name} sees overall risk reduction despite fiscal headwinds. Fiscal balance ${fiscalVerb} ${f}, external ${e}. Debt ${debtVerb} ${d}. Risk decline driven by external and monetary stabilisation rather than fiscal improvement.`;
+  }
+  if (risk_change < 0) {
+    if (deltas.fiscal_balance >= 0) return `${name} sees mild improvement. Fiscal balance ${fiscalVerb} ${f}, external ${e}. Net positive effect on public finances under this scenario.`;
+    return `${name} sees mild overall improvement despite fiscal pressure of ${f}. External and debt dynamics partially offset the headwind.`;
+  }
+  return `Limited impact on ${name}. Fiscal ${f}, external ${e}. Country fundamentals remain largely unchanged under this scenario.`;
 }
 
 /* ── Impact Card ── */
 
-function ImpactCard({ impact, fxValue, shocks }: { impact: CountryImpact; fxValue: number; shocks: ShockVector }) {
+function ImpactCard({ impact, fxValue, shocks, aiNarrative, aiLoading }: {
+  impact: CountryImpact; fxValue: number; shocks: ShockVector;
+  aiNarrative: string | null; aiLoading: boolean;
+}) {
   const badge = severityBadge(impact.new_risk);
   const sign = impact.risk_change > 0 ? "+" : "";
 
@@ -98,7 +110,16 @@ function ImpactCard({ impact, fxValue, shocks }: { impact: CountryImpact; fxValu
           </div>
         ))}
       </div>
-      <p className="mt-3 text-[11px] leading-relaxed text-ink-500">{impactNarrative(impact, shocks)}</p>
+      {aiLoading && !aiNarrative ? (
+        <p className="mt-3 text-[11px] text-ink-600 italic animate-pulse">Generating analyst note...</p>
+      ) : aiNarrative ? (
+        <div className="mt-3">
+          <p className="text-[11px] leading-relaxed text-ink-400">{aiNarrative}</p>
+          <span className="mt-1 inline-block text-[9px] text-indigo-500/60">✦ AI</span>
+        </div>
+      ) : (
+        <p className="mt-3 text-[11px] leading-relaxed text-ink-500">{impactNarrative(impact)}</p>
+      )}
     </div>
   );
 }
@@ -159,6 +180,8 @@ export default function ScenarioEngine() {
   const [description, setDescription] = useState("");
   const [impacts, setImpacts] = useState<CountryImpact[] | null>(null);
   const [impactsLoading, setImpactsLoading] = useState(false);
+  const [aiNarratives, setAiNarratives] = useState<Record<string, string> | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>([]);
   const [saving, setSaving] = useState(false);
   const [savedId, setSavedId] = useState<string | null>(null);
@@ -177,17 +200,36 @@ export default function ScenarioEngine() {
   }, []);
 
   const fetchPreview = useCallback(async (s: ShockVector) => {
-    if (!hasNonZero(s)) { setImpacts(null); return; }
+    if (!hasNonZero(s)) { setImpacts(null); setAiNarratives(null); return; }
     setImpactsLoading(true);
+    setAiNarratives(null);
     try {
       const result = await api<CountryImpact[]>("/api/scenarios/preview-all", { method: "POST", body: JSON.stringify({ shocks: s }) });
       setImpacts(result);
     } catch { /* ignore */ } finally { setImpactsLoading(false); }
   }, []);
 
+  const fetchAiNarratives = useCallback(async (s: ShockVector, imp: CountryImpact[]) => {
+    setAiLoading(true);
+    try {
+      const result = await api<Record<string, string>>("/api/scenarios/narratives", {
+        method: "POST",
+        body: JSON.stringify({ shocks: s, impacts: imp }),
+      });
+      setAiNarratives(result);
+    } catch { toast.error("AI narratives unavailable"); } finally { setAiLoading(false); }
+  }, []);
+
   useEffect(() => { fetchPreview(debouncedShocks); }, [debouncedShocks, fetchPreview]);
 
-  const handleSlider = (key: keyof ShockVector, value: number) => { setShocks((p) => ({ ...p, [key]: value })); setSavedId(null); };
+  // Auto-fetch AI narratives when switching to AI mode if impacts already loaded
+  useEffect(() => {
+    if (mode === "ai" && impacts && !aiNarratives && !aiLoading) {
+      fetchAiNarratives(debouncedShocks, impacts);
+    }
+  }, [mode, impacts, aiNarratives, aiLoading, debouncedShocks, fetchAiNarratives]);
+
+  const handleSlider = (key: keyof ShockVector, value: number) => { setShocks((p) => ({ ...p, [key]: value })); setSavedId(null); setAiNarratives(null); };
 
   const handleSave = async () => {
     if (!title.trim()) return;
@@ -234,20 +276,33 @@ export default function ScenarioEngine() {
               {title && <span className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase ${cat.label.includes("COMMODITY") ? "bg-amber-500/15 text-amber-400" : cat.label.includes("FX") ? "bg-blue-500/15 text-blue-400" : "bg-purple-500/15 text-purple-400"}`}>{cat.label}</span>}
               {savedId && <span className="rounded bg-green-500/10 px-2 py-0.5 text-[9px] font-bold text-green-400">saved</span>}
             </div>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Scenario title..."
-              className="w-full text-[18px] font-semibold text-ink-100 bg-transparent border-none outline-none placeholder:text-ink-600"
-            />
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe the scenario thesis..."
-              rows={2}
-              className="mt-1 w-full text-[12px] text-ink-400 bg-transparent border-none outline-none resize-none placeholder:text-ink-600"
-            />
+            <div
+              className={`rounded-lg px-3 py-2.5 transition-all duration-300 ${
+                !title
+                  ? "border border-blue-500/40 bg-blue-500/5 shadow-[0_0_12px_rgba(59,130,246,0.15)] animate-pulse"
+                  : "border border-transparent bg-transparent"
+              }`}
+            >
+              {!title && (
+                <p className="text-[9px] font-semibold uppercase tracking-wider text-blue-400/70 mb-1.5">
+                  Name your scenario
+                </p>
+              )}
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Oil crash + EM spread widening"
+                className="w-full text-[18px] font-semibold text-ink-100 bg-transparent border-none outline-none placeholder:text-ink-600"
+              />
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the thesis — what's driving this shock and why it matters..."
+                rows={2}
+                className="mt-1 w-full text-[12px] text-ink-400 bg-transparent border-none outline-none resize-none placeholder:text-ink-600"
+              />
+            </div>
           </div>
 
           {/* Variables header */}
@@ -319,11 +374,30 @@ export default function ScenarioEngine() {
             </div>
             <div className="flex items-center gap-3">
               <button onClick={() => setMode("manual")} className={`text-[11px] font-medium ${mode === "manual" ? "text-ink-200" : "text-ink-500"}`}>⚙ Manual</button>
-              <button onClick={() => setMode("ai")} className={`text-[11px] font-medium ${mode === "ai" ? "text-ink-200" : "text-ink-500"}`}>✦ AI-Assisted</button>
+              <button
+                onClick={() => {
+                  setMode("ai");
+                  if (impacts && !aiNarratives && !aiLoading) fetchAiNarratives(debouncedShocks, impacts);
+                }}
+                className={`text-[11px] font-medium ${mode === "ai" ? "text-indigo-400" : "text-ink-500"}`}
+              >
+                ✦ AI-Assisted
+              </button>
+              {mode === "ai" && aiNarratives && (
+                <button
+                  onClick={() => impacts && fetchAiNarratives(debouncedShocks, impacts)}
+                  disabled={aiLoading}
+                  className="text-[11px] font-medium text-ink-500 hover:text-ink-300 disabled:opacity-40"
+                >
+                  ↺ Regenerate
+                </button>
+              )}
               <button onClick={handleSave} disabled={!title.trim()} className="text-[11px] font-medium text-ink-500 hover:text-ink-300 disabled:opacity-40">💾 Save</button>
             </div>
           </div>
-          <p className="text-[10px] text-ink-500 mb-4">Deterministic calculation · Live update on slider change</p>
+          <p className="text-[10px] text-ink-500 mb-4">
+            {mode === "ai" ? "AI-generated analyst narratives · Deterministic risk calculations" : "Deterministic calculation · Live update on slider change"}
+          </p>
 
           {impactsLoading && <p className="text-sm text-ink-400">Computing impact...</p>}
 
@@ -336,7 +410,14 @@ export default function ScenarioEngine() {
           {impacts && !impactsLoading && (
             <div className="space-y-3">
               {impacts.map((impact) => (
-                <ImpactCard key={impact.iso3} impact={impact} fxValue={debouncedShocks.fx_depreciation} shocks={debouncedShocks} />
+                <ImpactCard
+                  key={impact.iso3}
+                  impact={impact}
+                  fxValue={debouncedShocks.fx_depreciation}
+                  shocks={debouncedShocks}
+                  aiNarrative={mode === "ai" ? (aiNarratives?.[impact.iso3] ?? null) : null}
+                  aiLoading={mode === "ai" && aiLoading}
+                />
               ))}
             </div>
           )}

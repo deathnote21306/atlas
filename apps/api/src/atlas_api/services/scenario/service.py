@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from atlas_api.models import ScenarioRun
 from atlas_api.services.country.bundle import get_country_bundle
-from atlas_api.services.scenario.engine import compute_scenario_preview
+from atlas_api.services.scenario.engine import COUNTRY_COMMODITY_EXPOSURE, COMMODITY_SENSITIVITY, compute_scenario_preview
 
 
 def preview_scenario(
@@ -40,12 +40,15 @@ def preview_scenario(
     raw_status = bundle.country.status
     status = raw_status.value if hasattr(raw_status, "value") else str(raw_status)
 
+    commodity_sensitivity = COUNTRY_COMMODITY_EXPOSURE.get(iso3, COMMODITY_SENSITIVITY)
+
     return compute_scenario_preview(
         status=status,
         baseline_indicators=baseline_indicators,
         baseline_fx_delta=baseline_fx_delta,
         shocks=shocks,
         baseline_risk_composite=bundle.risk.composite,
+        commodity_sensitivity=commodity_sensitivity,
     )
 
 

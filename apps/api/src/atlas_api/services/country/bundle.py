@@ -161,7 +161,7 @@ def get_country_bundle(session: Session, iso3: str) -> CountryBundle | None:
         country.economic_structure = econ  # type: ignore[attr-defined]
 
     # Enrich with REER source info for the schema validator
-    source_pref = ["imf_ifs", "bis_broad", "bis_narrow", "seed"]
+    source_pref = ["imf_eer", "imf_ifs", "bis_broad", "bis_narrow", "seed"]
     for src in source_pref:
         reer_row = session.execute(
             select(REERHistory)

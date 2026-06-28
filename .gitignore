@@ -27,3 +27,4 @@ coverage/
 htmlcov/
 .coverage
 apps/web/src/types/generated.ts
+reports/*.pdf

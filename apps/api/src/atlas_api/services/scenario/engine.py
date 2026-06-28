@@ -13,10 +13,27 @@ from atlas_api.services.scenario.pod import compute_pod
 
 COMMODITY_SENSITIVITY = 0.15
 
+# Net commodity export sensitivity per country.
+# Positive = net exporter (benefits from commodity price rise on fiscal + CA).
+# Negative = net importer (hurt by commodity price rise).
+COUNTRY_COMMODITY_EXPOSURE: dict[str, float] = {
+    "NGA": 0.30,   # dominant oil exporter
+    "GHA": 0.25,   # oil + cocoa + gold
+    "CIV": 0.20,   # cocoa + oil
+    "ZAF": 0.15,   # gold + platinum
+    "MAR": 0.05,   # phosphates, modest net
+    "EGY": -0.08,  # net oil importer, domestic production cushions somewhat
+    "KEN": -0.13,  # oil importer, diversified services base
+    "ETH": -0.18,  # oil importer, large import bill relative to reserves
+    "SEN": -0.10,  # oil importer, emerging offshore gas provides partial hedge
+    "RWA": -0.22,  # landlocked, fully import-dependent, no hedging capacity
+}
+
 
 def apply_shocks(
     baseline_indicators: dict[str, float],
     shocks: ShockVector,
+    commodity_sensitivity: float = COMMODITY_SENSITIVITY,
 ) -> dict[str, float]:
     """Apply a shock vector to baseline macro indicators, returning shocked values.
 
@@ -51,10 +68,10 @@ def apply_shocks(
     baseline_fiscal = baseline_indicators.get("FISCAL_BALANCE_PCT_GDP", 0.0)
     baseline_ca = baseline_indicators.get("CURRENT_ACCOUNT_PCT_GDP", 0.0)
     shocked["FISCAL_BALANCE_PCT_GDP"] = (
-        baseline_fiscal + shocks.commodity_shock * COMMODITY_SENSITIVITY
+        baseline_fiscal + shocks.commodity_shock * commodity_sensitivity
     )
     shocked["CURRENT_ACCOUNT_PCT_GDP"] = (
-        baseline_ca + shocks.commodity_shock * COMMODITY_SENSITIVITY
+        baseline_ca + shocks.commodity_shock * commodity_sensitivity
     )
 
     return shocked
@@ -66,18 +83,22 @@ def compute_scenario_preview(
     baseline_fx_delta: float | None,
     shocks: ShockVector,
     baseline_risk_composite: float,
+    commodity_sensitivity: float = COMMODITY_SENSITIVITY,
 ) -> ScenarioPreview:
     """Full scenario preview: apply shocks, recompute risk, compute PoD.
 
     Pure function -- no DB access.
     """
-    shocked = apply_shocks(baseline_indicators, shocks)
+    shocked = apply_shocks(baseline_indicators, shocks, commodity_sensitivity)
 
-    # Recompute risk score with shocked indicators + fx_depreciation as the new FX delta
+    # Recompute risk score: fx_depreciation is a delta ON TOP of baseline, not a replacement.
+    # Passing it as absolute would silently zero out baseline FX moves for countries with
+    # large currency trends, producing nonsensical risk drops when slider is left at 0.
+    effective_fx = (baseline_fx_delta or 0.0) + shocks.fx_depreciation
     new_risk = compute_risk_score(
         status=status,
         indicators=shocked,
-        fx_delta_30d_pct=shocks.fx_depreciation,
+        fx_delta_30d_pct=effective_fx,
     )
 
     # Compute PoD

@@ -82,7 +82,19 @@ const SECTIONS: NavSection[] = [
         badge: "3",
         badgeColor: "red",
       },
-      { label: "Reports", to: "#", icon: <FolderOpen className="h-4 w-4" />, disabled: true },
+      {
+        label: "Reports",
+        to: "/reports",
+        icon: <FolderOpen className="h-4 w-4" />,
+        badge: "NEW",
+        badgeColor: "amber",
+        expandKey: "reports",
+        routePrefix: "/reports",
+        children: [
+          { label: "All Reports", to: "/reports" },
+          { label: "Generate Report", to: "/reports/new" },
+        ],
+      },
     ],
   },
   {

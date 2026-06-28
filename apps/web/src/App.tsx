@@ -8,6 +8,8 @@ import ScenarioEngine from "./routes/ScenarioEngine";
 import ScenarioView from "./routes/ScenarioView";
 import AdminSynopses from "./routes/AdminSynopses";
 import NewsIntelligence from "./routes/NewsIntelligence";
+import ReportsList from "./routes/ReportsList";
+import ReportGenerator from "./routes/ReportGenerator";
 import RequireAuth from "./routes/RequireAuth";
 import { AppToaster } from "./components/Toast";
 
@@ -25,6 +27,8 @@ export default function App() {
       <Route path="/scenarios/:id" element={<RequireAuth><ScenarioView /></RequireAuth>} />
       <Route path="/news" element={<RequireAuth><NewsIntelligence /></RequireAuth>} />
       <Route path="/admin/synopses" element={<RequireAuth><AdminSynopses /></RequireAuth>} />
+      <Route path="/reports" element={<RequireAuth><ReportsList /></RequireAuth>} />
+      <Route path="/reports/new" element={<RequireAuth><ReportGenerator /></RequireAuth>} />
     </Routes>
     </>
   );

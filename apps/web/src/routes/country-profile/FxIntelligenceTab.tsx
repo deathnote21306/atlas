@@ -4,6 +4,7 @@ import { api } from "../../api/client";
 
 function sourceLabel(source: string): string {
   switch (source) {
+    case "imf_eer": return "IMF EER";
     case "imf_ifs": return "IMF IFS";
     case "bis_broad": return "BIS broad";
     case "bis_narrow": return "BIS narrow";

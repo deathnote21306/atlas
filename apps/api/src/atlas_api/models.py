@@ -292,6 +292,20 @@ class ScenarioRun(Base):
     )
 
 
+class Report(Base):
+    __tablename__ = "report"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    template: Mapped[str] = mapped_column(String(64), nullable=False, default="country_brief")
+    iso3: Mapped[str] = mapped_column(String(3), ForeignKey("country.iso3"), nullable=False)
+    vintage_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("data_vintage.id"), nullable=True)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    generated_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=True)
+    pdf_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    manifest: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending")  # pending | ready | failed
+
+
 class NewsItem(Base):
     __tablename__ = "news_item"
 

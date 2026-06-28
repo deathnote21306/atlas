@@ -27,6 +27,7 @@ from atlas_schemas.scenario import (
     ScenarioRunOut,
     ShockVector,
 )
+from atlas_schemas.report import GenerateReportRequest, ReportOut
 from atlas_schemas.staleness import StalenessInfo, StalenessState
 
 __all__ = [
@@ -38,6 +39,7 @@ __all__ = [
     "RatingAction", "RatingsSection",
     "RiskDimension", "RiskScore", "ScenarioDeltas", "ScenarioPreview",
     "ScenarioRunOut", "ShockVector", "SourceStats", "StalenessInfo",
+    "GenerateReportRequest", "ReportOut",
     "PromptPurpose", "PromptTraceOut",
     "StalenessState",
     "SynopsisApprovalState", "SynopsisContent", "SynopsisKeyPoint",
