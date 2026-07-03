@@ -24,3 +24,9 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 addopts = "-ra -q"
 testpaths = ["apps/api/tests", "packages/schemas/tests"]
+
+[dependency-groups]
+dev = [
+    "python-dateutil>=2.9.0.post0",
+    "yfinance>=1.5.1",
+]
