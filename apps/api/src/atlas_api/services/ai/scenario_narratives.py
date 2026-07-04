@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import structlog
+from atlas_schemas.scenario import CountryImpact, ShockVector
 from pydantic import BaseModel
 
-from atlas_schemas.scenario import CountryImpact, ShockVector
 from atlas_api.services.ai.provider import call_tool
 
 log = structlog.get_logger()
@@ -33,7 +33,10 @@ def _shock_description(shocks: ShockVector) -> str:
     parts = []
     if shocks.commodity_shock != 0:
         direction = "surge" if shocks.commodity_shock > 0 else "crash"
-        parts.append(f"oil/commodity price {direction} ({shocks.commodity_shock:+.0f} USD/bbl equivalent)")
+        parts.append(
+            f"oil/commodity price {direction}"
+            f" ({shocks.commodity_shock:+.0f} USD/bbl equivalent)"
+        )
     if shocks.gdp_shock != 0:
         parts.append(f"global GDP growth shock ({shocks.gdp_shock:+.1f}pp)")
     if shocks.rate_shock != 0:

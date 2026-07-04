@@ -88,8 +88,8 @@ def build_scheduler() -> AsyncIOScheduler:
 
     # Monthly debt profile refresh (1st at 04:30 UTC — after REER, World Bank data is annual)
     def _run_debt_profiles() -> None:
-        import sys
         import os
+        import sys
         # Resolve the scripts directory relative to this file's package root
         scripts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "scripts")
         scripts_dir = os.path.abspath(scripts_dir)

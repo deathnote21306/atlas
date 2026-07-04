@@ -39,7 +39,8 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
     justify-content: space-between;
   }
   .header-brand { font-size: 18pt; font-weight: 700; color: #f59e0b; letter-spacing: 0.05em; }
-  .header-sub { font-size: 8pt; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+  .header-sub { font-size: 8pt; color: #94a3b8; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-top: 2px; }
   .header-meta { text-align: right; font-size: 8.5pt; color: #94a3b8; }
   .header-meta strong { color: #e2e8f0; font-size: 10pt; }
   .body { padding: 24px 28px; }
@@ -61,7 +62,8 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
     border-radius: 6px;
     padding: 10px 12px;
   }
-  .kpi-label { font-size: 7.5pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+  .kpi-label { font-size: 7.5pt; color: #64748b; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 2px; }
   .kpi-value { font-size: 14pt; font-weight: 700; color: #0f172a; }
   .kpi-sub { font-size: 7.5pt; color: #94a3b8; margin-top: 1px; }
   .risk-badge {
@@ -86,7 +88,8 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
     padding: 10px 12px;
     text-align: center;
   }
-  .rating-agency { font-size: 7.5pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; }
+  .rating-agency { font-size: 7.5pt; color: #64748b; text-transform: uppercase;
+    letter-spacing: 0.08em; }
   .rating-value { font-size: 18pt; font-weight: 800; color: #0f172a; line-height: 1.2; }
   .rating-outlook { font-size: 8pt; color: #64748b; }
   .info-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
@@ -113,7 +116,8 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
   }
   .risk-score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
   .risk-number { font-size: 32pt; font-weight: 800; color: #0f172a; line-height: 1; }
-  .dimension-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 8.5pt; }
+  .dimension-row { display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px; font-size: 8.5pt; }
   .dim-label { width: 130px; color: #334155; }
   .dim-bar-bg { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
   .dim-bar { height: 100%; border-radius: 3px; }
@@ -168,7 +172,8 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
           {% for tile in macro_tiles %}
           <div class="kpi">
             <div class="kpi-label">{{ tile.label }}</div>
-            <div class="kpi-value">{% if tile.value is not none %}{{ tile.value }}{% if tile.unit %}{{ tile.unit }}{% endif %}{% else %}—{% endif %}</div>
+            <div class="kpi-value">{% if tile.value is not none %}{{ tile.value
+              }}{% if tile.unit %}{{ tile.unit }}{% endif %}{% else %}—{% endif %}</div>
             {% if tile.period %}<div class="kpi-sub">{{ tile.period }}</div>{% endif %}
           </div>
           {% endfor %}
@@ -313,7 +318,8 @@ def _build_context(session: Session, iso3: str) -> dict[str, Any]:
         }
         label_map = {
             "GDP_GROWTH_PCT": "GDP Growth", "INFLATION_PCT": "Inflation",
-            "FISCAL_BALANCE_PCT_GDP": "Fiscal Balance", "CURRENT_ACCOUNT_PCT_GDP": "Current Account",
+            "FISCAL_BALANCE_PCT_GDP": "Fiscal Balance",
+            "CURRENT_ACCOUNT_PCT_GDP": "Current Account",
             "PUBLIC_DEBT_PCT_GDP": "Debt/GDP", "UNEMPLOYMENT_PCT": "Unemployment",
         }
         tile_map = {

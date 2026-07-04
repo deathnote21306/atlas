@@ -23,7 +23,9 @@ def upgrade() -> None:
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
         sa.Column("template", sa.String(64), nullable=False, server_default="country_brief"),
         sa.Column("iso3", sa.String(3), sa.ForeignKey("country.iso3"), nullable=False),
-        sa.Column("vintage_id", UUID(as_uuid=True), sa.ForeignKey("data_vintage.id"), nullable=True),
+        sa.Column(
+            "vintage_id", UUID(as_uuid=True), sa.ForeignKey("data_vintage.id"), nullable=True
+        ),
         sa.Column("generated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
         sa.Column("generated_by", UUID(as_uuid=True), sa.ForeignKey("user.id"), nullable=True),
         sa.Column("pdf_path", sa.String(512), nullable=True),
