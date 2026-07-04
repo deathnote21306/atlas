@@ -202,7 +202,7 @@ export default function Dashboard() {
         {/* ── Market Indicators ── */}
         <div className={`${C} mb-3 px-5 py-3`}>
           <div className="mb-2 flex items-center gap-2">
-            <span className="text-[10px] font-normal uppercase tracking-wider text-ink-500">Global Market Indicators · Static Reference Data</span>
+            <span className="text-[10px] font-normal uppercase tracking-wider text-ink-500">Global Market Indicators</span>
           </div>
           <div className="flex items-baseline gap-8">
             {MARKET_DATA.map((m) => (

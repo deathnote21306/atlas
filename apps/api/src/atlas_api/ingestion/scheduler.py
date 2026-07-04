@@ -86,6 +86,38 @@ def build_scheduler() -> AsyncIOScheduler:
     )
     log.info("scheduler_reer_configured", day=reer_day, hour=reer_hour)
 
+    # Monthly debt profile refresh (1st at 04:30 UTC — after REER, World Bank data is annual)
+    def _run_debt_profiles() -> None:
+        import sys
+        import os
+        # Resolve the scripts directory relative to this file's package root
+        scripts_dir = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "scripts")
+        scripts_dir = os.path.abspath(scripts_dir)
+        if scripts_dir not in sys.path:
+            sys.path.insert(0, scripts_dir)
+        try:
+            import importlib.util
+            spec = importlib.util.spec_from_file_location(
+                "ingest_debt_profiles",
+                os.path.join(scripts_dir, "ingest_debt_profiles.py"),
+            )
+            mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+            spec.loader.exec_module(mod)  # type: ignore[union-attr]
+            mod.main()
+            log.info("debt_profile_refresh_complete")
+        except Exception as exc:
+            log.error("debt_profile_refresh_failed", error=str(exc))
+
+    scheduler.add_job(
+        _run_debt_profiles,
+        CronTrigger(day=1, hour=4, minute=30, timezone="UTC"),
+        id="monthly_debt_profiles",
+        replace_existing=True,
+        max_instances=1,
+        coalesce=True,
+    )
+    log.info("scheduler_debt_profiles_configured", cron="30 4 1 * *")
+
     if not settings.ingestion_schedule_enabled and not settings.news_poll_enabled:
         log.info("scheduler_all_disabled")
 
