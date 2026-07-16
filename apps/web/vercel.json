@@ -4,6 +4,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://atlasweb-production-cf6c.up.railway.app/api/:path*"
+    },
+    {
+      "source": "/:path((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 }
