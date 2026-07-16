@@ -2,6 +2,8 @@
 
 > Sovereign-finance decision-grade intelligence platform — prototype.
 
+**Live demo:** [atlas-tau-dun.vercel.app](https://atlas-tau-dun.vercel.app) — log in with `analyst@atlas.test` / `change-me`.
+
 Atlas turns a messy real-time firehose of macro data, FX, credit ratings, and news into **decision-grade country briefs** for sovereign-finance analysts (the kind of user you'd find at an institution like the OPEC Fund). It tracks 10 SSA/MENA economies (CIV, GHA, KEN, NGA, SEN, ETH, RWA, ZAF, MAR, EGY) and generates AI-scored country intelligence — with **full prompt lineage on every AI-generated figure**, so a reviewer can always see *why* a score exists, not just *what* it is.
 
 ## Highlights
@@ -9,7 +11,7 @@ Atlas turns a messy real-time firehose of macro data, FX, credit ratings, and ne
 - **Real-time news pipeline (runs every 10 min):** GDELT + RSS → semantic dedup (fastembed MiniLM → pgvector) → spaCy NER → relevance filter → event classification → **4-axis impact scoring**.
 - **Explainable AI scoring:** country synopses and impact scores are generated with Claude and stored with full prompt lineage / provenance — a "receipt" a human reviewer can audit.
 - **Data engine:** World Bank, IMF, FX, and credit-ratings ingestion with an admin review flow.
-- **Production-shaped:** monorepo (pnpm + uv workspaces), GitHub Actions CI (Python + JS + Docker, all green), **219 tests** (182 pytest + 37 JS), deployed on Vercel + Railway + Cloudflare R2.
+- **Production-shaped:** monorepo (pnpm + uv workspaces), GitHub Actions CI (Python + JS + Docker, all green), **219 tests** (182 pytest + 37 JS), deployed on Vercel (SPA + API proxy) + Railway (FastAPI container) + Supabase (Postgres + pgvector).
 
 ## Stack
 
