@@ -19,6 +19,7 @@ from atlas_schemas.ingestion import DataVintage, IngestionReport, SourceStats
 from atlas_schemas.macro import MacroIndicator, MacroValue
 from atlas_schemas.news import EventType, ImpactLevel, NewsImpactScoreOut, NewsItemOut
 from atlas_schemas.ratings import Agency, RatingAction
+from atlas_schemas.report import GenerateReportRequest, ReportOut
 from atlas_schemas.risk import DimensionScore, RiskDimension, RiskScore
 from atlas_schemas.scenario import (
     CountryImpact,
@@ -27,7 +28,6 @@ from atlas_schemas.scenario import (
     ScenarioRunOut,
     ShockVector,
 )
-from atlas_schemas.report import GenerateReportRequest, ReportOut
 from atlas_schemas.staleness import StalenessInfo, StalenessState
 
 __all__ = [

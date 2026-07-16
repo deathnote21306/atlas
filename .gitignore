@@ -27,4 +27,17 @@ coverage/
 htmlcov/
 .coverage
 apps/web/src/types/generated.ts
+reports/
 reports/*.pdf
+
+# Local tooling
+.claude/
+.superpowers/
+flow/
+
+# Local data and dumps (repo is public — never commit these)
+atlas_dump.sql
+*.dump
+sqlite_dev.db
+*.sqlite
+*.sqlite3

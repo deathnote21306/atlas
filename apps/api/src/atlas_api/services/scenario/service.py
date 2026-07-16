@@ -9,7 +9,11 @@ from sqlalchemy.orm import Session
 
 from atlas_api.models import ScenarioRun
 from atlas_api.services.country.bundle import get_country_bundle
-from atlas_api.services.scenario.engine import COUNTRY_COMMODITY_EXPOSURE, COMMODITY_SENSITIVITY, compute_scenario_preview
+from atlas_api.services.scenario.engine import (
+    COMMODITY_SENSITIVITY,
+    COUNTRY_COMMODITY_EXPOSURE,
+    compute_scenario_preview,
+)
 
 
 def preview_scenario(

@@ -8,7 +8,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from atlas_api.config import settings
 from atlas_api.ingestion.scheduler import build_scheduler
 from atlas_api.logging_config import configure_logging
-from atlas_api.routers import auth, countries, dashboard, fx, health, news, reports, scenarios, synopses
+from atlas_api.routers import (
+    auth,
+    countries,
+    dashboard,
+    fx,
+    health,
+    news,
+    reports,
+    scenarios,
+    synopses,
+)
 
 configure_logging()
 
