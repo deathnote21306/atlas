@@ -13,6 +13,10 @@ COPY apps/api/src apps/api/src
 COPY packages/schemas/src packages/schemas/src
 RUN uv sync --frozen --no-dev --package atlas-api
 
+# spaCy model for news NER (uv venvs have no pip, so install the wheel directly)
+RUN uv pip install --python /app/.venv/bin/python \
+    "en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"
+
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 # sh -c so ${PORT} is expanded at runtime: hosts like Railway inject their own
