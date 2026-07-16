@@ -1,0 +1,14 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "infra/docker/Dockerfile.api"
+  },
+  "deploy": {
+    "startCommand": "uvicorn atlas_api.main:app --host 0.0.0.0 --port $PORT --app-dir apps/api/src",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 120,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}
