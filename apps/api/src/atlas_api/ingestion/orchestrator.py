@@ -1,5 +1,6 @@
 """Nightly orchestrator: creates one vintage, runs all four ingesters, records circuit state."""
 
+import asyncio
 import uuid
 from collections.abc import Sequence
 from datetime import UTC, datetime
@@ -69,9 +70,19 @@ async def run_nightly(factories: Sequence[type[Ingester]] | None = None) -> Inge
 
         # Generate debt commentary for all seeded countries. A failure here must
         # never prevent the rest of the nightly report from being built/returned.
-        try:
+        #
+        # run_debt_commentary_for_all makes synchronous, blocking Anthropic calls
+        # (up to ~60s each, one per country). run_nightly is an async job that the
+        # AsyncIOScheduler runs directly on the event loop, so calling this inline
+        # would freeze the entire API for minutes (health checks and all requests
+        # hang until it finishes). Offload the blocking batch to a worker thread so
+        # the event loop stays responsive.
+        def _debt_commentary_batch() -> None:
             with SessionLocal() as commentary_session:
                 run_debt_commentary_for_all(commentary_session)
+
+        try:
+            await asyncio.to_thread(_debt_commentary_batch)
         except Exception:
             log.exception("debt_commentary_batch_failed")
 
