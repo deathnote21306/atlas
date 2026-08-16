@@ -16,11 +16,21 @@ def get_country(session: Session, iso3: str) -> Country | None:
 
 
 def get_latest(session: Session, iso3: str, indicator: str) -> MacroIndicatorVintage | None:
+    """Latest stored value not beyond the current calendar year.
+
+    Ordered by period desc so the most recent actual (or current-year estimate)
+    wins. Out-year IMF WEO projections (period > current year) are excluded so
+    headline macro tiles and AI grounding never surface a far-future projection
+    as the "current" figure. Projections remain in the table for the forecast
+    service, which queries them by explicit period.
+    """
+    current_year = str(date.today().year)
     return session.execute(
         select(MacroIndicatorVintage)
         .where(
             MacroIndicatorVintage.iso3 == iso3.upper(),
             MacroIndicatorVintage.indicator == indicator,
+            MacroIndicatorVintage.period <= current_year,
         )
         .order_by(
             MacroIndicatorVintage.period.desc(),
