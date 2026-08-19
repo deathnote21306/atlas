@@ -7,6 +7,8 @@ decision stays auditable and reversible.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+
 import structlog
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -20,17 +22,28 @@ from atlas_api.services.news.prefilter import is_obvious_junk
 
 log = structlog.get_logger()
 
+# The stored archive runs to thousands of items and each one costs an AI call.
+# Grading only recent news keeps the backfill affordable, and old articles add
+# little to a live feed. Pass since_days=None to deliberately grade everything.
+DEFAULT_SINCE_DAYS = 90
 
-def regrade_batch(session: Session, limit: int) -> dict[str, int]:
-    """Grade up to `limit` ungraded items. Safe to call repeatedly."""
+
+def regrade_batch(
+    session: Session,
+    limit: int,
+    since_days: int | None = DEFAULT_SINCE_DAYS,
+) -> dict[str, int]:
+    """Grade up to `limit` ungraded items, newest first. Safe to call repeatedly."""
     stats = {"seen": 0, "kept": 0, "rejected": 0, "junk": 0, "failed": 0}
+
+    stmt = select(NewsItem).where(NewsItem.ai_graded.is_(False))
+    if since_days is not None:
+        cutoff = datetime.now(UTC) - timedelta(days=since_days)
+        stmt = stmt.where(NewsItem.published_at >= cutoff)
 
     rows = list(
         session.execute(
-            select(NewsItem)
-            .where(NewsItem.ai_graded.is_(False))
-            .order_by(NewsItem.published_at.desc().nullslast())
-            .limit(limit)
+            stmt.order_by(NewsItem.published_at.desc().nullslast()).limit(limit)
         ).scalars()
     )
 
