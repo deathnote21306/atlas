@@ -73,16 +73,20 @@ token_counter = _DailyTokenCounter()
 def _pydantic_to_tool_schema(name: str, description: str, model: type[BaseModel]) -> dict[str, Any]:
     """Convert a Pydantic model to an Anthropic tool definition."""
     schema = model.model_json_schema()
-    properties = schema.get("properties", {})
-    required = schema.get("required", [])
+    input_schema: dict[str, Any] = {
+        "type": "object",
+        "properties": schema.get("properties", {}),
+        "required": schema.get("required", []),
+    }
+    # Enums and nested models are emitted as $ref into $defs. Forwarding only
+    # properties leaves those refs dangling, so the model cannot see the allowed
+    # values and starts inventing them. Carry $defs through.
+    if "$defs" in schema:
+        input_schema["$defs"] = schema["$defs"]
     return {
         "name": name,
         "description": description,
-        "input_schema": {
-            "type": "object",
-            "properties": properties,
-            "required": required,
-        },
+        "input_schema": input_schema,
     }
 
 
