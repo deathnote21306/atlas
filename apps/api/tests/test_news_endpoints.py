@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from atlas_api.models import NewsImpactScore, NewsItem, User
+from atlas_api.models import NewsImpactScore, NewsItem, NewsItemCountry, User
 from atlas_api.security import hash_password
 from atlas_api.services.news.dedup import url_hash
 
@@ -32,8 +32,15 @@ def _seed_news(session, iso3="GHA"):
         title="Ghana debt restructuring", source="reuters",
         published_at=datetime.now(UTC), body_text="Fiscal deficit...",
         primary_iso3=iso3, event_type="Fiscal", ingested_at=datetime.now(UTC),
+        # Only graded, relevant items are served, and the country feed reads
+        # the link table rather than primary_iso3.
+        relevant=True, ai_graded=True, relevance_score=85,
+        relevance_rationale="Sovereign debt restructuring bears directly on credit risk.",
+        summary_en="Ghana advanced its debt restructuring talks.", source_lang="en",
     )
     session.add(item)
+    session.commit()
+    session.add(NewsItemCountry(news_item_id=item.id, iso3=iso3, role="primary"))
     session.commit()
     score = NewsImpactScore(
         id=uuid.uuid4(), news_item_id=item.id,

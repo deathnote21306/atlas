@@ -44,8 +44,8 @@ class TestPollRss:
         async with httpx.AsyncClient() as client:
             result = await poll_rss(client)
 
-        # 2 articles per feed x 3 feeds = 6
-        assert len(result) == 6
+        # 2 articles per feed, across however many feeds are configured
+        assert len(result) == 2 * len(RSS_FEEDS)
         assert result[0].title == "Kenya central bank holds rate"
         assert result[0].url == "https://example.com/kenya-rate"
         assert result[0].source == "Test Feed"
@@ -97,10 +97,15 @@ class TestPollRss:
 
 
 class TestRssFeeds:
-    def test_three_feeds_configured(self):
-        assert len(RSS_FEEDS) == 3
+    def test_enough_feeds_configured(self):
+        # Volume protection: a single feed was the main constraint on how much
+        # news reached the pipeline at all.
+        assert len(RSS_FEEDS) >= 5
 
     def test_feed_urls(self):
-        assert "reuters" in RSS_FEEDS[0].lower()
-        assert "imf" in RSS_FEEDS[1].lower()
-        assert "worldbank" in RSS_FEEDS[2].lower()
+        joined = " ".join(RSS_FEEDS).lower()
+        for expected in ("reuters", "imf", "worldbank", "africanews", "allafrica"):
+            assert expected in joined, f"expected an {expected} feed"
+
+    def test_feed_urls_are_unique(self):
+        assert len(RSS_FEEDS) == len(set(RSS_FEEDS))
