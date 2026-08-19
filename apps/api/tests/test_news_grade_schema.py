@@ -46,3 +46,17 @@ def test_rejects_bad_impact_level():
 def test_allows_null_primary_country_for_irrelevant_items():
     result = NewsGradeResult(**_valid(relevant=False, primary_iso3=None, relevance_score=4))
     assert result.primary_iso3 is None
+
+
+def test_event_type_is_constrained_to_the_atlas_taxonomy():
+    """The DB has a CHECK constraint, so a free-form event_type breaks inserts."""
+    with pytest.raises(ValidationError):
+        NewsGradeResult(**_valid(event_type="Inflation"))
+
+
+def test_event_type_accepts_every_valid_value():
+    from atlas_schemas.news import EventType
+
+    for value in EventType:
+        result = NewsGradeResult(**_valid(event_type=value.value))
+        assert result.event_type == value.value

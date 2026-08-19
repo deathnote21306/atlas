@@ -8,6 +8,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
+from atlas_schemas.news import EventType as NewsEventType
+
 # -- Enums ------------------------------------------------------------------
 
 
@@ -141,7 +143,9 @@ class NewsGradeResult(BaseModel):
     secondary_iso3: list[str] = Field(
         default_factory=list, description="Other tracked countries genuinely covered"
     )
-    event_type: str = Field(..., description="One of the Atlas event types")
+    # Constrained, not free-form: news_item has a CHECK constraint on event_type,
+    # and the generated tool schema enumerates these so Claude cannot invent one.
+    event_type: NewsEventType = Field(..., description="One of the Atlas event types")
     fiscal_impact: str = Field(..., pattern="^[LMH]$")
     external_impact: str = Field(..., pattern="^[LMH]$")
     fx_impact: str = Field(..., pattern="^[LMH]$")

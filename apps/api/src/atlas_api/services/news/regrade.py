@@ -73,9 +73,16 @@ def regrade_batch(
             continue
 
         keep = passes_gate(result, settings.news_relevance_threshold)
-        apply_grade(session, item, result, meta, keep=keep)
+        # One bad row must never abort a long backfill. Roll back and carry on.
+        try:
+            apply_grade(session, item, result, meta, keep=keep)
+            session.commit()
+        except Exception:
+            session.rollback()
+            log.exception("regrade_item_failed", news_item_id=str(item.id))
+            stats["failed"] += 1
+            continue
         stats["kept" if keep else "rejected"] += 1
-        session.commit()
 
     log.info("regrade_batch_complete", **stats)
     return stats
