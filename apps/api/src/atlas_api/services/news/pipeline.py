@@ -92,9 +92,15 @@ async def run_news_pipeline() -> dict[str, int]:
                 {"id": str(item.id)},
             ).first()
             embedding = row[0] if row and row[0] is not None else None
-            if embedding is not None and is_duplicate(session, item.id, embedding):
-                stats["duplicates"] += 1
-                continue
+            # Dedup is an optimisation, not a correctness requirement. A failure
+            # here must never abort the run and cost us every remaining article.
+            try:
+                if embedding is not None and is_duplicate(session, item.id, embedding):
+                    stats["duplicates"] += 1
+                    continue
+            except Exception:
+                log.exception("semantic_dedup_failed", item_id=str(item.id))
+                session.rollback()
             if is_obvious_junk(item.title, item.body_text or ""):
                 stats["junk"] += 1
                 continue
