@@ -8,8 +8,6 @@ is allowed to decide what is relevant.
 
 from __future__ import annotations
 
-from typing import TypeVar
-
 TRACKED_ISO3: frozenset[str] = frozenset(
     {"CIV", "GHA", "KEN", "NGA", "SEN", "ETH", "RWA", "ZAF", "MAR", "EGY"}
 )
@@ -41,16 +39,13 @@ _JUNK_TERMS: frozenset[str] = frozenset(
     }
 )
 
-T = TypeVar("T")
-
-
 def is_obvious_junk(title: str, body: str) -> bool:
     """True only for articles that clearly cannot bear on sovereign risk."""
     combined = f"{title} {body}".lower()
     return any(term in combined for term in _JUNK_TERMS)
 
 
-def split_by_budget(items: list[T], limit: int) -> tuple[list[T], list[T]]:
+def split_by_budget[T](items: list[T], limit: int) -> tuple[list[T], list[T]]:
     """Split into the items to grade now and the items deferred to a later run."""
     if limit <= 0:
         return [], list(items)

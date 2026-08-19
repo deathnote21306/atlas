@@ -47,6 +47,12 @@ CREDITOR_CODES = {
     "IBRD (World Bank)": "DT.DOD.MIBR.CD",
 }
 
+# External debt stock indicators (fetched directly, not in MacroIndicator enum)
+EXT_DEBT_CODES = {
+    "total_usd": "DT.DOD.DECT.CD",   # External debt stocks, total (current US$)
+    "short_term_usd": "DT.DOD.SHRT.CD",  # Short-term external debt stocks (US$)
+}
+
 # Key risks by country (sourced from IMF DSA / World Bank reports)
 COUNTRY_KEY_RISKS: dict[str, list[str]] = {
     "GHA": [
@@ -102,24 +108,39 @@ COUNTRY_KEY_RISKS: dict[str, list[str]] = {
 }
 
 
+def _wb_latest(iso3: str, code: str, client: httpx.Client) -> float | None:
+    """Fetch most-recent non-null value for a WB indicator."""
+    url = WB_BASE.format(iso3=iso3, code=code)
+    try:
+        r = client.get(url, params=WB_PARAMS, timeout=20)
+        payload = r.json()
+        return next(
+            (d["value"] for d in (payload[1] or []) if d.get("value") is not None),
+            None,
+        )
+    except Exception as exc:
+        log.warning("wb_fetch_failed", iso3=iso3, code=code, error=str(exc))
+        return None
+
+
 def _sync_fetch_creditors(
     iso3: str, client: httpx.Client
 ) -> dict[str, float | None]:
     """Return creditor USD values (billions) for a given country."""
     result: dict[str, float | None] = {}
     for name, code in CREDITOR_CODES.items():
-        url = WB_BASE.format(iso3=iso3, code=code)
-        try:
-            r = client.get(url, params=WB_PARAMS, timeout=20)
-            payload = r.json()
-            val = next(
-                (d["value"] for d in (payload[1] or []) if d.get("value") is not None),
-                None,
-            )
-            result[name] = round(val / 1e9, 3) if val is not None else None
-        except Exception as exc:
-            log.warning("creditor_fetch_failed", iso3=iso3, code=code, error=str(exc))
-            result[name] = None
+        val = _wb_latest(iso3, code, client)
+        result[name] = round(val / 1e9, 3) if val is not None else None
+        time.sleep(0.15)
+    return result
+
+
+def _sync_fetch_ext_debt(iso3: str, client: httpx.Client) -> dict[str, float]:
+    """Return external debt stock values in USD for a given country."""
+    result: dict[str, float] = {}
+    for key, code in EXT_DEBT_CODES.items():
+        val = _wb_latest(iso3, code, client)
+        result[key] = val if val is not None else 0.0
         time.sleep(0.15)
     return result
 
@@ -218,9 +239,11 @@ def main() -> None:
             m = macro.get(iso3, {})
             gdp_b = m.get("GDP_USD", 0) / 1e9
             debt_pct = m.get("PUBLIC_DEBT_PCT_GDP")
-            ext_debt_usd = m.get("EXTERNAL_DEBT_STOCKS_USD", 0)
-            short_term_usd = m.get("EXTERNAL_DEBT_SHORT_TERM_USD", 0)
             debt_svc_pct = m.get("DEBT_SERVICE_PCT_EXPORTS")
+
+            ext_debt_stocks = _sync_fetch_ext_debt(iso3, http_client)
+            ext_debt_usd = ext_debt_stocks["total_usd"]
+            short_term_usd = ext_debt_stocks["short_term_usd"]
 
             ext_debt_b = ext_debt_usd / 1e9
 
