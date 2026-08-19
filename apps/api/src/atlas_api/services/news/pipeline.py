@@ -1,10 +1,14 @@
 """News pipeline orchestrator.
 
-Chains: poll -> dedup -> embed -> semantic dedup -> NER -> classify -> score.
+Chains: poll -> store -> embed -> semantic dedup -> junk cut -> budget split ->
+AI grade -> persist. Grading is blocking, so it is offloaded to a worker thread:
+this coroutine is run directly on the event loop by the scheduler and must never
+block it.
 """
 
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 import httpx
@@ -12,72 +16,77 @@ import structlog
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from atlas_api.config import settings
 from atlas_api.db import SessionLocal
+from atlas_api.services.news.ai_grader import grade_article, passes_gate
 from atlas_api.services.news.dedup import store_new_articles
 from atlas_api.services.news.embeddings import update_embeddings
 from atlas_api.services.news.gdelt import poll_gdelt
 from atlas_api.services.news.heuristic_scorer import persist_score, score_impact
 from atlas_api.services.news.nlp import classify_event, extract_country, is_relevant
+from atlas_api.services.news.persist import apply_grade, mark_deferred
+from atlas_api.services.news.prefilter import TRACKED_ISO3, is_obvious_junk, split_by_budget
 from atlas_api.services.news.rss import poll_rss
 from atlas_api.services.news.semantic_dedup import is_duplicate
 
 log = structlog.get_logger()
 
 
-def _score_item(session: Session, item: Any, stats: dict[str, int]) -> None:
-    """Try AI scorer first, fall back to heuristic."""
-    try:
-        from atlas_api.services.ai.news_scorer import score_with_ai
+def _heuristic_fallback(session: Session, item: Any) -> bool:
+    """Used when the AI is unavailable. Keeps the feed alive during an outage.
 
-        ai_score = score_with_ai(
-            session,
-            news_item_id=item.id,
-            title=item.title,
-            body=item.body_text or "",
-            iso3=item.primary_iso3,
-            event_type=item.event_type,
-        )
-        if ai_score is not None:
-            stats["ai_scored"] = stats.get("ai_scored", 0) + 1
-            return
-    except Exception:
-        log.exception("ai_scorer_import_or_call_error")
+    Returns True when the item is kept.
+    """
+    title = item.title
+    body = item.body_text or ""
+    iso3 = extract_country(title, body)
+    keep = bool(iso3) and iso3 in TRACKED_ISO3 and is_relevant(title, body)
 
-    # Heuristic fallback
-    scores = score_impact(item.title, item.body_text or "")
-    persist_score(session, item.id, scores)
-    stats["heuristic_scored"] = stats.get("heuristic_scored", 0) + 1
+    item.ai_graded = False
+    item.relevant = keep
+    if not keep:
+        return False
+
+    item.primary_iso3 = iso3
+    item.event_type = classify_event(title, body)
+    item.relevance_rationale = "Scored by keyword fallback while the AI was unavailable."
+    persist_score(session, item.id, score_impact(title, body))
+    return True
 
 
 async def run_news_pipeline() -> dict[str, int]:
     """Run one poll cycle. Returns stats dict."""
     session = SessionLocal()
     stats: dict[str, int] = {
-        "polled": 0, "stored": 0, "embedded": 0, "scored": 0,
-        "irrelevant": 0, "duplicates": 0, "ai_scored": 0, "heuristic_scored": 0,
+        "polled": 0,
+        "stored": 0,
+        "embedded": 0,
+        "duplicates": 0,
+        "junk": 0,
+        "graded": 0,
+        "kept": 0,
+        "rejected": 0,
+        "deferred": 0,
+        "heuristic_fallback": 0,
     }
     try:
-        # 1. Poll sources
         async with httpx.AsyncClient() as http:
             gdelt_articles = await poll_gdelt(http)
             rss_articles = await poll_rss(http)
         all_articles = gdelt_articles + rss_articles
         stats["polled"] = len(all_articles)
 
-        # 2. URL dedup + store
         new_items = store_new_articles(session, all_articles)
         stats["stored"] = len(new_items)
         if not new_items:
             log.info("news_pipeline_no_new", **stats)
             return stats
 
-        # 3. Generate embeddings
-        embedded = update_embeddings(session, new_items)
-        stats["embedded"] = embedded
+        stats["embedded"] = update_embeddings(session, new_items)
 
-        # 4. Process each item: semantic dedup -> NER -> relevance -> classify -> score
+        # Cheap filters first so nothing junk or duplicated is ever paid for.
+        candidates = []
         for item in new_items:
-            # Semantic dedup: fetch embedding from DB
             row = session.execute(
                 text("SELECT embedding FROM news_item WHERE id = :id"),
                 {"id": str(item.id)},
@@ -86,27 +95,42 @@ async def run_news_pipeline() -> dict[str, int]:
             if embedding is not None and is_duplicate(session, item.id, embedding):
                 stats["duplicates"] += 1
                 continue
+            if is_obvious_junk(item.title, item.body_text or ""):
+                stats["junk"] += 1
+                continue
+            candidates.append(item)
 
-            # NER: extract country
-            iso3 = extract_country(item.title, item.body_text or "")
-            if iso3:
-                item.primary_iso3 = iso3
+        to_grade, deferred = split_by_budget(candidates, settings.news_ai_calls_per_run)
+        for item in deferred:
+            mark_deferred(session, item)
+        stats["deferred"] = len(deferred)
+        session.commit()
+
+        for item in to_grade:
+            candidate_iso3 = extract_country(item.title, item.body_text or "")
+            # Blocking Anthropic call. Never run this on the event loop.
+            result, meta = await asyncio.to_thread(
+                grade_article,
+                title=item.title,
+                body=item.body_text or "",
+                source=item.source,
+                candidate_iso3=candidate_iso3,
+            )
+
+            if result is None:
+                if _heuristic_fallback(session, item):
+                    stats["kept"] += 1
+                else:
+                    stats["rejected"] += 1
+                stats["heuristic_fallback"] += 1
                 session.commit()
-
-            # Relevance filter
-            if not is_relevant(item.title, item.body_text or ""):
-                stats["irrelevant"] += 1
                 continue
 
-            # Event classification
-            event_type = classify_event(item.title, item.body_text or "")
-            item.event_type = event_type
+            keep = passes_gate(result, settings.news_relevance_threshold)
+            apply_grade(session, item, result, meta, keep=keep)
+            stats["graded"] += 1
+            stats["kept" if keep else "rejected"] += 1
             session.commit()
-
-            # Impact scoring: AI first, heuristic fallback
-            _score_item(session, item, stats)
-            session.commit()
-            stats["scored"] += 1
 
         log.info("news_pipeline_complete", **stats)
         return stats
