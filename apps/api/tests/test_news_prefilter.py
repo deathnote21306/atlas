@@ -34,7 +34,7 @@ def test_macro_is_never_cut():
 
 def test_tracked_countries_are_the_ten():
     expected = frozenset({"CIV", "GHA", "KEN", "NGA", "SEN", "ETH", "RWA", "ZAF", "MAR", "EGY"})
-    assert TRACKED_ISO3 == expected
+    assert expected == TRACKED_ISO3
 
 
 def test_budget_split():
