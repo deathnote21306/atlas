@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import contextlib
 from datetime import datetime
 
@@ -15,9 +16,18 @@ log = structlog.get_logger()
 
 GDELT_DOC_API = "https://api.gdeltproject.org/api/v2/doc/doc"
 
+# Sovereign macro plus material politics. Keeps junk out at the source, which is
+# far cheaper than filtering it later.
+THEME_CLAUSE = (
+    '(debt OR IMF OR inflation OR bond OR eurobond OR fiscal OR budget OR deficit '
+    'OR "central bank" OR "interest rate" OR rating OR downgrade OR upgrade '
+    'OR currency OR reserves OR "exchange rate" OR economy OR "economic growth" '
+    'OR election OR coup OR sanctions OR protests OR reform)'
+)
+
 # Map our 10 countries to GDELT search terms
-COUNTRY_QUERIES: dict[str, str] = {
-    "CIV": '"Ivory Coast" OR "Cote Ivoire"',
+_COUNTRY_TERMS: dict[str, str] = {
+    "CIV": '("Ivory Coast" OR "Cote Ivoire")',
     "GHA": "Ghana",
     "KEN": "Kenya",
     "NGA": "Nigeria",
@@ -27,6 +37,10 @@ COUNTRY_QUERIES: dict[str, str] = {
     "ZAF": '"South Africa"',
     "MAR": "Morocco",
     "EGY": "Egypt",
+}
+
+COUNTRY_QUERIES: dict[str, str] = {
+    iso3: f"{term} AND {THEME_CLAUSE}" for iso3, term in _COUNTRY_TERMS.items()
 }
 
 RETRY = AsyncRetrying(
@@ -42,12 +56,22 @@ async def poll_gdelt(
     *,
     english_only: bool = False,
     timespan: str = "",
-    max_records: int = 50,
+    max_records: int = 100,
+    request_delay: float = 5.0,
 ) -> list[RawArticle]:
-    """Query GDELT DOC API for each country and return raw articles."""
+    """Query GDELT DOC API for each country and return raw articles.
+
+    english_only stays False on purpose. Non-English articles are wanted and are
+    translated downstream by the grader.
+    """
     articles: list[RawArticle] = []
+    first_request = True
 
     for iso3, query in COUNTRY_QUERIES.items():
+        if not first_request:
+            # GDELT rejects more than one request every 5 seconds with HTTP 429.
+            await asyncio.sleep(request_delay)
+        first_request = False
         try:
             full_query = f"{query} sourcelang:english" if english_only else query
             params: dict[str, str] = {
@@ -95,7 +119,7 @@ async def poll_gdelt(
                         title=title,
                         source=str(source_name)[:200],
                         published_at=pub_at,
-                        body_snippet=art.get("socialimage", ""),  # GDELT doesn't return body
+                        body_snippet=title,  # GDELT returns no body, title is the only text
                         source_feed="gdelt",
                     )
                 )

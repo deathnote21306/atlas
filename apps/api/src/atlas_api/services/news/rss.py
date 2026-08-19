@@ -16,6 +16,10 @@ log = structlog.get_logger()
 
 RSS_FEEDS: list[str] = [
     "https://feeds.reuters.com/reuters/AFRICANewsrss",
+    "https://www.africanews.com/feed/rss",
+    "https://allafrica.com/tools/headlines/rdf/business/headlines.rdf",
+    "https://www.theafricareport.com/feed/",
+    "https://african.business/feed",
     "https://blogs.imf.org/feed/",
     "https://blogs.worldbank.org/feed",
 ]
