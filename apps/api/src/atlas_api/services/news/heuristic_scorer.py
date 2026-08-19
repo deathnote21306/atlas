@@ -57,8 +57,17 @@ def score_impact(title: str, body: str) -> dict[str, Any]:
 
 
 def persist_score(
-    session: Session, news_item_id: uuid.UUID, score_dict: dict[str, Any]
+    session: Session,
+    news_item_id: uuid.UUID,
+    score_dict: dict[str, Any],
+    *,
+    scorer: str = "heuristic",
 ) -> NewsImpactScore:
+    """Persist an impact score.
+
+    `scorer` records provenance. It must not say "heuristic" for an AI-produced
+    score, because daily_rescore selects on that value to find work to redo.
+    """
     row = NewsImpactScore(
         id=uuid.uuid4(),
         news_item_id=news_item_id,
@@ -67,7 +76,7 @@ def persist_score(
         fx_impact=score_dict["fx_impact"],
         political_impact=score_dict["political_impact"],
         rationale=score_dict["rationale"],
-        scorer="heuristic",
+        scorer=scorer,
         scored_at=datetime.now(UTC),
     )
     session.add(row)
