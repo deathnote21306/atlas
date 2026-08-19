@@ -62,7 +62,7 @@ class TestPollGdelt:
                 )
 
         async with httpx.AsyncClient() as client:
-            result = await poll_gdelt(client)
+            result = await poll_gdelt(client, max_records=50, request_delay=0)
 
         assert len(result) == 2
         assert result[0].url == "https://example.com/article1"
@@ -91,7 +91,7 @@ class TestPollGdelt:
             )
 
         async with httpx.AsyncClient() as client:
-            result = await poll_gdelt(client)
+            result = await poll_gdelt(client, max_records=50, request_delay=0)
 
         assert len(result) == 1
         assert result[0].title == "Valid"
@@ -110,7 +110,7 @@ class TestPollGdelt:
             )
 
         async with httpx.AsyncClient() as client:
-            result = await poll_gdelt(client)
+            result = await poll_gdelt(client, max_records=50, request_delay=0)
 
         assert result == []
 
@@ -130,7 +130,7 @@ class TestPollGdelt:
                 )
 
         async with httpx.AsyncClient() as client:
-            result = await poll_gdelt(client)
+            result = await poll_gdelt(client, max_records=50, request_delay=0)
 
         # Should return empty list, not raise
         assert result == []
@@ -158,7 +158,7 @@ class TestPollGdelt:
             )
 
         async with httpx.AsyncClient() as client:
-            result = await poll_gdelt(client)
+            result = await poll_gdelt(client, max_records=50, request_delay=0)
 
         assert len(result) == 1
         assert result[0].published_at is not None

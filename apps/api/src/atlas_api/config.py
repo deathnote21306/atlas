@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     ingestion_cron: str = "0 3 * * *"  # 03:00 UTC daily
     news_poll_enabled: bool = False
     news_poll_cron: str = "*/10 * * * *"  # every 10 minutes
+    # Relevance gate. Lower for more coverage, raise for a stricter feed.
+    news_relevance_threshold: int = 60
+    news_ai_calls_per_run: int = 40
+    news_translate_enabled: bool = True
 
     # -- AI integration (Plan 5b) --
     anthropic_api_key: str = ""

@@ -13,15 +13,27 @@ SIMILARITY_THRESHOLD = 0.92
 WINDOW_DAYS = 7
 
 
+def _to_vector_literal(embedding: list[float] | str) -> str:
+    """Accept either a float sequence or the literal pgvector already returns.
+
+    Reading the column with raw SQL yields a string such as "[0.1,-0.2]".
+    Joining that character by character produced an invalid vector literal and
+    a DataError that aborted the entire pipeline run.
+    """
+    if isinstance(embedding, str):
+        return embedding
+    return "[" + ",".join(str(v) for v in embedding) + "]"
+
+
 def find_near_duplicates(
     session: Session,
     item_id: uuid.UUID,
-    embedding: list[float],
+    embedding: list[float] | str,
     window_days: int = WINDOW_DAYS,
     threshold: float = SIMILARITY_THRESHOLD,
 ) -> list[uuid.UUID]:
     cutoff = datetime.now(UTC) - timedelta(days=window_days)
-    vec_str = "[" + ",".join(str(v) for v in embedding) + "]"
+    vec_str = _to_vector_literal(embedding)
     rows = session.execute(
         text(
             "SELECT id FROM news_item "
@@ -38,7 +50,7 @@ def find_near_duplicates(
 def is_duplicate(
     session: Session,
     item_id: uuid.UUID,
-    embedding: list[float],
+    embedding: list[float] | str,
 ) -> bool:
     dupes = find_near_duplicates(session, item_id, embedding)
     if dupes:

@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import select
 
 from atlas_api.deps import CurrentUser, DbSession, _check_iso3
-from atlas_api.models import NewsImpactScore, NewsItem
+from atlas_api.models import NewsImpactScore, NewsItem, NewsItemCountry
 from atlas_api.services.news.daily_rescore import get_scoring_status
 
 router = APIRouter(prefix="/api/news", tags=["news"])
@@ -25,6 +25,11 @@ def _item_to_out(item: NewsItem, score: NewsImpactScore | None = None) -> dict[s
         "body_text": (item.body_text or "")[:500],
         "primary_iso3": item.primary_iso3,
         "event_type": item.event_type,
+        "summary_en": item.summary_en,
+        "source_lang": item.source_lang,
+        "relevance_score": item.relevance_score,
+        "relevance_rationale": item.relevance_rationale,
+        "translated": item.original_title is not None,
         "ingested_at": item.ingested_at,
     }
     if score:
@@ -50,13 +55,21 @@ def list_news(
     stmt = (
         select(NewsItem, NewsImpactScore)
         .outerjoin(NewsImpactScore, NewsItem.id == NewsImpactScore.news_item_id)
-        .order_by(NewsItem.published_at.desc())
-        .limit(limit)
+        # Nothing is served until something has judged it relevant.
+        .where(NewsItem.relevant.is_(True))
+        .order_by(
+            NewsItem.relevance_score.desc().nullslast(),
+            NewsItem.published_at.desc(),
+        )
     )
     if iso3:
         iso3 = _check_iso3(iso3)
-        stmt = stmt.where(NewsItem.primary_iso3 == iso3)
-    rows = session.execute(stmt).all()
+        # Match primary or secondary, so an article covering two countries
+        # appears on both feeds.
+        stmt = stmt.join(NewsItemCountry, NewsItemCountry.news_item_id == NewsItem.id).where(
+            NewsItemCountry.iso3 == iso3
+        )
+    rows = session.execute(stmt.limit(limit)).all()
     return [_item_to_out(item, score) for item, score in rows]
 
 

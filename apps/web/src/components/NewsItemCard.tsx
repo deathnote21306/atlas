@@ -14,9 +14,24 @@ interface NewsItemData {
   published_at: string | null;
   event_type: string | null;
   impact_score: ImpactScore | null;
+  summary_en?: string | null;
+  source_lang?: string | null;
+  relevance_score?: number | null;
+  relevance_rationale?: string | null;
+  translated?: boolean;
 }
 
 export type { NewsItemData };
+
+const LANGUAGE_NAMES: Record<string, string> = {
+  ar: "Arabic",
+  fr: "French",
+  pt: "Portuguese",
+  es: "Spanish",
+  sw: "Swahili",
+  am: "Amharic",
+  en: "English",
+};
 
 function ImpactBadge({ axis, level }: { axis: string; level: string }) {
   const colors: Record<string, string> = {
@@ -32,7 +47,8 @@ function ImpactBadge({ axis, level }: { axis: string; level: string }) {
 }
 
 function ScorerBadge({ scorer }: { scorer: string }) {
-  const isAI = scorer.startsWith("claude");
+  // Any scorer that is not the keyword fallback was produced by the model.
+  const isAI = scorer !== "heuristic";
   return (
     <span
       className={`rounded px-1.5 py-0.5 text-[10px] ${
@@ -58,6 +74,11 @@ export default function NewsItemCard({ item }: { item: NewsItemData }) {
         </a>
         {item.impact_score && <ScorerBadge scorer={item.impact_score.scorer} />}
       </div>
+      {item.translated && item.source_lang && (
+        <span className="mt-1 inline-block rounded bg-[#21262d] px-1.5 py-0.5 text-[10px] text-ink-400">
+          Translated from {LANGUAGE_NAMES[item.source_lang] ?? item.source_lang}
+        </span>
+      )}
       <div className="mt-1 flex items-center gap-2 text-[10px] text-ink-400">
         <span>{item.source}</span>
         {item.published_at && (
@@ -67,6 +88,9 @@ export default function NewsItemCard({ item }: { item: NewsItemData }) {
           <span className="rounded bg-[#21262d] px-1.5 py-0.5">{item.event_type}</span>
         )}
       </div>
+      {item.relevance_rationale && (
+        <p className="mt-2 text-xs leading-relaxed text-ink-400">{item.relevance_rationale}</p>
+      )}
       {item.impact_score && (
         <div className="mt-2 flex flex-wrap gap-1">
           <ImpactBadge axis="fiscal" level={item.impact_score.fiscal_impact} />

@@ -49,5 +49,10 @@ class NewsItemOut(BaseModel):
     published_at: datetime | None = None
     primary_iso3: str | None = None
     event_type: str | None = None
+    summary_en: str | None = None
+    source_lang: str | None = None
+    relevance_score: int | None = None
+    relevance_rationale: str | None = None
+    translated: bool = False
     ingested_at: datetime
     impact_score: NewsImpactScoreOut | None = None

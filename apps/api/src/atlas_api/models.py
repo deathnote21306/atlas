@@ -327,6 +327,20 @@ class NewsItem(Base):
         String(3), ForeignKey("country.iso3"), nullable=True
     )
     event_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    relevant: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=sa.false()
+    )
+    relevance_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    relevance_rationale: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_lang: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    original_title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    summary_en: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_graded: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=sa.false()
+    )
+    prompt_trace_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("prompt_trace.id"), nullable=True
+    )
     raw_payload: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     ingested_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -336,6 +350,18 @@ class NewsItem(Base):
     )
     # Note: 'embedding' column is vector(384) managed via raw SQL in migration.
     # We do NOT map it here; we use raw queries for vector operations.
+
+
+class NewsItemCountry(Base):
+    """Link table so one article can appear on every country it genuinely covers."""
+
+    __tablename__ = "news_item_country"
+
+    news_item_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("news_item.id", ondelete="CASCADE"), primary_key=True
+    )
+    iso3: Mapped[str] = mapped_column(String(3), ForeignKey("country.iso3"), primary_key=True)
+    role: Mapped[str] = mapped_column(String(16), nullable=False, default="primary")
 
 
 class NewsImpactScore(Base):
