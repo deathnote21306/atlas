@@ -124,3 +124,28 @@ class AIScoreResponse(BaseModel):
     result: AIScoreResult
     scorer: str
     prompt_trace_id: uuid.UUID
+
+
+# -- News Grading -----------------------------------------------------------
+
+
+class NewsGradeResult(BaseModel):
+    """The typed output Claude must return when grading one news article."""
+
+    relevant: bool = Field(..., description="True only if the article is on editorial policy")
+    relevance_score: int = Field(..., ge=0, le=100, description="Confidence and importance, 0-100")
+    rationale: str = Field(..., description="One sentence, grounded in the article, on why")
+    primary_iso3: str | None = Field(
+        None, description="The single country the article is actually about, or null"
+    )
+    secondary_iso3: list[str] = Field(
+        default_factory=list, description="Other tracked countries genuinely covered"
+    )
+    event_type: str = Field(..., description="One of the Atlas event types")
+    fiscal_impact: str = Field(..., pattern="^[LMH]$")
+    external_impact: str = Field(..., pattern="^[LMH]$")
+    fx_impact: str = Field(..., pattern="^[LMH]$")
+    political_impact: str = Field(..., pattern="^[LMH]$")
+    source_lang: str = Field(..., description="ISO 639-1 code of the source article")
+    title_en: str = Field(..., description="English title, translated when needed")
+    summary_en: str = Field(..., description="Two sentence English summary")
