@@ -96,7 +96,7 @@ export default function EconomicStructureTab({ data, countryName }: EconomicStru
           <span className="text-xs text-ink-500">Data as of {data.year}</span>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-6 md:grid-cols-4">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-6 md:grid-cols-4">
           {data.diversification_score != null && div && (
             <div>
               <p className="text-[10px] uppercase tracking-[0.14em] text-ink-500">Diversification</p>

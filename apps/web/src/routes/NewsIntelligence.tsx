@@ -193,7 +193,7 @@ export default function NewsIntelligence() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-[1440px] px-6 pb-10">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 pb-10">
 
         {/* Header */}
         <div className="pb-5 pt-4">
@@ -217,7 +217,7 @@ export default function NewsIntelligence() {
         ) : (
           <>
             {/* KPI strip */}
-            <div className="mb-4 grid grid-cols-3 gap-3">
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { label: "Total Articles", value: total },
                 { label: "High Impact", value: highImpact },

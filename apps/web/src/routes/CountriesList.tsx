@@ -160,7 +160,7 @@ export default function CountriesList() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-[1440px] px-6 pb-10">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 pb-10">
 
         {/* Header */}
         <div className="pb-4 pt-4">

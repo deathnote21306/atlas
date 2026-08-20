@@ -151,7 +151,7 @@ export default function FxIntelligenceTab({ iso3, fxIntel, spotRate, spotAsOf, s
           </div>
 
           {/* Change ladder */}
-          <div className="grid w-3/5 grid-cols-4 gap-3">
+          <div className="grid w-3/5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {(["1d", "1w", "1m", "3m"] as const).map((window) => (
               <div key={window} className="rounded-md border border-[#21262d] bg-[#131920] px-3 py-3 text-center">
                 <div className="text-[11px] uppercase tracking-wider text-ink-500">{window.toUpperCase()}</div>
