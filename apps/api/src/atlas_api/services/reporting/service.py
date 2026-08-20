@@ -251,6 +251,55 @@ def _risk_label_from_score(score: float) -> str:
     return "LOW"
 
 
+# Bands used by services/risk (the engine the dashboard and country pages use).
+_DECOMPOSITION_CLASS = {
+    "severe risk": "critical",
+    "high risk": "high",
+    "elevated risk": "high",
+    "moderate risk": "medium",
+    "low risk": "low",
+}
+
+
+def _risk_context_from_decomposition(rd: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Build the report's risk block from the stored risk decomposition.
+
+    This is the same score and the same six dimensions the dashboard, the country
+    page and the forecast bands use. The report previously derived its own number
+    from a second, legacy engine, so an exported brief contradicted the screen.
+
+    Returns None when a country has not been scored yet, so the caller can fall back.
+    """
+    if not rd:
+        return None
+    dims = rd.get("dimensions") or []
+    score = rd.get("composite_score")
+    if not dims or score is None:
+        return None
+
+    label = str(rd.get("composite_label") or "")
+    dimensions = []
+    for d in dims[:6]:
+        # Engine B scores are already on a 0 to 100 scale, so the bar width is the score.
+        dim_score = int(d.get("score") or 0)
+        pct = max(0, min(dim_score, 100))
+        dimensions.append(
+            {
+                "label": d.get("label") or str(d.get("key", "")).replace("_", " ").title(),
+                "score": str(dim_score),
+                "pct": pct,
+                "color": _bar_color(pct),
+            }
+        )
+
+    return {
+        "risk_score": f"{float(score):.0f}",
+        "risk_label": label,
+        "risk_level_cls": _DECOMPOSITION_CLASS.get(label.strip().lower(), "medium"),
+        "dimensions": dimensions,
+    }
+
+
 def _build_context(session: Session, iso3: str) -> dict[str, Any]:
     from atlas_api.services.country.bundle import get_country_bundle
 
@@ -279,8 +328,13 @@ def _build_context(session: Session, iso3: str) -> dict[str, Any]:
         "spread_bps": None,
     }
 
-    # risk.composite is a plain float
-    if risk:
+    # Prefer the canonical score: the one services/risk computes and the dashboard,
+    # country page and forecast bands all read. Only fall back to the bundle's legacy
+    # score for a country that has never been scored.
+    canonical = _risk_context_from_decomposition(getattr(country, "risk_decomposition", None))
+    if canonical is not None:
+        ctx.update(canonical)
+    elif risk:
         score = risk.composite
         label = _risk_label_from_score(score)
         ctx["risk_score"] = f"{score:.0f}"
