@@ -11,6 +11,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    LargeBinary,
     Numeric,
     String,
     Text,
@@ -307,7 +308,11 @@ class Report(Base):
     generated_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("user.id"), nullable=True
     )
+    # Kept for rows generated before PDFs were stored in the database.
     pdf_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    # The PDF itself. Container disks are ephemeral, so the bytes live here and
+    # survive restarts and redeploys. A brief is roughly 200 KB.
+    pdf_bytes: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     manifest: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     # pending | ready | failed
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="pending")

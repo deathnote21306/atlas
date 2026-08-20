@@ -17,6 +17,12 @@ RUN uv sync --frozen --no-dev --package atlas-api
 RUN uv pip install --python /app/.venv/bin/python \
     "en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"
 
+# Chromium for PDF report generation. The playwright Python package ships with the
+# app, but the browser binary is a separate download and Debian slim lacks the
+# system libraries it needs, so --with-deps is required. Without this step every
+# report fails at pw.chromium.launch() and is saved with status "failed".
+RUN /app/.venv/bin/playwright install --with-deps chromium
+
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 # sh -c so ${PORT} is expanded at runtime: hosts like Railway inject their own

@@ -451,6 +451,9 @@ def generate_country_brief(
             )
             browser.close()
 
+        # Keep the bytes on the row. The container filesystem is ephemeral, so a
+        # PDF that only exists on disk is gone after the next restart.
+        report.pdf_bytes = pdf_path.read_bytes()
         report.pdf_path = str(pdf_path)
         report.status = "ready"
         report.manifest = {"template": "country_brief", "iso3": iso3}
