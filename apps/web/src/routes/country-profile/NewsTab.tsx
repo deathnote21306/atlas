@@ -226,7 +226,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
 
                   {/* 4-axis scores */}
                   {article.score && (
-                    <div className="mt-3 grid grid-cols-4 gap-2">
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                       {(
                         [
                           ["Fiscal", article.score.fiscal_impact],
@@ -275,7 +275,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
       {selectedArticle && (
         <>
           <div className="fixed inset-0 z-50 bg-black/40" onClick={closePanel} />
-          <div className="fixed bottom-0 right-0 top-0 z-50 w-[500px] overflow-y-auto border-l border-[#21262d] bg-[#0d1117] p-6">
+          <div className="fixed bottom-0 right-0 top-0 z-50 w-full max-w-[500px] overflow-y-auto border-l border-[#21262d] bg-[#0d1117] p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-ink-100">{selectedArticle.title}</h3>
               <button onClick={closePanel} className="rounded p-1 text-ink-500 hover:text-ink-200">
@@ -295,7 +295,7 @@ export default function NewsTab({ iso3 }: NewsTabProps) {
             {selectedArticle.score && (
               <div className="mt-6">
                 <h4 className="mb-3 text-sm font-semibold text-ink-300">Impact Assessment</h4>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {(
                     [
                       ["Fiscal", selectedArticle.score.fiscal_impact],
