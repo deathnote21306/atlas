@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import sqlalchemy as sa
-from atlas_schemas.country import CountryStatus, FxRegime
+from atlas_schemas.country import CountryStatus, CoverageStatus, FxRegime
 from sqlalchemy import (
     Boolean,
     Date,
@@ -49,10 +49,24 @@ class Country(Base):
     tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
     tier: Mapped[str] = mapped_column(String(8), nullable=False)
     # Depth of intelligence (PRD CI-005), distinct from `tier` above, which is
-    # market tiering. server_default covers rows written by raw SQL and the
-    # migration backfill; default covers rows the ORM builds without the kwarg.
-    coverage_status: Mapped[str] = mapped_column(
-        String(16), nullable=False, server_default="coming_soon", default="coming_soon"
+    # market tiering. Declared like the sibling enums below so the non-native
+    # Enum emits a CHECK constraint: an out-of-enum value would otherwise pass
+    # the database and then fail Pydantic response validation, 500-ing the whole
+    # country list rather than just its own row. server_default covers rows
+    # written by raw SQL and the migration backfill; default covers rows the ORM
+    # builds without the kwarg.
+    coverage_status: Mapped[CoverageStatus] = mapped_column(
+        SqlEnum(
+            CoverageStatus,
+            name="country_coverage_status",
+            native_enum=False,
+            create_constraint=True,
+            length=16,
+            values_callable=lambda enum: [e.value for e in enum],
+        ),
+        nullable=False,
+        server_default="coming_soon",
+        default=CoverageStatus.COMING_SOON,
     )
     status: Mapped[CountryStatus] = mapped_column(
         SqlEnum(

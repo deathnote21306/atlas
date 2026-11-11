@@ -17,7 +17,9 @@ const COLORS: Record<CoverageLevel, string> = {
   full: "bg-positive/15 text-positive",
   standard: "bg-amber-500/15 text-amber-400",
   benchmark: "bg-[#21262d] text-ink-300",
-  coming_soon: "bg-[#21262d] text-ink-500",
+  // ink-400 (5.99:1 on #21262d), not ink-500 (3.15:1), which fails WCAG AA at
+  // this 10px size. coming_soon is the default for every new country.
+  coming_soon: "bg-[#21262d] text-ink-400",
 };
 
 const FALLBACK_LABEL = "Unknown";

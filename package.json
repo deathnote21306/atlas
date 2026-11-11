@@ -6,7 +6,7 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "dev:web": "pnpm --filter @atlas/web dev",
-    "build:types": "(chflags nohidden .venv/lib/python3.12/site-packages/*.pth 2>/dev/null || true) && .venv/bin/python packages/schemas/scripts/generate_ts.py",
+    "build:types": "uv run python packages/schemas/scripts/generate_ts.py",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test"

@@ -1,5 +1,6 @@
 import uuid
 
+import pytest
 from atlas_api.models import Country, User
 from atlas_api.security import hash_password
 
@@ -100,3 +101,22 @@ def test_country_without_explicit_coverage_defaults_to_coming_soon(client, sessi
     r = client.get("/api/countries/KEN")
     assert r.status_code == 200
     assert r.json()["coverage_status"] == "coming_soon"
+
+
+def test_out_of_enum_coverage_status_is_rejected_by_the_database(session):
+    """An out-of-enum value must be impossible, not merely render a fallback.
+
+    Pydantic validates the response model, so a hand-edited row would otherwise
+    500 the whole /api/countries list, not just its own row.
+    """
+    from sqlalchemy import text
+    from sqlalchemy.exc import IntegrityError
+
+    with pytest.raises(IntegrityError):
+        session.execute(text(
+            "INSERT INTO country (iso3, name, capital, region, tags, tier, "
+            "coverage_status, status, fx_regime) VALUES "
+            "('XXX','X','X','X','{}','B','Standard','performing','float')"
+        ))
+        session.flush()
+    session.rollback()
