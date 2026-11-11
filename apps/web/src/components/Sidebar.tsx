@@ -4,7 +4,6 @@ import { useAuth } from "../auth/AuthContext";
 import {
   LayoutGrid,
   Globe,
-  FileText,
   Activity,
   BookOpen,
   Bell,
@@ -52,18 +51,6 @@ const SECTIONS: NavSection[] = [
         children: [
           { label: "Country List", to: "/countries" },
           { label: "Country Comparison", to: "/countries/compare" },
-        ],
-      },
-      {
-        label: "Deal Analysis",
-        to: "#",
-        icon: <FileText className="h-4 w-4" />,
-        disabled: true,
-        expandKey: "deals",
-        routePrefix: "/deals",
-        children: [
-          { label: "Deal List", to: "#" },
-          { label: "New Deal", to: "#" },
         ],
       },
       {
