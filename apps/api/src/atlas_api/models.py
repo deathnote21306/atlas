@@ -48,6 +48,12 @@ class Country(Base):
     region: Mapped[str] = mapped_column(String(100), nullable=False)
     tags: Mapped[list[str]] = mapped_column(ARRAY(String), nullable=False, default=list)
     tier: Mapped[str] = mapped_column(String(8), nullable=False)
+    # Depth of intelligence (PRD CI-005), distinct from `tier` above, which is
+    # market tiering. server_default covers rows written by raw SQL and the
+    # migration backfill; default covers rows the ORM builds without the kwarg.
+    coverage_status: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default="coming_soon", default="coming_soon"
+    )
     status: Mapped[CountryStatus] = mapped_column(
         SqlEnum(
             CountryStatus,

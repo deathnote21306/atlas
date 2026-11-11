@@ -14,6 +14,19 @@ class CountryStatus(StrEnum):
     RESTRUCTURED = "restructured"
 
 
+class CoverageStatus(StrEnum):
+    """How much of the eight-pillar country model Atlas actually carries (PRD CI-005).
+
+    This is depth of intelligence, not market quality. The separate `tier` field
+    (A/B/C) is market tiering and means something else.
+    """
+
+    FULL = "full"
+    STANDARD = "standard"
+    BENCHMARK = "benchmark"
+    COMING_SOON = "coming_soon"
+
+
 class FxRegime(StrEnum):
     FLOAT = "float"
     MANAGED_FLOAT = "managed_float"
@@ -48,6 +61,7 @@ class Country(BaseModel):
     region: str
     tags: list[str]
     tier: str
+    coverage_status: CoverageStatus = CoverageStatus.COMING_SOON
     status: CountryStatus
     fx_regime: FxRegime
     fx_regime_notes: str | None = None

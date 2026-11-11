@@ -77,3 +77,26 @@ def test_get_country_normalizes_case(client, session):
     assert r.status_code == 200
     body = r.json()
     assert body["iso3"] == "GHA"
+
+
+def test_country_exposes_coverage_status(client, session):
+    _seed_user(session)
+    session.add(Country(
+        iso3="GHA", name="Ghana", capital="Accra", region="West Africa",
+        tags=["SSA"], tier="C", status="restructured", fx_regime="float",
+        coverage_status="standard",
+    ))
+    session.commit()
+    _login(client)
+    r = client.get("/api/countries/GHA")
+    assert r.status_code == 200
+    assert r.json()["coverage_status"] == "standard"
+
+
+def test_country_without_explicit_coverage_defaults_to_coming_soon(client, session):
+    _seed_user(session)
+    _seed_country(session, "KEN")
+    _login(client)
+    r = client.get("/api/countries/KEN")
+    assert r.status_code == 200
+    assert r.json()["coverage_status"] == "coming_soon"
