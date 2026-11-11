@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { CoverageBadge } from "@atlas/design-system";
 import { api } from "../api/client";
 import AppShell from "./AppShell";
 
@@ -8,7 +9,7 @@ const C = "rounded-lg bg-[#161b22]";
 
 /* ── Types ── */
 
-interface Country { iso3: string; name: string; region: string; status: string; fx_regime: string; tier: string; }
+interface Country { iso3: string; name: string; region: string; status: string; fx_regime: string; tier: string; coverage_status: string; }
 interface FxObs { iso3: string; ccy: string; usd_per_ccy: number; observation_date: string; source: string; }
 interface FxDeltas { latest: FxObs; delta_1d_pct: number | null; delta_7d_pct: number | null; delta_30d_pct: number | null; delta_ytd_pct: number | null; }
 interface RatingAction { iso3: string; agency: string; rating: string; outlook: string | null; action: string; action_date: string; source_url: string | null; }
@@ -213,6 +214,7 @@ export default function CountriesList() {
                   Country<SortIcon active={sortKey === "name"} dir={sortDir} />
                 </th>
                 <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-ink-500">Region</th>
+                <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-ink-500">Coverage</th>
                 <th className="px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-ink-500">Ratings (Norm.)</th>
                 <th className="cursor-pointer select-none px-4 py-3 text-[10px] font-semibold uppercase tracking-wider text-ink-500" onClick={() => toggleSort("risk")}>
                   ATLAS Risk<SortIcon active={sortKey === "risk"} dir={sortDir} />
@@ -229,13 +231,13 @@ export default function CountriesList() {
               {isLoading ? (
                 Array.from({ length: 8 }, (_, i) => (
                   <tr key={i} className="border-b border-[#21262d]">
-                    {Array.from({ length: 9 }, (_, j) => (
+                    {Array.from({ length: 10 }, (_, j) => (
                       <td key={j} className="px-4 py-4"><div className="h-3.5 animate-pulse rounded bg-[#21262d]" style={{ width: `${40 + Math.random() * 40}%` }} /></td>
                     ))}
                   </tr>
                 ))
               ) : rows.length === 0 ? (
-                <tr><td colSpan={9} className="px-4 py-8 text-center text-sm text-ink-500">No countries match your search.</td></tr>
+                <tr><td colSpan={10} className="px-4 py-8 text-center text-sm text-ink-500">No countries match your search.</td></tr>
               ) : (
                 rows.map((c) => {
                   const b = bundles.get(c.iso3);
@@ -279,6 +281,11 @@ export default function CountriesList() {
                       <td className="px-4 py-3">
                         <div className="text-[12px] text-ink-300">{regionShort}</div>
                         <div className="text-[10px] text-ink-500">{c.region}</div>
+                      </td>
+
+                      {/* Coverage */}
+                      <td className="px-4 py-3">
+                        <CoverageBadge status={c.coverage_status} />
                       </td>
 
                       {/* Ratings */}
