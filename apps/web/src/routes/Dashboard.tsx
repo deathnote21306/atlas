@@ -176,7 +176,7 @@ export default function Dashboard() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-[1440px] px-6 pb-10">
+      <div className="mx-auto max-w-[1440px] px-4 sm:px-6 pb-10">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between pb-5 pt-4">
@@ -216,7 +216,7 @@ export default function Dashboard() {
         </div>
 
         {/* ── KPI Cards ── */}
-        <div className="mb-3 grid grid-cols-4 gap-3">
+        <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div className={`${C} flex items-start justify-between px-5 py-4`}>
             <div>
               <div className="text-[12px] text-ink-400">Countries Under Watch</div>
@@ -256,7 +256,7 @@ export default function Dashboard() {
           <div className="flex flex-col gap-3">
 
             {/* Deteriorating + Improving side by side */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className={`${C} px-5 py-4`}>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center gap-2"><TrendDown /><span className="text-[13px] font-medium text-ink-200">Top Deteriorating</span></div>
@@ -339,7 +339,7 @@ export default function Dashboard() {
 
             {/* Thematic Intelligence 2×2 */}
             {thematic.length > 0 && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {thematic.map((card) => (
                   <div key={card.title} className={`${C} border-l-2 ${THEMATIC_BORDER[card.color] ?? "border-l-slate-500/70"} p-4`}>
                     <div className="mb-2 flex items-center justify-between gap-2">

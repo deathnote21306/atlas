@@ -12,3 +12,5 @@ export { RiskBadge } from "./primitives/RiskBadge";
 export type { RiskBadgeProps, RiskLevel } from "./primitives/RiskBadge";
 export { AlertBadge } from "./primitives/AlertBadge";
 export type { AlertBadgeProps } from "./primitives/AlertBadge";
+export { CoverageBadge } from "./primitives/CoverageBadge";
+export type { CoverageBadgeProps, CoverageLevel } from "./primitives/CoverageBadge";

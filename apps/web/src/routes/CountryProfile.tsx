@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import {
+  CoverageBadge,
   type StalenessState,
 } from "@atlas/design-system";
 import { Search, Bell } from "lucide-react";
@@ -83,6 +84,7 @@ interface CountryData {
   region: string;
   tags: string[];
   tier: string;
+  coverage_status: string;
   status: string;
   fx_regime: string;
   fx_regime_notes: string | null;
@@ -239,6 +241,7 @@ export default function CountryProfile() {
               </h1>
             </div>
             <div className="flex items-center gap-3">
+              <CoverageBadge status={country.coverage_status} />
               <div className="flex items-center gap-2 rounded-md bg-[#161b22] px-3 py-1.5">
                 <Search className="h-3.5 w-3.5 text-ink-500" />
                 <span className="text-sm text-ink-500">Search countries...</span>

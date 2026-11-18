@@ -18,10 +18,10 @@ function wrap(ui: React.ReactNode) {
 }
 
 const SAMPLE = [
-  { iso3: "GHA", name: "Ghana", capital: "Accra", region: "West Africa", tags: ["SSA"], tier: "C", status: "restructured", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
-  { iso3: "KEN", name: "Kenya", capital: "Nairobi", region: "East Africa", tags: ["SSA"], tier: "B", status: "performing", fx_regime: "managed_float", fx_regime_notes: null, fx_parallel_premium: null },
-  { iso3: "ZAF", name: "South Africa", capital: "Pretoria", region: "Southern Africa", tags: ["SSA"], tier: "A", status: "performing", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
-  { iso3: "EGY", name: "Egypt", capital: "Cairo", region: "North Africa", tags: ["MENA"], tier: "B", status: "performing", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
+  { iso3: "GHA", coverage_status: "standard", name: "Ghana", capital: "Accra", region: "West Africa", tags: ["SSA"], tier: "C", status: "restructured", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
+  { iso3: "KEN", coverage_status: "full", name: "Kenya", capital: "Nairobi", region: "East Africa", tags: ["SSA"], tier: "B", status: "performing", fx_regime: "managed_float", fx_regime_notes: null, fx_parallel_premium: null },
+  { iso3: "ZAF", coverage_status: "benchmark", name: "South Africa", capital: "Pretoria", region: "Southern Africa", tags: ["SSA"], tier: "A", status: "performing", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
+  { iso3: "EGY", coverage_status: "coming_soon", name: "Egypt", capital: "Cairo", region: "North Africa", tags: ["MENA"], tier: "B", status: "performing", fx_regime: "float", fx_regime_notes: null, fx_parallel_premium: null },
 ];
 
 function makeBundle(country: typeof SAMPLE[number]) {
@@ -77,6 +77,47 @@ describe("CountriesList", () => {
     await userEvent.type(screen.getByPlaceholderText(/search/i), "ken");
     expect(screen.getByText("Kenya")).toBeInTheDocument();
     expect(screen.queryByText("Ghana")).not.toBeInTheDocument();
+  });
+
+  it("shows the coverage label for each country", async () => {
+    stubFetch(SAMPLE);
+    render(wrap(<CountriesList />));
+    expect(await screen.findByText("Standard Intelligence")).toBeInTheDocument();
+    expect(screen.getByText("Full Intelligence")).toBeInTheDocument();
+    expect(screen.getByText("Benchmark Data")).toBeInTheDocument();
+    expect(screen.getByText("Coming Soon")).toBeInTheDocument();
+  });
+
+  it("still renders a coming_soon country's empty cells rather than implying data", async () => {
+    // GAB is in the country list but has no bundle yet, which is what a genuinely
+    // uncovered country looks like: the row must degrade, not print NaN.
+    const withUncovered = [
+      ...SAMPLE,
+      { iso3: "GAB", coverage_status: "coming_soon", name: "Gabon", capital: "Libreville", region: "Central Africa", tags: ["SSA"], tier: "B", status: "performing", fx_regime: "pegged", fx_regime_notes: null, fx_parallel_premium: null },
+    ];
+    // bundles are served only for SAMPLE, so GAB's bundle 404s
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url: string) => {
+        if (url === "/api/me") {
+          return Promise.resolve(new Response(JSON.stringify({ email: "a@b.test", role: "Analyst" }), { status: 200 }));
+        }
+        const bundleMatch = url.match(/^\/api\/countries\/([A-Z]{3})\/bundle$/);
+        if (bundleMatch) {
+          const country = SAMPLE.find((c) => c.iso3 === bundleMatch[1]);
+          if (country) {
+            return Promise.resolve(new Response(JSON.stringify(makeBundle(country)), { status: 200 }));
+          }
+          return Promise.resolve(new Response(JSON.stringify({ detail: "Not found" }), { status: 404 }));
+        }
+        return Promise.resolve(new Response(JSON.stringify(withUncovered), { status: 200 }));
+      }),
+    );
+    render(wrap(<CountriesList />));
+    expect(await screen.findByText("Gabon")).toBeInTheDocument();
+    expect(screen.getAllByText("Coming Soon").length).toBeGreaterThan(0);
+    expect(screen.queryByText("NaN")).not.toBeInTheDocument();
+    expect(screen.queryByText(/NaN/)).not.toBeInTheDocument();
   });
 
   it("filters by region chip", async () => {

@@ -4,7 +4,6 @@ import { useAuth } from "../auth/AuthContext";
 import {
   LayoutGrid,
   Globe,
-  FileText,
   Activity,
   BookOpen,
   Bell,
@@ -52,18 +51,6 @@ const SECTIONS: NavSection[] = [
         children: [
           { label: "Country List", to: "/countries" },
           { label: "Country Comparison", to: "/countries/compare" },
-        ],
-      },
-      {
-        label: "Deal Analysis",
-        to: "#",
-        icon: <FileText className="h-4 w-4" />,
-        disabled: true,
-        expandKey: "deals",
-        routePrefix: "/deals",
-        children: [
-          { label: "Deal List", to: "#" },
-          { label: "New Deal", to: "#" },
         ],
       },
       {
@@ -126,7 +113,14 @@ function sectionOwnsRoute(routePrefix: string, pathname: string): boolean {
   return pathname === routePrefix || pathname.startsWith(routePrefix + "/");
 }
 
-export default function Sidebar() {
+interface SidebarProps {
+  /** Drawer visibility below the lg breakpoint. Ignored at lg and above,
+   *  where the sidebar is always docked. */
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ open = false, onClose }: SidebarProps = {}) {
   const { user, logout } = useAuth();
   const location = useLocation();
   const nav = useNavigate();
@@ -166,7 +160,13 @@ export default function Sidebar() {
   const version = (import.meta as any).env?.VITE_APP_VERSION ?? "v2.0 \u00b7 MVP";
 
   return (
-    <aside className="sticky top-0 z-40 flex h-[calc(100vh-2rem)] w-60 shrink-0 flex-col border-r border-[#1e2b42] bg-[#0e1523]">
+    <aside
+      // Below lg the sidebar is an off-canvas drawer, so narrow screens keep their
+      // full width for content. At lg and above it docks exactly as before.
+      className={`fixed inset-y-0 left-0 z-50 flex h-full w-60 shrink-0 flex-col border-r border-[#1e2b42] bg-[#0e1523] transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:z-40 lg:h-[calc(100vh-2rem)] lg:translate-x-0 ${
+        open ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
       {/* Brand */}
       <div className="px-5 pb-4 pt-5">
         <div className="flex items-center gap-2">
@@ -252,6 +252,7 @@ export default function Sidebar() {
                     ) : (
                       <NavLink
                         to={item.to}
+                        onClick={onClose}
                         className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
                           parentHighlight
                             ? "border-l-[3px] border-amber-500 bg-amber-500/5 text-amber-500"
@@ -283,6 +284,7 @@ export default function Sidebar() {
                               <NavLink
                                 to={child.to}
                                 end
+                                onClick={onClose}
                                 className={`flex items-center rounded-md px-3 py-1.5 text-sm transition-colors duration-150 ${
                                   childActive
                                     ? "border-l-[3px] border-amber-500 bg-amber-500/5 text-amber-500"

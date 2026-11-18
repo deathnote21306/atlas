@@ -95,7 +95,7 @@ function ImpactCard({ impact, fxValue, shocks, aiNarrative, aiLoading }: {
           {sign}{impact.risk_change.toFixed(1)} risk pts
         </span>
       </div>
-      <div className="mt-3 grid grid-cols-4 gap-3 text-center">
+      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-center">
         {[
           { label: "GDP (pp)", v: impact.deltas.debt_gdp },
           { label: "Fiscal (pp)", v: impact.deltas.fiscal_balance },
@@ -268,7 +268,7 @@ export default function ScenarioEngine() {
         <Library scenarios={savedScenarios} activeId={activeScenarioId} onSelect={handleSelect} onNew={handleReset} />
 
         {/* ── Center: Scenario Detail + Variables ── */}
-        <div className="w-[420px] shrink-0 overflow-y-auto border-r border-[#21262d] p-6">
+        <div className="w-full shrink-0 overflow-y-auto border-b border-[#21262d] p-4 sm:p-6 lg:w-[420px] lg:border-b-0 lg:border-r">
 
           {/* Scenario header */}
           <div className="mb-5">

@@ -346,7 +346,7 @@ export default function CountryComparison() {
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-500">
               Risk Dimensions
             </h2>
-            <div className={`grid gap-4 ${activeBundles.length === 1 ? "grid-cols-1" : activeBundles.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+            <div className={`grid gap-4 ${activeBundles.length === 1 ? "grid-cols-1" : activeBundles.length === 2 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"}`}>
               {activeBundles.map((b) => (
                 <div key={b.country.iso3}>
                   <h3 className="mb-2 text-xs font-medium text-ink-300">{b.country.name}</h3>

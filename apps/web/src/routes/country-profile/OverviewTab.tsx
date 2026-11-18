@@ -92,7 +92,7 @@ export default function OverviewTab({ keyRisks, keyOpportunities, riskDecomposit
       {riskDecomposition && riskDecomposition.dimensions.length > 0 && (
         <div className="rounded-lg bg-[#161b22] p-6">
           <h3 className="mb-5 text-base font-semibold text-ink-100">Risk Decomposition Overview</h3>
-          <div className="grid grid-cols-3 gap-6 sm:grid-cols-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:grid-cols-6">
             {riskDecomposition.dimensions.map((d) => (
               <MiniRiskRing key={d.key} score={d.score} label={d.label} weight={d.weight} />
             ))}

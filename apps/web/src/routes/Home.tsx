@@ -13,7 +13,7 @@ export default function Home() {
     <AppShell>
       <main className="mx-auto max-w-6xl p-8">
         <h1 className="text-xl font-semibold">Atlas — signed in as {user?.email}</h1>
-        <div className="mt-6 grid grid-cols-2 gap-3">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <KpiCard label="API status" value={data?.status ?? "—"} />
           <KpiCard label="API version" value={data?.version ?? "—"} />
         </div>

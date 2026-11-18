@@ -130,7 +130,7 @@ export default function ScenarioView() {
             </h2>
             <div className="space-y-3">
               {/* Risk comparison */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="rounded-lg bg-[#161b22] p-3 text-center">
                   <div className="text-xs text-ink-400">Baseline Risk</div>
                   <div className="mt-1 font-mono text-xl text-ink-100">
